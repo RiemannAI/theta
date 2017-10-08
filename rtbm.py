@@ -21,8 +21,31 @@ class RTBM(object):
         """Evaluates the RTBM instance for a given data array"""
         return probability(data, self._bv, self._bh, self._t, self._w, self._q)
 
+    def size(self):
+        """Get size of RTBM"""
+        return self._bv.shape[0] + self._t.shape[0] + self._bh.shape[0] + self._w.size + self._q.shape[0]
+
+    def get_bounds(self):
+        """"""
+        lower_bounds = [None for i in range(self.size())]
+        upper_bounds = [None for i in range(self.size())]
+
+        # set T positive
+        if self._bv.shape[0] == 1:
+            index = self._bv.shape[0]
+            lower_bounds[index:index+self._t.shape[0]] = [1E-5]*self._t.shape[0]
+
+        # set Q positive
+        index = self.size()-self._q.shape[0]
+        lower_bounds[index:] = [1E-5]*self._q.shape[0]
+
+        return lower_bounds, upper_bounds
+
     def assign(self, params):
         """Assigns a flat array of parameters to the RTBM matrices"""
+        if len(params) != self.size():
+            raise Exception('Size does no match.')
+
         index = self._bv.shape[0]
         self._bv = params[0:index].reshape(self._bv.shape)
 
