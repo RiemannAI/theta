@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from numba import jit
 from abelfunctions import RiemannTheta
 
 
@@ -27,8 +26,8 @@ class RTBM(object):
 
     def get_bounds(self):
         """"""
-        lower_bounds = [None for i in range(self.size())]
-        upper_bounds = [None for i in range(self.size())]
+        lower_bounds = [-10 for i in range(self.size())]
+        upper_bounds = [ 10 for i in range(self.size())]
 
         # set T positive
         if self._bv.shape[0] == 1:
