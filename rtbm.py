@@ -5,6 +5,7 @@ import numpy as np
 from numba import jit
 from abelfunctions import RiemannTheta
 
+RTBM_precision = 1e-16
 
 class RTBM(object):
     """This class implements the Riemann Theta Boltzmann Machine"""
@@ -53,7 +54,41 @@ def probability(v, bv, bh, t, w, q):
 
     ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1]))
 
-    R1 = RiemannTheta((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), prec=1e-16)
-    R2 = RiemannTheta((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), prec=1e-16)
+    R1 = RiemannTheta((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), prec=RTBM_precision)
+    R2 = RiemannTheta((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), prec=RTBM_precision)
 
     return np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * R1/R2
+
+
+def gradientLogTheta(v,q,d):
+    """ Implements the directional log gradient 
+        
+        d : int for direction of gradient
+    """
+    Nh = q.shape[0]
+    D = np.zeros(Nh)
+    D[d] = 1
+    
+    R = RiemannTheta(v, q, prec=RTBM_precision)
+    L = RiemannTheta(v, q, prec=RTBM_precision, derivs=[D])
+    
+    return L/R
+    
+def factorizedHiddenExpectation(v,bh,w,q):
+    """ Implements E(h|v) in factorized form for q diagonal 
+        Note: Does not check if q is actual diagonal (for performance)
+        
+        Returns [ E(h_1|v), E(h_2|v), ... ] in vectorized form (each E is an array for the vs)
+    """ 
+    Nh = q.shape[0]
+    
+    vW = np.transpose(v).dot(w)
+    
+    E = []
+    
+    for i in range(0,Nh):
+        O = np.matrix([[q[i,i]]], dtype=np.complex)
+        E.append( -gradientLogTheta(vW[:,[i]]+bh[i],O,0) )
+    
+    return E
+    
