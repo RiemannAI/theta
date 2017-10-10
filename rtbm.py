@@ -29,12 +29,12 @@ class RTBM(object):
 
     def size(self):
         """Get size of RTBM"""
-        return self._bv.shape[0] + self._t.shape[0] + self._bh.shape[0] + self._w.size + self._q.shape[0]
+        return 2*self._Nv + 2*self._Nh + self._Nv*self._Nh
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
-        lower_bounds = [-self.param_bound for i in range(self.size())]
-        upper_bounds = [ self.param_bound for i in range(self.size())]
+        lower_bounds = [-self._param_bound for i in range(self.size())]
+        upper_bounds = [ self._param_bound for i in range(self.size())]
 
         # set T positive
         if self._bv.shape[0] == 1:
@@ -46,14 +46,8 @@ class RTBM(object):
         lower_bounds[index:] = [1E-5]*self._q.shape[0]
 
         return lower_bounds, upper_bounds
-
-    def set_bound(self,bound=10):
-        """ Set the global bound for the parameters """
-        
-        self.param_bound = bound
-        
     
-    def assign(self, params):
+    def assign_params(self, params):
         """Assigns a flat array of parameters to the RTBM matrices"""
         if len(params) != self.size():
             raise Exception('Size does no match.')
@@ -72,10 +66,16 @@ class RTBM(object):
 
         np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
 
+    def get_params(self):
+        """Return flat array with current matrices weights"""
+        params = np.concatenate([self._bv.flatten(), self._t.diagonal(), self._bh.flatten(),
+                   self._w.flatten(), self._q.diagonal()])
+        return params
+
     def random_init(self, Tmax=2, Qmax=5, Wmax=2):
-        """ Initalizes the RTBM parameters uniform random """
-        """ (the Bs are kept @ 0) """
-        
+        """ Initalizes the RTBM parameters uniform random
+        (the Bs are kept @ 0)
+        """
         # Init random diagonal pos. def. 
         self._t = np.diag(np.random.uniform(0.01,Tmax,self._Nv)).astype(complex)
         self._q = np.diag(np.random.uniform(0.01,Qmax,self._Nh)).astype(complex)
@@ -86,7 +86,17 @@ class RTBM(object):
         while(checkNormalizationConsistency(self._t,self._q,self._w) == False):
             self._w = np.random.uniform(-Wmax,Wmax,(self._Nv,self._Nh))
             
-        
+    @property
+    def param_bound(self):
+        return self._param_bound
+
+    @param_bound.setter
+    def param_bound(self, bound):
+        """ Set the global bound for the parameters """
+        if np.isnan(bound) or np.isinf(bound):
+            raise AssertionError('Bound is nan or inf')
+        self._param_bound = bound
+
     @property
     def bv(self):
         return self._bv
@@ -172,7 +182,8 @@ def gradientLogTheta(v,q,d):
     L = RiemannTheta(v, q, prec=RTBM_precision, derivs=[D])
     
     return L/R
-    
+
+
 def factorizedHiddenExpectation(v,bh,w,q):
     """ Implements E(h|v) in factorized form for q diagonal 
         Note: Does not check if q is actual diagonal (for performance)
