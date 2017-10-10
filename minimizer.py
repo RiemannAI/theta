@@ -54,7 +54,7 @@ class CMA(Minimizer):
             pool = mp.Pool(self._num_cores)
             while not es.stop():
                 solutions = es.ask()
-                f_values = pool.map(self.cost, solutions)
+                f_values = pool.map_async(self.cost, solutions).get()
                 es.tell(solutions, f_values)
                 es.logger.add()
                 es.disp()
@@ -72,7 +72,7 @@ class CMA(Minimizer):
 
     @num_cores.setter
     def num_cores(self, cores):
-        if cores > multiprocessing.cpu_count():
+        if cores > mp.cpu_count():
             print('CMA: the number of requested CPU is larger than cpu_count.')
         elif cores <= 0:
             raise AssertionError('CMA: the requested number of CPU is <= 0')
