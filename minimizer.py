@@ -38,7 +38,7 @@ class CMA(Minimizer):
     def train(self, rtbm, data):
         super(CMA, self).train(rtbm, data)
         bmin, bmax = rtbm.get_bounds()
-        sol = fmin(self.cost, rtbm.size()*[1e-5], 2, {'bounds': [bmin, bmax]})
+        sol = fmin(self.cost, rtbm.size()*[1e-5], np.max(bmax)*0.1, {'bounds': [bmin, bmax]})
         rtbm.assign(sol[0])
         return sol[0]
 
