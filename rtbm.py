@@ -24,10 +24,10 @@ class RTBM(object):
         """Get size of RTBM"""
         return self._bv.shape[0] + self._t.shape[0] + self._bh.shape[0] + self._w.size + self._q.shape[0]
 
-    def get_bounds(self):
-        """"""
-        lower_bounds = [-10 for i in range(self.size())]
-        upper_bounds = [ 10 for i in range(self.size())]
+    def get_bounds(self, absmax=10):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        lower_bounds = [-absmax for i in range(self.size())]
+        upper_bounds = [ absmax for i in range(self.size())]
 
         # set T positive
         if self._bv.shape[0] == 1:
@@ -58,6 +58,56 @@ class RTBM(object):
         index += self._w.size
 
         np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
+
+    @property
+    def bv(self):
+        return self._bv
+
+    @bv.setter
+    def bv(self, value):
+        if value.shape != self._bv.shape:
+            raise AssertionError('Setting bv with wrong shape.')
+        self._bv = value
+
+    @property
+    def t(self):
+        return self._t
+
+    @t.setter
+    def t(self, value):
+        if value.shape != self._t.shape:
+            raise AssertionError('Setting t with wrong shape.')
+        self._t = value
+
+    @property
+    def bh(self):
+        return self._bh
+
+    @bh.setter
+    def bh(self, value):
+        if value.shape != self._bh.shape:
+            raise AssertionError('Setting bh with wrong shape.')
+        self._bh = value
+
+    @property
+    def w(self):
+        return self._w
+
+    @w.setter
+    def w(self, value):
+        if value.shape != self._w.shape:
+            raise AssertionError('Setting w with wrong shape.')
+        self._w = value
+
+    @property
+    def q(self):
+        return self._q
+
+    @q.setter
+    def q(self, value):
+        if value.shape != self._q.shape:
+            raise AssertionError('Setting q with wrong shape.')
+        self._q = value
 
 
 def probability(v, bv, bh, t, w, q):
