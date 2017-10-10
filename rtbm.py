@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from numba import jit
 from abelfunctions import RiemannTheta
 
 RTBM_precision = 1e-16
@@ -22,8 +21,31 @@ class RTBM(object):
         """Evaluates the RTBM instance for a given data array"""
         return probability(data, self._bv, self._bh, self._t, self._w, self._q)
 
+    def size(self):
+        """Get size of RTBM"""
+        return self._bv.shape[0] + self._t.shape[0] + self._bh.shape[0] + self._w.size + self._q.shape[0]
+
+    def get_bounds(self, absmax=10):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        lower_bounds = [-absmax for i in range(self.size())]
+        upper_bounds = [ absmax for i in range(self.size())]
+
+        # set T positive
+        if self._bv.shape[0] == 1:
+            index = self._bv.shape[0]
+            lower_bounds[index:index+self._t.shape[0]] = [1E-5]*self._t.shape[0]
+
+        # set Q positive
+        index = self.size()-self._q.shape[0]
+        lower_bounds[index:] = [1E-5]*self._q.shape[0]
+
+        return lower_bounds, upper_bounds
+
     def assign(self, params):
         """Assigns a flat array of parameters to the RTBM matrices"""
+        if len(params) != self.size():
+            raise Exception('Size does no match.')
+
         index = self._bv.shape[0]
         self._bv = params[0:index].reshape(self._bv.shape)
 
@@ -37,6 +59,56 @@ class RTBM(object):
         index += self._w.size
 
         np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
+
+    @property
+    def bv(self):
+        return self._bv
+
+    @bv.setter
+    def bv(self, value):
+        if value.shape != self._bv.shape:
+            raise AssertionError('Setting bv with wrong shape.')
+        self._bv = value
+
+    @property
+    def t(self):
+        return self._t
+
+    @t.setter
+    def t(self, value):
+        if value.shape != self._t.shape:
+            raise AssertionError('Setting t with wrong shape.')
+        self._t = value
+
+    @property
+    def bh(self):
+        return self._bh
+
+    @bh.setter
+    def bh(self, value):
+        if value.shape != self._bh.shape:
+            raise AssertionError('Setting bh with wrong shape.')
+        self._bh = value
+
+    @property
+    def w(self):
+        return self._w
+
+    @w.setter
+    def w(self, value):
+        if value.shape != self._w.shape:
+            raise AssertionError('Setting w with wrong shape.')
+        self._w = value
+
+    @property
+    def q(self):
+        return self._q
+
+    @q.setter
+    def q(self, value):
+        if value.shape != self._q.shape:
+            raise AssertionError('Setting q with wrong shape.')
+        self._q = value
 
 
 def probability(v, bv, bh, t, w, q):
