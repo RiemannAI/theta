@@ -17,6 +17,12 @@ class RTBM(object):
         self._w = np.zeros([visible_units, hidden_units], dtype=complex)
         self._q = np.zeros([hidden_units, hidden_units], dtype=complex)
 
+        self._Nv = visible_units
+        self._Nh = hidden_units
+        
+        # Set default parameter bound value
+        self.param_bound = 10
+        
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
         return probability(data, self._bv, self._bh, self._t, self._w, self._q)
@@ -25,10 +31,10 @@ class RTBM(object):
         """Get size of RTBM"""
         return self._bv.shape[0] + self._t.shape[0] + self._bh.shape[0] + self._w.size + self._q.shape[0]
 
-    def get_bounds(self, absmax=10):
+    def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
-        lower_bounds = [-absmax for i in range(self.size())]
-        upper_bounds = [ absmax for i in range(self.size())]
+        lower_bounds = [-self.param_bound for i in range(self.size())]
+        upper_bounds = [ self.param_bound for i in range(self.size())]
 
         # set T positive
         if self._bv.shape[0] == 1:
@@ -41,6 +47,12 @@ class RTBM(object):
 
         return lower_bounds, upper_bounds
 
+    def set_bound(self,bound=10):
+        """ Set the global bound for the parameters """
+        
+        self.param_bound = bound
+        
+    
     def assign(self, params):
         """Assigns a flat array of parameters to the RTBM matrices"""
         if len(params) != self.size():
@@ -60,6 +72,21 @@ class RTBM(object):
 
         np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
 
+    def random_init(self, Tmax=2, Qmax=5, Wmax=2):
+        """ Initalizes the RTBM parameters uniform random """
+        """ (the Bs are kept @ 0) """
+        
+        # Init random diagonal pos. def. 
+        self._t = np.diag(np.random.uniform(0.01,Tmax,self._Nv)).astype(complex)
+        self._q = np.diag(np.random.uniform(0.01,Qmax,self._Nh)).astype(complex)
+        
+        # Init random
+        self._w = np.random.uniform(-Wmax,Wmax,(self._Nv,self._Nh))
+        
+        while(checkNormalizationConsistency(self._t,self._q,self._w) == False):
+            self._w = np.random.uniform(-Wmax,Wmax,(self._Nv,self._Nh))
+            
+        
     @property
     def bv(self):
         return self._bv
@@ -164,3 +191,7 @@ def factorizedHiddenExpectation(v,bh,w,q):
     
     return E
     
+    
+def checkNormalizationConsistency(T,Q,W):
+    C = Q - np.transpose(W).dot(np.linalg.inv(T).dot(W))
+    return np.all(np.linalg.eigvals(C) > 0)
