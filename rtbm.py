@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import copy
 from abelfunctions import RiemannTheta
 
 RTBM_precision = 1e-16
@@ -22,10 +23,16 @@ class RTBM(object):
         
         # Set default parameter bound value
         self.param_bound = 10
+
+        # Populate with non-zero parameters
+        self.assign_params(np.array([1E-5]*self.size()))
         
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
         return probability(data, self._bv, self._bh, self._t, self._w, self._q)
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def size(self):
         """Get size of RTBM"""
