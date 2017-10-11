@@ -1,5 +1,6 @@
 from layers import Layer 
 
+import numpy as np
 
 class Model(object):
     
@@ -28,25 +29,30 @@ class Model(object):
 
         return x
 
-    def get_parameters():
+    def get_parameters(self):
         """ Collects all parameters and returns a flat array """
+        R = []
+        for L in self._layers:
+            R.append(L.get_parameters())
+            
+        return np.concatenate(R)
+
+    def set_parameters(self,P):
+        """ Set to the given parameters """
+        Nt = 0
+        
+        for L in self._layers:
+            Np = L.get_Nparameters()
+            
+            L.set_parameters(P[Nt:Nt+Np])
+        
+            Nt = Nt + Np    
+
+    def train(self,X,Y):
+        """ Trains the model with the set cost function """
         #...
 
-    def set_parameters(P):
-        """ Sets the new parameters """
-        #...
-
-
-    def set_costfunction(C):
-        """ Sets the cost function to be used """
-        #...
-    
-
-    def train(X,Y):
-       """ Trains the model with the set costfunction"""
-       #...
-
-    def predict(X):
+    def predict(self,X):
         """ Performs prediction with the trained model """
 
         return feedthrough(X)

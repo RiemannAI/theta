@@ -13,22 +13,29 @@ class Minimizer(object):
 
     def __init__(self):
         self._rtbm = None
-        self._data = None
+        self.X_data = None
+        self.Y_data = None
 
     @abstractmethod
-    def train(self, rtbm, data):
+    def train(self, rtbm, X_data, Y_data):
         self._rtbm = rtbm
-        self._data = data
+        self.X_data = X_data
+        self.Y_data = Y_data
 
+    def set_costfunction(C):
+        """ Sets the cost function to be used """
+        self._costfunction = staticmethod(C)
+        
+        
     def cost(self, params):
         self._rtbm.assign(params)
-        try:
-            res = -np.sum(np.log(self._rtbm(self._data)))
-            if np.isnan(res): res = np.inf
-        except:
-            res = np.inf
+       
+        res = self._costfunction.__func__(self._rtbm(self.X_data),Y_data)
+       
         return res
 
+    
+    
 
 class CMA(Minimizer):
     """Implements the GA using CMA library"""
