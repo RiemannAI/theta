@@ -168,10 +168,10 @@ def gradientLogTheta(v,q,d):
     D = np.zeros(Nh)
     D[d] = 1
     
-    R = RiemannTheta(v, q, prec=RTBM_precision)
-    L = RiemannTheta(v, q, prec=RTBM_precision, derivs=[D])
+    R = RiemannTheta(v/(2.0j * np.pi), -q/(2.0j * np.pi), prec=RTBM_precision)
+    L = RiemannTheta(v/(2.0j * np.pi), -q/(2.0j * np.pi), prec=RTBM_precision, derivs=[D])
     
-    return L/R
+    return -L/R/(2.0j * np.pi)
     
 def factorizedHiddenExpectation(v,bh,w,q):
     """ Implements E(h|v) in factorized form for q diagonal 
@@ -187,7 +187,8 @@ def factorizedHiddenExpectation(v,bh,w,q):
     
     for i in range(0,Nh):
         O = np.matrix([[q[i,i]]], dtype=np.complex)
-        E.append( -gradientLogTheta(vW[:,[i]]+bh[i],O,0) )
+      
+        E.append( gradientLogTheta((vW[:,[i]]+bh[i]),O,0) )
     
     return E
     
