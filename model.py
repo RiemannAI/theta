@@ -1,6 +1,8 @@
-from layers import Layer 
+#!/usr/bin/env sage
+# -*- coding: utf-8 -*-
 
 import numpy as np
+import copy
 
 class Model(object):
     
@@ -44,6 +46,8 @@ class Model(object):
     
         return self.feedthrough(data)
 
+    def copy(self):
+        return copy.deepcopy(self)
     
     def get_parameters(self):
         """ Collects all parameters and returns a flat array """
@@ -73,7 +77,7 @@ class Model(object):
     def size(self):
         return self._Np
     
-    def assign(self,P):
+    def assign_params(self,P):
         """ Set to the given parameters """
         Nt = 0
         

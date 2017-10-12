@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABCMeta, abstractmethod
-from cma import fmin
-from scipy.optimize import differential_evolution
+from cma import CMAEvolutionStrategy
 import numpy as np
+import multiprocessing as mp
+from contextlib import closing
 
 
 class Minimizer(object):
@@ -12,52 +13,70 @@ class Minimizer(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        self._model = None
-        self.X_data = None
-        self.Y_data = None
+        self._cost_function = None
+        self.x_data = None
+        self.y_data = None
 
     @abstractmethod
-    def train(self, model, X_data, Y_data):
-        self._model = model
-        self.X_data = X_data
-        self.Y_data = Y_data
+    def train(self, cost, model, x_data, y_data):
+        self._cost_function = cost
+        self.x_data = x_data
+        self.y_data = y_data
 
-    def set_costfunction(self, C):
-        """ Sets the cost function to be used """
-        self._costfunction = staticmethod(C)
-        
-        
+    @staticmethod
+    def init_worker(input_model):
+        global thread_model
+        thread_model = input_model.copy()
+
     def cost(self, params):
-        self._model.assign(params)
-       
-        res = self._costfunction.__func__(self._model(self.X_data),self.Y_data)
-       
+        thread_model.assign_params(params)
+        res = self._cost_function(thread_model(self.x_data),self.y_data)
         return res
 
-    
-    
 
 class CMA(Minimizer):
     """Implements the GA using CMA library"""
-    def __init__(self):
+    def __init__(self, multi_thread=False):
         super(CMA, self).__init__()
+        if multi_thread:
+            self.num_cores = mp.cpu_count()
+        else:
+            self.num_cores = 1
+        print('CMA on %d cpu(s) enabled' % self.num_cores)
 
-    def train(self, model, X_data, Y_data):
-        super(CMA, self).train(model, X_data, Y_data)
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11):
+        """The training algorithm"""
+        super(CMA, self).train(cost, model, x_data, y_data)
+
         bmin, bmax = model.get_bounds()
-        sol = fmin(self.cost, model.size()*[1e-5], np.max(bmax)*0.1, {'bounds': [bmin, bmax]})
-        model.assign(sol[0])
-        return sol[0]
+        args = {'bounds': [bmin, bmax],
+                'tolfun': tolfun, 'verb_log': 0}
+        sigma = np.max(bmax)*0.1
+        initsol = model.get_parameters()
 
+        with closing(mp.Pool(self.num_cores, initializer=Minimizer.init_worker(model))) as pool:
+            es = CMAEvolutionStrategy(initsol, sigma, args)
+            while not es.stop():
+                solutions = es.ask()
+                f_values = pool.map_async(self.cost, solutions).get()
+                es.tell(solutions, f_values)
+                es.logger.add()
+                es.disp()
+            print(es.result)
+            pool.terminate()
 
-class DifferentialEvolution(Minimizer):
-    """Implements the scipy optimize differential evolution"""
-    def __init__(self):
-        super(DifferentialEvolution, self).__init__()
+        model.assign_params(es.result[0])
+        return es.result[0]
 
-    def train(self, model, X_data, Y_data):
-        super(DifferentialEvolution, self).train(model, X_data, Y_data)
-        bmin, bmax = model.get_bounds()
-        sol = differential_evolution(self.cost, [ (bmin[i],bmax[i]) for i in range(len(bmin))], disp=True)
-        model.assign(sol.x)
-        return sol.x
+    @property
+    def num_cores(self):
+        return self._num_cores
+
+    @num_cores.setter
+    def num_cores(self, cores):
+        if cores > mp.cpu_count():
+            print('CMA: the number of requested CPU is larger than cpu_count.')
+        elif cores <= 0:
+            raise AssertionError('CMA: the requested number of CPU is <= 0')
+        self._num_cores = cores
+

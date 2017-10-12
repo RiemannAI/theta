@@ -1,16 +1,20 @@
+#!/usr/bin/env sage
+# -*- coding: utf-8 -*-
 
 import numpy as np
 
-""" Logarithmic total cost """
-def Logarithmic(X,Y):
+
+def logarithmic(x, *y):
+    """ Logarithmic total cost """
     try:
-        res = -np.sum(np.log(X))
-        if np.isnan(res): res = np.inf
+        res = -np.sum(np.log(x))
+        if np.isnan(res):
+            res = np.inf
     except:
         res = np.inf
-        
     return res
-    
-""" Mean squared error """
-def MSE(X,Y):
-    return np.mean((X-Y)**2)
+
+
+def mse(x, y):
+    """ Mean squared error """
+    return np.mean((x-y)**2)
