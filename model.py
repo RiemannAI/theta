@@ -42,7 +42,7 @@ class Model(object):
     def __call__(self, data):
         """Evaluates the model for a given data array"""
     
-        return feedthrough(data)
+        return self.feedthrough(data)
 
     
     def get_parameters(self):
@@ -63,26 +63,27 @@ class Model(object):
             A_L.append(bl)
             A_U.append(bu)
          
-        self._lower_bounds = np.concatenate(A_L)
-        self._upper_bounds = np.concatenate(A_U)
+        self._lower_bounds = np.concatenate(A_L).tolist()
+        self._upper_bounds = np.concatenate(A_U).tolist()
     
     def get_bounds(self):
         """ Returns the bounds """
         return self._lower_bounds, self._upper_bounds
     
+    def size(self):
+        return self._Np
     
     def assign(self,P):
         """ Set to the given parameters """
         Nt = 0
         
         for L in self._layers:
-            Np = L.get_Nparameters()
             
-            L.set_parameters(P[Nt:Nt+Np])
+            L.set_parameters(P[Nt:Nt+L.get_Nparameters()])
         
-            Nt = Nt + Np    
+            Nt = Nt + L.get_Nparameters() 
 
     def predict(self,X):
         """ Performs prediction with the trained model """
 
-        return feedthrough(X)
+        return self.feedthrough(X)
