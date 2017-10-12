@@ -9,4 +9,4 @@ def Logarithmic(X,Y):
         res = np.inf
         
     return res
-    
+        
