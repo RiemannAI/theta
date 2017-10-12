@@ -59,19 +59,31 @@ class RTBM(object):
             raise Exception('Size does no match.')
 
         index = self._bv.shape[0]
-        self._bv = params[0:index].reshape(self._bv.shape)
+        Bv = params[0:index].reshape(self._bv.shape)
 
-        np.fill_diagonal(self._t, params[index:index+self._t.shape[0]])
+        #np.fill_diagonal(self._t, params[index:index+self._t.shape[0]])
+        T = np.diag(params[index:index+self._t.shape[0]])
         index += self._t.shape[0]
 
-        self._bh = params[index:index+self._bh.shape[0]].reshape(self._bh.shape)
+        Bh = params[index:index+self._bh.shape[0]].reshape(self._bh.shape)
         index += self._bh.shape[0]
 
-        self._w = params[index:index+self._w.size].reshape(self._w.shape)
+        W = params[index:index+self._w.size].reshape(self._w.shape)
         index += self._w.size
 
-        np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
-
+        #np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
+        Q = np.diag(params[index:index+self._q.shape[0]])
+        
+        """ Only keep if consistent solution """
+        """ Temporary work-around """
+        if checkNormalizationConsistency(T,Q,W):
+            self._w = W
+            self._q = Q
+            self._t = T
+            self._bv = Bv
+            self._bh = Bh
+            
+        
     def random_init(self, Tmax=2, Qmax=5, Wmax=2):
         """ Initalizes the RTBM parameters uniform random """
         """ (the Bs are kept @ 0) """
@@ -168,10 +180,12 @@ def gradientLogTheta(v,q,d):
     D = np.zeros(Nh)
     D[d] = 1
     
-    R = RiemannTheta(v, q, prec=RTBM_precision)
-    L = RiemannTheta(v, q, prec=RTBM_precision, derivs=[D])
+    R = RiemannTheta(v/(2.0j * np.pi), -q/(2.0j * np.pi), prec=RTBM_precision)
+    L = RiemannTheta(v/(2.0j * np.pi), -q/(2.0j * np.pi), prec=RTBM_precision, derivs=[D])
     
-    return L/R
+    """ ToDo: Check if not some factor is missing ... """
+    
+    return -L/R/(2.0j * np.pi)
     
 def factorizedHiddenExpectation(v,bh,w,q):
     """ Implements E(h|v) in factorized form for q diagonal 
@@ -187,7 +201,8 @@ def factorizedHiddenExpectation(v,bh,w,q):
     
     for i in range(0,Nh):
         O = np.matrix([[q[i,i]]], dtype=np.complex)
-        E.append( -gradientLogTheta(vW[:,[i]]+bh[i],O,0) )
+      
+        E.append( gradientLogTheta((vW[:,[i]]+bh[i]),O,0) )
     
     return E
     
