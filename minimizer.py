@@ -14,23 +14,21 @@ class Minimizer(object):
 
     def __init__(self):
         self._cost_function = None
+        self._model = None
         self.x_data = None
         self.y_data = None
 
     @abstractmethod
     def train(self, cost, model, x_data, y_data):
         self._cost_function = cost
+        self._model = model
         self.x_data = x_data
         self.y_data = y_data
 
-    @staticmethod
-    def init_worker(input_model):
-        global thread_model
-        thread_model = input_model.copy()
-
     def cost(self, params):
-        thread_model.assign_params(params)
-        res = self._cost_function(thread_model(self.x_data),self.y_data)
+        func = self._model.copy()
+        func.assign_params(params)
+        res = self._cost_function(func(self.x_data),self.y_data)
         return res
 
 
@@ -54,7 +52,7 @@ class CMA(Minimizer):
         sigma = np.max(bmax)*0.1
         initsol = model.get_parameters()
 
-        with closing(mp.Pool(self.num_cores, initializer=Minimizer.init_worker(model))) as pool:
+        with closing(mp.Pool(self.num_cores)) as pool:
             es = CMAEvolutionStrategy(initsol, sigma, args)
             while not es.stop():
                 solutions = es.ask()
