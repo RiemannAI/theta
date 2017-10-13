@@ -8,6 +8,10 @@ from abelfunctions import RiemannTheta
 RTBM_precision = 1e-16
 
 
+class AssignError(Exception):
+    pass
+
+
 class RTBM(object):
     """This class implements the Riemann Theta Boltzmann Machine"""
 
@@ -83,6 +87,9 @@ class RTBM(object):
             self._t = T
             self._bv = Bv
             self._bh = Bh
+        else:
+            raise AssignError('RTBM assign_params: check normalization consistency failed')
+
 
     def get_parameters(self):
         """Return flat array with current matrices weights"""

@@ -1,38 +1,39 @@
 #!/usr/bin/env sage
 # -*- coding: utf-8 -*-
 
-from abc import ABCMeta, abstractmethod
 from cma import CMAEvolutionStrategy
 import numpy as np
 import multiprocessing as mp
 from contextlib import closing
+from rtbm import AssignError
 
 
-class Minimizer(object):
-    """Abstract class layer for the implementation of minimizers"""
-    __metaclass__ = ABCMeta
-
-    def __init__(self):
-        self._cost_function = None
-        self._model = None
-        self.x_data = None
-        self.y_data = None
-
-    @abstractmethod
-    def train(self, cost, model, x_data, y_data):
-        self._cost_function = cost
-        self._model = model
+class Resource(object):
+    """Resources container for the worker load"""
+    def __init__(self, cost, model, x_data, y_data=None):
+        self.cost_function = cost
+        self.model = model
         self.x_data = x_data
         self.y_data = y_data
 
-    def cost(self, params):
-        func = self._model.copy()
-        func.assign_params(params)
-        res = self._cost_function(func(self.x_data),self.y_data)
-        return res
+
+def worker_initialize(cost, model, x_data, y_data):
+    global resource
+    resource = Resource(cost, model, x_data, y_data)
 
 
-class CMA(Minimizer):
+def worker_compute(params):
+    try:
+        resource.model.assign_params(params)
+    except AssignError:
+        return np.inf
+    res = resource.cost_function(resource.model(resource.x_data), resource.y_data)
+    if np.isnan(res):
+        res = np.inf
+    return res
+
+
+class CMA(object):
     """Implements the GA using CMA library"""
     def __init__(self, multi_thread=False):
         super(CMA, self).__init__()
@@ -44,24 +45,25 @@ class CMA(Minimizer):
 
     def train(self, cost, model, x_data, y_data=None, tolfun=1e-11):
         """The training algorithm"""
-        super(CMA, self).train(cost, model, x_data, y_data)
 
         bmin, bmax = model.get_bounds()
         args = {'bounds': [bmin, bmax],
-                'tolfun': tolfun, 'verb_log': 0}
+                'tolfun': tolfun,
+                'verb_log': 0}
         sigma = np.max(bmax)*0.1
-        initsol = model.get_parameters()
+        initsol = np.real(model.get_parameters())
 
-        with closing(mp.Pool(self.num_cores)) as pool:
-            es = CMAEvolutionStrategy(initsol, sigma, args)
+        es = CMAEvolutionStrategy(initsol, sigma, args)
+        with closing(mp.Pool(self.num_cores, initializer=worker_initialize,
+                             initargs=(cost, model, x_data, y_data))) as pool:
             while not es.stop():
                 solutions = es.ask()
-                f_values = pool.map_async(self.cost, solutions).get()
+                f_values = pool.map_async(worker_compute, solutions).get()
                 es.tell(solutions, f_values)
                 es.logger.add()
                 es.disp()
-            print(es.result)
             pool.terminate()
+        print(es.result)
 
         model.assign_params(es.result[0])
         return es.result[0]

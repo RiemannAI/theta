@@ -6,12 +6,7 @@ import numpy as np
 
 def logarithmic(x, *y):
     """ Logarithmic total cost """
-    try:
-        res = -np.sum(np.log(x))
-        if np.isnan(res):
-            res = np.inf
-    except:
-        res = np.inf
+    res = -np.sum(np.log(x))
     return res
 
 
