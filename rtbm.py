@@ -1,11 +1,8 @@
 #!/usr/bin/env sage
 # -*- coding: utf-8 -*-
 
-import copy
 import numpy as np
-from abelfunctions import RiemannTheta
-
-RTBM_precision = 1e-16
+from mathtools import rtbm_probability, check_normalization_consistency
 
 
 class AssignError(Exception):
@@ -17,14 +14,13 @@ class RTBM(object):
 
     def __init__(self, visible_units, hidden_units):
         """Setup operators for BM based on the number of visible and hidden units"""
+        self._Nv = visible_units
+        self._Nh = hidden_units
         self._bv = np.zeros([visible_units, 1], dtype=complex)
         self._t = np.ones([visible_units, visible_units], dtype=complex)
         self._bh = np.zeros([hidden_units, 1], dtype=complex)
         self._w = np.zeros([visible_units, hidden_units], dtype=complex)
         self._q = np.zeros([hidden_units, hidden_units], dtype=complex)
-
-        self._Nv = visible_units
-        self._Nh = hidden_units
         
         # Set default parameter bound value
         self._param_bound = 10
@@ -34,10 +30,7 @@ class RTBM(object):
         
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
-        return probability(data, self._bv, self._bh, self._t, self._w, self._q)
-
-    def copy(self):
-        return copy.deepcopy(self)
+        return rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
 
     def size(self):
         """Get size of RTBM"""
@@ -45,8 +38,8 @@ class RTBM(object):
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
-        lower_bounds = [-self.param_bound for _ in range(self.size())]
-        upper_bounds = [ self.param_bound for _ in range(self.size())]
+        lower_bounds = [-self._param_bound for _ in range(self.size())]
+        upper_bounds = [ self._param_bound for _ in range(self.size())]
 
         # set T positive
         if self._bv.shape[0] == 1:
@@ -59,37 +52,35 @@ class RTBM(object):
 
         return lower_bounds, upper_bounds
 
-    def assign_params(self, params):
+    def set_parameters(self, params):
         """Assigns a flat array of parameters to the RTBM matrices"""
         if len(params) != self.size():
             raise Exception('Size does no match.')
 
         index = self._bv.shape[0]
-        Bv = params[0:index].reshape(self._bv.shape)
+        bv = params[0:index].reshape(self._bv.shape)
 
-        T = np.diag(params[index:index+self._t.shape[0]])
+        t = np.diag(params[index:index+self._t.shape[0]])
         index += self._t.shape[0]
 
-        Bh = params[index:index+self._bh.shape[0]].reshape(self._bh.shape)
+        bh = params[index:index+self._bh.shape[0]].reshape(self._bh.shape)
         index += self._bh.shape[0]
 
-        W = params[index:index+self._w.size].reshape(self._w.shape)
+        w = params[index:index+self._w.size].reshape(self._w.shape)
         index += self._w.size
 
-        #np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
-        Q = np.diag(params[index:index+self._q.shape[0]])
+        q = np.diag(params[index:index+self._q.shape[0]])
         
         # Only keep if consistent solution
         # Temporary work-around
-        if checkNormalizationConsistency(T,Q,W):
-            self._w = W
-            self._q = Q
-            self._t = T
-            self._bv = Bv
-            self._bh = Bh
+        if check_normalization_consistency(t, q, w):
+            self._w = w
+            self._q = q
+            self._t = t
+            self._bv = bv
+            self._bh = bh
         else:
             raise AssignError('RTBM assign_params: check normalization consistency failed')
-
 
     def get_parameters(self):
         """Return flat array with current matrices weights"""
@@ -97,20 +88,20 @@ class RTBM(object):
                                  self._w.flatten(), self._q.diagonal()])
         return params
         
-    def random_init(self, Tmax=2, Qmax=5, Wmax=2):
+    def random_init(self, t_max=2, q_max=5, w_max=2):
         """ Initalizes the RTBM parameters uniform random
-        (the Bs are kept @ 0)
-        """
+        (the Bs are kept @ 0)"""
+
         # Init random diagonal pos. def. 
-        self._t = np.diag(np.random.uniform(0.01,Tmax,self._Nv)).astype(complex)
-        self._q = np.diag(np.random.uniform(0.01,Qmax,self._Nh)).astype(complex)
+        self._t = np.diag(np.random.uniform(0.01, t_max, self._Nv)).astype(complex)
+        self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh)).astype(complex)
         
         # Init random
-        self._w = np.random.uniform(-Wmax,Wmax,(self._Nv,self._Nh))
+        self._w = np.random.uniform(-w_max, w_max, (self._Nv, self._Nh)).astype(complex)
         
-        while(checkNormalizationConsistency(self._t,self._q,self._w) == False):
-            self._w = np.random.uniform(-Wmax,Wmax,(self._Nv,self._Nh))
-            
+        while not check_normalization_consistency(self._t, self._q, self._w):
+            self._w = np.random.uniform(-w_max, w_max, (self._Nv, self._Nh))
+
     @property
     def param_bound(self):
         return self._param_bound
@@ -171,65 +162,3 @@ class RTBM(object):
         if value.shape != self._q.shape:
             raise AssertionError('Setting q with wrong shape.')
         self._q = value
-
-
-def probability(v, bv, bh, t, w, q):
-    """Implements the RTBM probability"""
-    detT = np.linalg.det(t)
-    invT = np.linalg.inv(t)
-    vT = v.T
-    vTv = np.dot(np.dot(vT, t), v)
-    BvT = bv.T
-    BhT = bh.T
-    Bvv = np.dot(BvT, v)
-    BiTB = np.dot(np.dot(BvT, invT), bv)
-    BtiTW = np.dot(np.dot(BvT, invT), w)
-    WtiTW = np.dot(np.dot(w.T, invT), w)
-
-    ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1]))
-
-    R1 = RiemannTheta((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), prec=RTBM_precision)
-    R2 = RiemannTheta((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), prec=RTBM_precision)
-
-    return np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * R1/R2
-
-
-def gradientLogTheta(v,q,d):
-    """ Implements the directional log gradient 
-        
-        d : int for direction of gradient
-    """
-    Nh = q.shape[0]
-    D = np.zeros(Nh)
-    D[d] = 1
-    
-    R = RiemannTheta(v/(2.0j * np.pi), -q/(2.0j * np.pi), prec=RTBM_precision)
-    L = RiemannTheta(v/(2.0j * np.pi), -q/(2.0j * np.pi), prec=RTBM_precision, derivs=[D])
-    
-    """ ToDo: Check if not some factor is missing ... """
-    
-    return -L/R/(2.0j * np.pi)
-    
-def factorizedHiddenExpectation(v,bh,w,q):
-    """ Implements E(h|v) in factorized form for q diagonal 
-        Note: Does not check if q is actual diagonal (for performance)
-        
-        Returns [ E(h_1|v), E(h_2|v), ... ] in vectorized form (each E is an array for the vs)
-    """ 
-    Nh = q.shape[0]
-    
-    vW = np.transpose(v).dot(w)
-    
-    E = []
-    
-    for i in range(0,Nh):
-        O = np.matrix([[q[i,i]]], dtype=np.complex)
-      
-        E.append( gradientLogTheta((vW[:,[i]]+bh[i]),O,0) )
-    
-    return E
-    
-    
-def checkNormalizationConsistency(T,Q,W):
-    C = Q - np.transpose(W).dot(np.linalg.inv(T).dot(W))
-    return np.all(np.linalg.eigvals(C) > 0)

@@ -24,7 +24,7 @@ def worker_initialize(cost, model, x_data, y_data):
 
 def worker_compute(params):
     try:
-        resource.model.assign_params(params)
+        resource.model.set_parameters(params)
     except AssignError:
         return np.inf
     res = resource.cost_function(resource.model(resource.x_data), resource.y_data)
@@ -35,15 +35,15 @@ def worker_compute(params):
 
 class CMA(object):
     """Implements the GA using CMA library"""
-    def __init__(self, multi_thread=False):
+    def __init__(self, parallel=False):
         super(CMA, self).__init__()
-        if multi_thread:
+        if parallel:
             self.num_cores = mp.cpu_count()
         else:
             self.num_cores = 1
         print('CMA on %d cpu(s) enabled' % self.num_cores)
 
-    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11):
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None):
         """The training algorithm"""
 
         bmin, bmax = model.get_bounds()
@@ -53,7 +53,11 @@ class CMA(object):
         sigma = np.max(bmax)*0.1
         initsol = np.real(model.get_parameters())
 
+        if popsize is not None:
+            args['popsize'] = popsize
+
         es = CMAEvolutionStrategy(initsol, sigma, args)
+
         with closing(mp.Pool(self.num_cores, initializer=worker_initialize,
                              initargs=(cost, model, x_data, y_data))) as pool:
             while not es.stop():
@@ -65,7 +69,7 @@ class CMA(object):
             pool.terminate()
         print(es.result)
 
-        model.assign_params(es.result[0])
+        model.set_parameters(es.result[0])
         return es.result[0]
 
     @property

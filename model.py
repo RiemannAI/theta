@@ -2,53 +2,42 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import copy
+
 
 class Model(object):
     
     def __init__(self):
-        """ Init
-        """
-        self._layers = [] 
-        
+        """ Initialize attributes """
+        self._layers = []
         self._Np = 0
+        self._lower_bounds = None
+        self._upper_bounds = None
    
-    def add(self, L):
-        
-        if len(self._layers) == 0 or self._layers[-1].get_Nout()==L.get_Nin():
+    def add(self, layer):
+        """ Add layer to model """
+        if len(self._layers) == 0 or self._layers[-1].get_Nout() == layer.get_Nin():
             # Add the layer
-            self._layers.append(L)
+            self._layers.append(layer)
             
             # Increase the parameter counter
-            self._Np = self._Np + L.get_Nparameters()
-            
-            # Refresh the parameter bounds
-            self.generate_bounds()
-            
+            self._Np = self._Np + layer.size()
         else: 
             print("Input of layer does not match output of previous layer! => Add ignored")
 
-    def feedthrough(self, X):
-        """ Feeds the input X through all layers 
-            Vectorized
-        """ 
-
+    def feed_through(self, X):
+        """ Feeds the input X through all layers Vectorized """
         x = X
-
         for L in self._layers:
-            
             x = L.feedin(x)
-
         return x
 
     def __call__(self, data):
-        """Evaluates the model for a given data array"""
-    
-        return self.feedthrough(data)
+        """ Evaluates the model for a given data array """
+        return self.feed_through(data)
 
-    def copy(self):
-        return copy.deepcopy(self)
-    
+    def size(self):
+        return self._Np
+
     def get_parameters(self):
         """ Collects all parameters and returns a flat array """
         R = []
@@ -57,7 +46,7 @@ class Model(object):
             
         return np.concatenate(R)
 
-    def generate_bounds(self):
+    def get_bounds(self):
         """ Collects the bounds of the individual layers """
         A_L = []
         A_U = []
@@ -69,25 +58,18 @@ class Model(object):
          
         self._lower_bounds = np.concatenate(A_L).tolist()
         self._upper_bounds = np.concatenate(A_U).tolist()
-    
-    def get_bounds(self):
-        """ Returns the bounds """
+
         return self._lower_bounds, self._upper_bounds
-    
-    def size(self):
-        return self._Np
-    
-    def assign_params(self,P):
+
+    def set_parameters(self, params):
         """ Set to the given parameters """
         Nt = 0
         
         for L in self._layers:
             
-            L.set_parameters(P[Nt:Nt+L.get_Nparameters()])
-        
-            Nt = Nt + L.get_Nparameters() 
+            L.set_parameters(params[Nt:Nt+L.size()])
+            Nt += L.size()
 
-    def predict(self,X):
+    def predict(self, x):
         """ Performs prediction with the trained model """
-
-        return self.feedthrough(X)
+        return self.feed_through(x)
