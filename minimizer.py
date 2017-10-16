@@ -62,6 +62,7 @@ class CMA(object):
                              initargs=(cost, model, x_data, y_data))) as pool:
             while not es.stop():
                 solutions = es.ask()
+            
                 f_values = pool.map_async(worker_compute, solutions).get()
                 es.tell(solutions, f_values)
                 es.logger.add()
