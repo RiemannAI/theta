@@ -59,11 +59,11 @@ def factorized_hidden_expectation(v, bh, w, q):
 
     vW = np.transpose(v).dot(w)
 
-    E = []
+    E = np.zeros(Nh)
 
-    for i in range(0, Nh):
+    for i in range(Nh):
         O = np.matrix([[q[i, i]]], dtype=np.complex)
 
-        E.append(gradient_log_theta((vW[:, [i]] + bh[i]), O, 0))
+        E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
 
     return E

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import scipy
 from enum import Enum
 from mathtools import rtbm_probability, check_normalization_consistency, \
     factorized_hidden_expectation
@@ -37,19 +38,6 @@ class RTBM(object):
 
         # set operation mode
         self.mode = mode
-
-    @property
-    def mode(self):
-        return self._mode
-
-    @mode.setter
-    def mode(self, value):
-        if value is self.Mode.Probability:
-            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
-        elif value is self.Mode.Expectation:
-            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
-        else:
-            raise AssertionError('Mode %s not implemented.' % value)
 
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
@@ -115,15 +103,30 @@ class RTBM(object):
         """ Initalizes the RTBM parameters uniform random
         (the Bs are kept @ 0)"""
 
-        # Init random diagonal pos. def. 
-        self._t = np.diag(np.random.uniform(0.01, t_max, self._Nv)).astype(complex)
-        self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh)).astype(complex)
-        
-        # Init random
-        self._w = np.random.uniform(-w_max, w_max, (self._Nv, self._Nh)).astype(complex)
-        
-        while not check_normalization_consistency(self._t, self._q, self._w):
-            self._w = np.random.uniform(-w_max, w_max, (self._Nv, self._Nh))
+        self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh))
+        x = np.random.uniform(-self._param_bound, self.param_bound, self._Nh**2).reshape(self._q.shape)
+
+        s, j = scipy.linalg.schur(np.transpose(x).dot(x))
+        self._w = j
+        t = np.linalg.inv(s)
+
+        t0 = t
+        while not check_normalization_consistency(t, self._q, self._w):
+            t = np.random.uniform(-t_max, t_max)*t0
+        self._t = t
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value is self.Mode.Probability:
+            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
+        elif value is self.Mode.Expectation:
+            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
+        else:
+            raise AssertionError('Mode %s not implemented.' % value)
 
     @property
     def param_bound(self):
