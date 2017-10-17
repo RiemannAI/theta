@@ -52,11 +52,6 @@ class RTBM(object):
         lower_bounds = [-self._param_bound for _ in range(self.size())]
         upper_bounds = [ self._param_bound for _ in range(self.size())]
 
-        # set T positive
-        if self._bv.shape[0] == 1:
-            index = self._bv.shape[0]
-            lower_bounds[index:index+self._t.shape[0]] = [1E-5]*self._t.shape[0]
-
         # set Q positive
         index = self.size()-self._q.shape[0]
         lower_bounds[index:] = [1E-5]*self._q.shape[0]
