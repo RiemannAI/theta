@@ -93,7 +93,8 @@ class NormAddLayer(Layer):
 class SoftMaxLayer(Layer):
     """ A layer to perform the softmax operation """
     def __init__(self, Nin):
-        self._Nin = Nin
+        self._Nin  = Nin
+        self._Nout = Nin
         self._Np = 0
         self._param_bound = 0
         
@@ -129,6 +130,7 @@ class SoftMaxLayer(Layer):
 class MaxPosLayer(Layer):
     def __init__(self, Nin, startPos=0):
         self._Nin = Nin
+        self._Nout = 1
         self._Np = 0
         self._param_bound = 0
         self._startPos = startPos
