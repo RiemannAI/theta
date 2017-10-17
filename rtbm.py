@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from mathtools import rtbm_probability, check_normalization_consistency
+from enum import Enum
+from mathtools import rtbm_probability, check_normalization_consistency, \
+    factorized_hidden_expectation
 
 
 class AssignError(Exception):
@@ -11,8 +13,11 @@ class AssignError(Exception):
 
 class RTBM(object):
     """This class implements the Riemann Theta Boltzmann Machine"""
+    class Mode(Enum):
+        Probability = 0
+        Expectation = 1
 
-    def __init__(self, visible_units, hidden_units):
+    def __init__(self, visible_units, hidden_units, mode=Mode.Probability):
         """Setup operators for BM based on the number of visible and hidden units"""
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -21,16 +26,34 @@ class RTBM(object):
         self._bh = np.zeros([hidden_units, 1], dtype=complex)
         self._w = np.zeros([visible_units, hidden_units], dtype=complex)
         self._q = np.zeros([hidden_units, hidden_units], dtype=complex)
-        
+        self._mode = None
+        self._call = None
+
         # Set default parameter bound value
         self._param_bound = 10
 
         # Populate with random parameters
         self.random_init()
-        
+
+        # set operation mode
+        self.mode = mode
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value is self.Mode.Probability:
+            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
+        elif value is self.Mode.Expectation:
+            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
+        else:
+            raise AssertionError('Mode %s not implemented.' % value)
+
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
-        return rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
+        return self._call(data)
 
     def size(self):
         """Get size of RTBM"""
