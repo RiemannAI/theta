@@ -126,6 +126,39 @@ class SoftMaxLayer(Layer):
         return np.divide(E, S[np.newaxis,:])
     
     
+class MaxPosLayer(Layer):
+    def __init__(self, Nin, startPos=0):
+        self._Nin = Nin
+        self._Np = 0
+        self._param_bound = 0
+        self._startPos = startPos
+        
+    def get_parameters(self):
+        """ Returns the parameters as a flat array 
+            []
+        """
+
+        return np.empty(0)
+    
+    def set_parameters(self, params):
+        return
+        
+    
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        self._lower_bounds = []
+        self._upper_bounds = []
+
+        return self._lower_bounds, self._upper_bounds     
+    
+    def feedin(self, X):
+        """ Feeds in the data X and returns the output of the layer 
+            Note: Vectorized 
+        """
+        
+        return np.argmax(X,axis=0)+self._startPos
+    
+ 
         
 class ThetaUnitLayer(Layer):
     """ A layer of log-gradient theta units """
