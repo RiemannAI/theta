@@ -3,7 +3,7 @@
 
 import numpy as np
 import scipy
-from enum import Enum
+
 from mathtools import rtbm_probability, check_normalization_consistency, \
     factorized_hidden_expectation
 
@@ -14,7 +14,7 @@ class AssignError(Exception):
 
 class RTBM(object):
     """This class implements the Riemann Theta Boltzmann Machine"""
-    class Mode(Enum):
+    class Mode:
         Probability = 0
         Expectation = 1
 
