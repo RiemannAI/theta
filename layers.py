@@ -37,7 +37,131 @@ class Layer(object):
     def get_Nout(self):
         return self._Nout
 
+    def size(self):
+        """ Returns total # parameters """
+        return self._Np
+    
+    
+class NormAddLayer(Layer):
+    """ Linearly combines inputs with outputs normalized by sum of weights """
+    """ (no bias) """
+    
+    def __init__(self, Nin, Nout, param_bound=10):
+        self._Nin = Nin
+        self._Nout = Nout
+        self._param_bound = param_bound
+        
+        # Parameter init
+        self._w = np.random.uniform(-1, 1,(Nout,Nin)).astype(complex)
+        
+        self._Np = self._Nout*self._Nin
+   
+    def get_parameters(self):
+        """ Returns the parameters as a flat array 
+            [w]
+        """
 
+        return self._w.flatten()
+  
+    def set_parameters(self, P):
+        """ Set the matrices from flat input array P 
+            P = [w]
+        """
+        
+        self._w = P.reshape(self._w.shape)
+    
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        self._lower_bounds = [-self._param_bound for _ in range(self._Np)]
+        self._upper_bounds = [ self._param_bound for _ in range(self._Np)]
+
+        return self._lower_bounds, self._upper_bounds 
+    
+    def feedin(self, X):
+        """ Feeds in the data X and returns the output of the layer 
+            Note: Vectorized 
+        """
+    
+        S = np.sum(self._w,axis=1)
+        O = self._w.dot(X)
+       
+        return np.divide(O, S[:, np.newaxis])
+    
+
+
+
+class SoftMaxLayer(Layer):
+    """ A layer to perform the softmax operation """
+    def __init__(self, Nin):
+        self._Nin  = Nin
+        self._Nout = Nin
+        self._Np = 0
+        self._param_bound = 0
+        
+    def get_parameters(self):
+        """ Returns the parameters as a flat array 
+            []
+        """
+
+        return np.empty(0)
+    
+    def set_parameters(self, params):
+        return
+        
+    
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        self._lower_bounds = []
+        self._upper_bounds = []
+
+        return self._lower_bounds, self._upper_bounds 
+    
+    def feedin(self, X):
+        """ Feeds in the data X and returns the output of the layer 
+            Note: Vectorized 
+        """
+        
+        E = np.exp(X)
+        S = np.sum(E,axis=0) 
+       
+        return np.divide(E, S[np.newaxis,:])
+    
+    
+class MaxPosLayer(Layer):
+    def __init__(self, Nin, startPos=0):
+        self._Nin = Nin
+        self._Nout = 1
+        self._Np = 0
+        self._param_bound = 0
+        self._startPos = startPos
+        
+    def get_parameters(self):
+        """ Returns the parameters as a flat array 
+            []
+        """
+
+        return np.empty(0)
+    
+    def set_parameters(self, params):
+        return
+        
+    
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        self._lower_bounds = []
+        self._upper_bounds = []
+
+        return self._lower_bounds, self._upper_bounds     
+    
+    def feedin(self, X):
+        """ Feeds in the data X and returns the output of the layer 
+            Note: Vectorized 
+        """
+        
+        return np.argmax(X,axis=0)+self._startPos
+    
+ 
+        
 class ThetaUnitLayer(Layer):
     """ A layer of log-gradient theta units """
 
@@ -46,9 +170,9 @@ class ThetaUnitLayer(Layer):
         self._Nout = Nout
 
         # Parameter init
-        self._bh = np.random.uniform(-1, 1,(Nout,1)).astype(complex)
-        self._w = np.random.uniform(-1, 1,(Nin,Nout)).astype(complex)
-        self._q = 10*np.diag(np.random.rand(Nout)).astype(complex)
+        self._bh = np.random.uniform(-param_bound, param_bound,(Nout,1)).astype(complex)
+        self._w = np.random.uniform(-param_bound, param_bound,(Nin,Nout)).astype(complex)
+        self._q = param_bound*np.diag(np.random.rand(Nout)).astype(complex)
      
         self._Np = 2*self._Nout+self._Nout*self._Nin
         
@@ -83,10 +207,6 @@ class ThetaUnitLayer(Layer):
 
         np.fill_diagonal(self._q, params[index:index+self._q.shape[0]])
 
-    def size(self):
-        """ Returns total # parameters """
-        return self._Np
-    
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
         self._lower_bounds = [-self._param_bound for _ in range(self._Np)]
