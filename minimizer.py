@@ -43,7 +43,7 @@ class CMA(object):
             self.num_cores = 1
         print('CMA on %d cpu(s) enabled' % self.num_cores)
 
-    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None):
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None):
         """The training algorithm"""
 
         bmin, bmax = model.get_bounds()
@@ -56,18 +56,28 @@ class CMA(object):
         if popsize is not None:
             args['popsize'] = popsize
 
-        es = CMAEvolutionStrategy(initsol, sigma, args)
+        if maxiter is not None:
+            args['maxiter'] = maxiter
 
-        with closing(mp.Pool(self.num_cores, initializer=worker_initialize,
-                             initargs=(cost, model, x_data, y_data))) as pool:
+        es = CMAEvolutionStrategy(initsol, sigma, args)
+        if self.num_cores > 1:
+            with closing(mp.Pool(self.num_cores, initializer=worker_initialize,
+                                 initargs=(cost, model, x_data, y_data))) as pool:
+                while not es.stop():
+                    solutions = es.ask()
+                    f_values = pool.map_async(worker_compute, solutions).get()
+                    es.tell(solutions, f_values)
+                    es.logger.add()
+                    es.disp()
+                pool.terminate()
+        else:
+            worker_initialize(cost, model, x_data, y_data)
             while not es.stop():
                 solutions = es.ask()
-            
-                f_values = pool.map_async(worker_compute, solutions).get()
+                f_values = [ worker_compute(isol) for isol in solutions ]
                 es.tell(solutions, f_values)
                 es.logger.add()
                 es.disp()
-            pool.terminate()
         print(es.result)
 
         model.set_parameters(es.result[0])
