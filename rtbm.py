@@ -27,6 +27,7 @@ class RTBM(object):
         self._bh = np.zeros([hidden_units, 1], dtype=complex)
         self._w = np.zeros([visible_units, hidden_units], dtype=complex)
         self._q = np.zeros([hidden_units, hidden_units], dtype=complex)
+        self._Np = 2*self._Nv + 2*self._Nh + self._Nv*self._Nh
         self._mode = None
         self._call = None
 
@@ -60,7 +61,7 @@ class RTBM(object):
 
     def size(self):
         """Get size of RTBM"""
-        return 2*self._Nv + 2*self._Nh + self._Nv*self._Nh
+        return self._Np
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -113,17 +114,32 @@ class RTBM(object):
         """ Initalizes the RTBM parameters uniform random
         (the Bs are kept @ 0)"""
 
-        self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh))
-        x = np.random.uniform(-self._param_bound, self.param_bound, self._Nh**2).reshape(self._q.shape)
+        if self._Nv >= self._Nh:
+            # Init with positivity condition
+            self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh))
+            x = np.random.uniform(-self._param_bound, self.param_bound, self._Nv**2).reshape(self._t.shape)
 
-        s, j = scipy.linalg.schur(np.transpose(x).dot(x))
-        self._w = j
-        t = np.linalg.inv(s)
+            s, j = scipy.linalg.schur(np.transpose(x).dot(x))
+            t = np.linalg.inv(s)
+            self._w = j
 
-        t0 = t
-        while not check_normalization_consistency(t, self._q, self._w):
-            t = np.random.uniform(-t_max, t_max)*t0
-        self._t = t
+            # perform W reduction if Nv > Nh
+            if self._Nv > self._Nh:
+                self._w = self._w[:,:self._Nv-self._Nh]
+
+            while not check_normalization_consistency(t, self._q, self._w):
+                t *= np.random.uniform(-t_max, t_max)
+            self._t = t
+        else:
+            # Init random diagonal pos. def.
+            self._t = np.diag(np.random.uniform(0.01, t_max, self._Nv)).astype(complex)
+            self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh)).astype(complex)
+
+            # Init random
+            self._w = np.random.uniform(-w_max, w_max, (self._Nv, self._Nh)).astype(complex)
+
+            while not check_normalization_consistency(self._t, self._q, self._w):
+                self._w = np.random.uniform(-w_max, w_max, (self._Nv, self._Nh))
 
     @property
     def mode(self):
