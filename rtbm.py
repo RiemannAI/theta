@@ -4,8 +4,11 @@
 import numpy as np
 import scipy
 from enum import Enum
+
+from sympy.polys.specialpolys import w_polys
+
 from mathtools import rtbm_probability, check_normalization_consistency, \
-    factorized_hidden_expectation
+    factorized_hidden_expectation, check_is_positive
 
 
 class AssignError(Exception):
@@ -102,19 +105,24 @@ class RTBM(object):
         if self._Nv >= self._Nh:
             # Init with positivity condition
             self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh))
-            x = np.random.uniform(-self._param_bound, self.param_bound, self._Nv**2).reshape(self._t.shape)
+            self._t = np.diag(np.random.uniform(0.01, t_max, self._Nv))
+            w = last_best_w = np.zeros([self._Nv, self._Nh], dtype=complex)
 
-            s, j = scipy.linalg.schur(np.transpose(x).dot(x))
-            t = np.linalg.inv(s)
-            self._w = j
+            # populate w until 25% is non zero
+            while np.count_nonzero(w) / float(w.size) < 0.25:
+                inserted = False
+                while not inserted:
+                    index = np.random.choice(self._w.size, 1)
+                    if w[index] == 0:
+                        w[index] = np.random.uniform(-w_max, w_max, 1)
+                        inserted = True
 
-            # perform W reduction if Nv > Nh
-            if self._Nv > self._Nh:
-                self._w = self._w[:,:self._Nv-self._Nh]
+                if not check_normalization_consistency(self._t, self._q, w):
+                    np.copyto(w, last_best_w)
+                else:
+                    np.copyto(last_best_w, w)
+            self._w = w
 
-            while not check_normalization_consistency(t, self._q, self._w):
-                t *= np.random.uniform(-t_max, t_max)
-            self._t = t
         else:
             # Init random diagonal pos. def.
             self._t = np.diag(np.random.uniform(0.01, t_max, self._Nv)).astype(complex)
