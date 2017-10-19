@@ -17,7 +17,7 @@ class RTBM(object):
         Probability = 0
         Expectation = 1
 
-    def __init__(self, visible_units, hidden_units, mode=Mode.Probability):
+    def __init__(self, visible_units, hidden_units, mode=Mode.Probability, fraction=0.25):
         """Setup operators for BM based on the number of visible and hidden units"""
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -34,7 +34,7 @@ class RTBM(object):
         self._param_bound = 10
 
         # Populate with random parameters
-        self.random_init()
+        self.random_init(fraction=fraction)
 
         # set operation mode
         self.mode = mode
@@ -94,7 +94,7 @@ class RTBM(object):
                                  self._w.flatten(), self._q.diagonal()])
         return params
         
-    def random_init(self, t_max=2, q_max=5, w_max=2):
+    def random_init(self, t_max=2, q_max=5, w_max=2, fraction=0.25):
         """ Initalizes the RTBM parameters uniform random
         (the Bs are kept @ 0)"""
 
@@ -102,21 +102,20 @@ class RTBM(object):
             # Init with positivity condition
             self._q = np.diag(np.random.uniform(0.01, q_max, self._Nh))
             self._t = np.diag(np.random.uniform(0.01, t_max, self._Nv))
-            w = last_best_w = np.zeros([self._Nv, self._Nh], dtype=complex)
+            w = np.zeros([self._Nv, self._Nh], dtype=complex)
 
             # populate w until 25% is non zero
-            while np.count_nonzero(w) / float(w.size) < 0.25:
+            while np.count_nonzero(w) / float(w.size) <= fraction:
                 inserted = False
                 while not inserted:
                     index = np.random.choice(self._w.size, 1)
-                    if w[index] == 0:
-                        w[index] = np.random.uniform(-w_max, w_max, 1)
+                    if w.flat[index] == 0:
+                        w.flat[index] = np.random.uniform(-w_max, w_max, 1)
                         inserted = True
 
                 if not check_normalization_consistency(self._t, self._q, w):
-                    np.copyto(w, last_best_w)
-                else:
-                    np.copyto(last_best_w, w)
+                    w.flat[index] = 0
+
             self._w = w
 
         else:
