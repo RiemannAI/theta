@@ -32,6 +32,27 @@ def rtbm_probability(v, bv, bh, t, w, q):
     return np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * R1 / R2
 
 
+def rtbm_log_probability(v, bv, bh, t, w, q):
+    """Implements the RTBM probability"""
+    detT = np.linalg.det(t)
+    invT = np.linalg.inv(t)
+    vT = v.T
+    vTv = np.dot(np.dot(vT, t), v)
+    BvT = bv.T
+    BhT = bh.T
+    Bvv = np.dot(BvT, v)
+    BiTB = np.dot(np.dot(BvT, invT), bv)
+    BtiTW = np.dot(np.dot(BvT, invT), w)
+    WtiTW = np.dot(np.dot(w.T, invT), w)
+
+    ExpF = -0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1])
+
+    R1 = RiemannTheta((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), prec=RTBM_precision)
+    R2 = RiemannTheta((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), prec=RTBM_precision)
+
+    return np.log(np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0]))) + ExpF + np.log(R1) - np.log(R2)
+
+
 def gradient_log_theta(v, q, d):
     """ Implements the directional log gradient
 
