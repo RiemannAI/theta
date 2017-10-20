@@ -4,7 +4,7 @@
 import numpy as np
 
 from mathtools import rtbm_probability, check_normalization_consistency, \
-    factorized_hidden_expectation
+    factorized_hidden_expectation, rtbm_log_probability
 
 
 class AssignError(Exception):
@@ -15,7 +15,8 @@ class RTBM(object):
     """This class implements the Riemann Theta Boltzmann Machine"""
     class Mode:
         Probability = 0
-        Expectation = 1
+        LogProbability = 1
+        Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability):
         """Setup operators for BM based on the number of visible and hidden units"""
@@ -46,6 +47,8 @@ class RTBM(object):
     def mode(self, value):
         if value is self.Mode.Probability:
             self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
+        elif value is self.Mode.LogProbability:
+            self._call = lambda data: rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q)
         elif value is self.Mode.Expectation:
             self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
         else:

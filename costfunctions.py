@@ -6,8 +6,12 @@ import numpy as np
 
 def logarithmic(x, *y):
     """ Logarithmic total cost """
-    res = -np.sum(np.log(x))
-    return res
+    return -np.sum(np.log(x))
+
+
+def sum(x, *y):
+    """ Sum total cost """
+    return -np.sum(x)
 
 
 def mse(x, y):
