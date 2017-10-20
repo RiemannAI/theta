@@ -87,19 +87,6 @@ class RTBM(object):
         return self._parameters
 
     @property
-    def mode(self):
-        return self._mode
-
-    @mode.setter
-    def mode(self, value):
-        if value is self.Mode.Probability:
-            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
-        elif value is self.Mode.Expectation:
-            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
-        else:
-            raise AssertionError('Mode %s not implemented.' % value)
-
-    @property
     def param_bound(self):
         return self._param_bound
 
