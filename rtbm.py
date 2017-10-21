@@ -18,7 +18,7 @@ class RTBM(object):
         LogProbability = 1
         Expectation = 2
 
-    def __init__(self, visible_units, hidden_units, mode=Mode.Probability):
+    def __init__(self, visible_units, hidden_units, mode=Mode.Probability, param_bound=0.5):
         """Setup operators for BM based on the number of visible and hidden units"""
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -32,11 +32,9 @@ class RTBM(object):
         self._size = self._Nv + self._Nh + self._a_size
         self._mode = None
         self._call = None
-        self.param_bound = 10
 
         # Populate with random parameters
-        self._parameters = np.random.uniform(-self.param_bound,
-                                              self.param_bound, self._size)
+        self._parameters = np.random.uniform(-param_bound, param_bound, self._size)
         self.set_parameters(self._parameters)
 
         # set operation mode

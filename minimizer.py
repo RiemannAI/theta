@@ -36,15 +36,15 @@ class CMA(object):
             self.num_cores = 1
         print('CMA on %d cpu(s) enabled' % self.num_cores)
 
-    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None):
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None, bound=10):
         """The training algorithm"""
 
         initsol = model.get_parameters()
-        args = {'bounds': [ [-model.param_bound]*len(initsol),
-                            [model.param_bound]*len(initsol)],
+        args = {'bounds': [ [-bound]*len(initsol),
+                            [ bound]*len(initsol)],
                 'tolfun': tolfun,
                 'verb_log': 0}
-        sigma = model.param_bound*0.1
+        sigma = bound*0.1
 
         if popsize is not None:
             args['popsize'] = popsize
