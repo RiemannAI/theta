@@ -197,7 +197,7 @@ class ThetaUnitLayer(Layer):
             Note: Vectorized 
         """
 
-        return 1.0/self.phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
+        return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array 
