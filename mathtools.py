@@ -66,7 +66,7 @@ def gradient_log_theta(v, q, d):
     L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), prec=RTBM_precision, derivs=[D])
 
     """ ToDo: Check if not some factor is missing ... """
-
+          
     return -L / R / (2.0j * np.pi)
 
 
