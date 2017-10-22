@@ -170,9 +170,15 @@ class ThetaUnitLayer(Layer):
         self._Nout = Nout
         self._phase = phase
         
+        dtype = complex
+        
         # Parameter init
-        self._bh = phase*np.random.uniform(-Bmax, Bmax,(Nout,1)).astype(complex)
-        self._w = phase*np.random.uniform(-Wmax, Wmax,(Nin,Nout)).astype(complex)
+        if(phase == 1):
+            dtype = float
+            
+        self._bh = phase*np.random.uniform(-Bmax, Bmax,(Nout,1)).astype(dtype)
+        self._w = phase*np.random.uniform(-Wmax, Wmax,(Nin,Nout)).astype(dtype)
+        
         self._q = Qmax*np.diag(np.random.rand(Nout)).astype(complex)
      
         self._Np = 2*self._Nout+self._Nout*self._Nin
@@ -196,8 +202,10 @@ class ThetaUnitLayer(Layer):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
-
-        return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
+        if(self._phase==1):
+            return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q, True))
+        else:
+            return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array 
