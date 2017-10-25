@@ -319,7 +319,7 @@ def _find_int_points_python(g, R, T, c, start):
     # construct the integer points when the final dimension is reached
     if g == 0:
         points = numpy.array([], dtype=numpy.double)
-        for i in range(int(a), int(b+1)):
+        for i in range(a, b+1):
             # this algorithm works backwards on the coordinates: the last
             # coordinate found is n1 if our coordinates are {n1,n2,...,ng}
             points = numpy.append(numpy.append([i],start), points)
@@ -367,6 +367,6 @@ def integer_points_python(g, R, T):
     c = numpy.zeros((g,1))
     points = _find_int_points_python(g-1, R, T, c, [])
     points = numpy.array(points, dtype=numpy.double)
-    N = len(points)//g
+    N = len(points)/g
     points.resize((N,g))
     return points
