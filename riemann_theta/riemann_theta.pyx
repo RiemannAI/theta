@@ -171,6 +171,7 @@ cdef class RiemannTheta_Function(object):
     gradient
     oscillatory_part_hessian
     eval
+    log_eval
 
     """
     def __init__(self, accuracy_radius=5):
@@ -210,6 +211,35 @@ cdef class RiemannTheta_Function(object):
         u = self.exponential_part(z, Omega, **kwds)
         v = self.oscillatory_part(z, Omega, **kwds)
         values = numpy.exp(u)*v
+        return values
+
+    def log_eval(self, z, Omega, **kwds):
+        r"""Returns the value of the log Riemann theta function at `z` and `Omega`.
+
+        In many applications it's preferred to use :meth:`exponential_part` and
+        :meth:`oscillatory_part` due to the double-exponential growth of theta
+        in the directions of the columns of `Omega`.
+
+        Parameters
+        ----------
+        z : complex[:]
+            A complex row-vector or list of row-vectors at which to evaulate the
+            Riemann theta function.
+        Omega : complex[:,:]
+            A Riemann matrix.
+        **kwds : keywords
+            See :meth:`exponential_part` and :meth:`oscillatory_part` for
+            optional keywords.
+
+        Returns
+        -------
+        array
+            The value of the log Riemann theta function at each `g`-component vector
+            appearing in `z`.
+        """
+        u = self.exponential_part(z, Omega, **kwds)
+        v = self.oscillatory_part(z, Omega, **kwds)
+        values = u + numpy.log(v)
         return values
 
     def exponential_part(self, z, Omega, axis=1, **kwds):
