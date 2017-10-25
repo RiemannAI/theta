@@ -87,6 +87,22 @@ def gradient_log_theta_phaseI(v, q, d):
     return (-L / R / (2.0j * np.pi)) - re[0].flatten()
 
 
+def hidden_expectations(v, bh, w, q):
+    """ Implements E(h|v) for non-diagonal q
+        
+        Returns [ E(h_1|v), E(h_2|v), ... ] in vectorized form (each E is an array for the vs)
+    """ 
+    Nh = q.shape[0]
+
+    vW = np.transpose(v).dot(w)
+ 
+    E = np.zeros((Nh,v.shape[1]), dtype=complex)
+    
+    for i in range(0, Nh):
+        E[i] = gradient_log_theta(vW + bh, q, i)
+        
+    return E
+    
 def factorized_hidden_expectation(v, bh, w, q, phaseI=False):
     """ Implements E(h|v) in factorized form for q diagonal
         Note: Does not check if q is actual diagonal (for performance)
