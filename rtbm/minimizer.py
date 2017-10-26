@@ -1,4 +1,3 @@
-#!/usr/bin/env sage
 # -*- coding: utf-8 -*-
 
 from cma import CMAEvolutionStrategy
