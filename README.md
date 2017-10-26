@@ -7,4 +7,4 @@ It does not contain `setup.py` yet, but its implementation is trivial.
 
 ## Usage
 
-The code is supposed to run in a Sage python environment and in a `sage -notebook ipython` instance.
+The code runs with python 2.7.x environment and requires cython.
