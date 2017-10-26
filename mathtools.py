@@ -3,6 +3,7 @@
 
 import numpy as np
 from riemann_theta.riemann_theta import RiemannTheta
+RTBM_precision= 1e-8
 
 
 def check_normalization_consistency(t, q, w):
@@ -30,8 +31,8 @@ def rtbm_log_probability(v, bv, bh, t, w, q):
 
     ExpF = -0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1])
 
-    lnR1 = RiemannTheta.log_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi))
-    lnR2 = RiemannTheta.log_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi))
+    lnR1 = RiemannTheta.log_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    lnR2 = RiemannTheta.log_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), epsilon=RTBM_precision)
 
     return np.log(np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0]))) + ExpF + lnR1 - lnR2
 
@@ -45,8 +46,8 @@ def gradient_log_theta(v, q, d):
     D = np.zeros(Nh)
     D[d] = 1
 
-    R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi))
-    L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), derivs=[D])
+    R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), derivs=[D], epsilon=RTBM_precision)
 
     """ ToDo: Check if not some factor is missing ... """
           
