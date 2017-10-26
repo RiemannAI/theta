@@ -3,8 +3,7 @@
 
 import numpy as np
 
-from mathtools import rtbm_probability, check_normalization_consistency, \
-    factorized_hidden_expectation, rtbm_log_probability
+from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability
 
 
 class AssignError(Exception):
@@ -19,7 +18,7 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units,
-                 mode=Mode.Probability, init_max_param_bound=0.5, phase=1.0):
+                 mode=Mode.Probability, init_max_param_bound=0.5, phase=1):
         """Setup operators for BM based on the number of visible and hidden units
 
         Args:
@@ -32,11 +31,11 @@ class RTBM(object):
         """
         self._Nv = visible_units
         self._Nh = hidden_units
-        self._bv = np.zeros([visible_units, 1], dtype=complex)
-        self._t = np.ones([visible_units, visible_units], dtype=complex)
-        self._bh = np.zeros([hidden_units, 1], dtype=complex)
-        self._w = np.zeros([visible_units, hidden_units], dtype=complex)
-        self._q = np.zeros([hidden_units, hidden_units], dtype=complex)
+        self._bv = np.zeros([visible_units, 1])
+        self._t = np.ones([visible_units, visible_units])
+        self._bh = np.zeros([hidden_units, 1])
+        self._w = np.zeros([visible_units, hidden_units])
+        self._q = np.zeros([hidden_units, hidden_units])
         self._a_size = (self._Nv+self._Nh)**2
         self._a_shape = ((self._Nv+self._Nh), (self._Nv+self._Nh))
         self._size = self._Nv + self._Nh + self._a_size
@@ -46,11 +45,14 @@ class RTBM(object):
 
         # Populate with random parameters
         self._parameters = np.random.uniform(-init_max_param_bound,
-                                             init_max_param_bound, self._size)
+                                              init_max_param_bound, self._size)
         self.set_parameters(self._parameters)
 
         # set operation mode
         self.mode = mode
+
+        # set boundaries
+        self._lower_bounds = self._upper_bounds = [None] * self._size
 
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
@@ -74,12 +76,13 @@ class RTBM(object):
         self._bv = params[self._a_size:self._a_size+self._Nv].reshape(self._bv.shape)
         self._bh = self._phase*params[-self._Nh:].reshape(self._bh.shape)
 
-        if not check_normalization_consistency(self._t, self._q, self._w):
-            raise AssignError('not positive random initialization')
-
     def get_parameters(self):
         """Return flat array with current matrices weights"""
         return self._parameters
+
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        return [self._lower_bounds, self._upper_bounds]
 
     @property
     def mode(self):
@@ -92,7 +95,7 @@ class RTBM(object):
         elif value is self.Mode.LogProbability:
             self._call = lambda data: rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q)
         elif value is self.Mode.Expectation:
-            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
+            self._call = lambda data: self._phase*hidden_expectations(data, self._bh, self._w, self._q)
         else:
             raise AssertionError('Mode %s not implemented.' % value)
 

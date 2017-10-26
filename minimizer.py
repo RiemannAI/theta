@@ -4,6 +4,7 @@
 from cma import CMAEvolutionStrategy
 import multiprocessing as mp
 from contextlib import closing
+import numpy as np
 
 
 class Resource(object):
@@ -36,15 +37,15 @@ class CMA(object):
             self.num_cores = 1
         print('CMA on %d cpu(s) enabled' % self.num_cores)
 
-    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None, bound=10):
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None):
         """The training algorithm"""
 
         initsol = model.get_parameters()
-        args = {'bounds': [ [-bound]*len(initsol),
-                            [ bound]*len(initsol)],
+        args = {'bounds': model.get_bounds(),
                 'tolfun': tolfun,
                 'verb_log': 0}
-        sigma = bound*0.1
+        max_bound = np.max(model.get_bounds()[1])
+        sigma = 2 if max_bound is None else max_bound*0.1
 
         if popsize is not None:
             args['popsize'] = popsize
