@@ -46,12 +46,12 @@ def gradient_log_theta(v, q, d):
     D = np.zeros(Nh)
     D[d] = 1
 
-    R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
-    L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), derivs=[D], epsilon=RTBM_precision)
+    R = RiemannTheta.log_eval(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta.log_eval(v / (2.0j * np.pi), -q / (2.0j * np.pi), derivs=[D], epsilon=RTBM_precision)
 
     """ ToDo: Check if not some factor is missing ... """
 
-    return -L / R / (2.0j * np.pi)
+    return - np.exp(L-R)/ (2.0j * np.pi)
 
 def gradient_log_theta_phaseI(v, q, d):
     """ Implements the directional log gradient
@@ -66,10 +66,10 @@ def gradient_log_theta_phaseI(v, q, d):
 
     re = np.divmod(v, q)
 
-    R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
-    L = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+    R = RiemannTheta.log_eval(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta.log_eval(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
 
-    return (-L / R / (2.0j * np.pi)) - re[0].flatten()
+    return (- np.exp(L-R) / (2.0j * np.pi)) - re[0].flatten()
 
 
 def hidden_expectations(v, bh, w, q):
