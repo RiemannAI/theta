@@ -19,7 +19,7 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units,
-                 mode=Mode.Probability, init_max_param_bound=0.5, phase=1):
+                 mode=Mode.Probability, init_max_param_bound=0.5, phase=1.0):
         """Setup operators for BM based on the number of visible and hidden units
 
         Args:
@@ -27,7 +27,7 @@ class RTBM(object):
             hidden_units: number of hidden units
             mode: see Mode enumerator
             init_max_param_bound: size of maximum parameters used in random initialization.
-            phase: accepted values [1,2], phase=2 uses complex W and Bh matrices.
+            phase: number which multiplies w and bh
 
         """
         self._Nv = visible_units
@@ -42,9 +42,6 @@ class RTBM(object):
         self._size = self._Nv + self._Nh + self._a_size
         self._mode = None
         self._call = None
-
-        if phase != 1 or phase != 1:
-            raise AssertionError('RTBM phase out of range [1,2].')
         self._phase = phase
 
         # Populate with random parameters
@@ -73,13 +70,9 @@ class RTBM(object):
         a = np.transpose(x).dot(x)
         self._q = a[:self._Nh,:self._Nh]
         self._t = a[self._Nh:self._Nh+self._Nv,self._Nh:]
-        self._w = a[self._Nh:,:self._Nh]
+        self._w = self._phase*a[self._Nh:,:self._Nh]
         self._bv = params[self._a_size:self._a_size+self._Nv].reshape(self._bv.shape)
-        self._bh = params[-self._Nh:].reshape(self._bh.shape)
-
-        if self._phase == 2:
-            self._w = 1.0j * self._w
-            self._bh = 1.0j * self._bh
+        self._bh = self._phase*params[-self._Nh:].reshape(self._bh.shape)
 
         if not check_normalization_consistency(self._t, self._q, self._w):
             raise AssignError('not positive random initialization')
