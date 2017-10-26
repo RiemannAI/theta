@@ -50,11 +50,45 @@ def gradient_log_theta(v, q, d):
     L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), derivs=[D], epsilon=RTBM_precision)
 
     """ ToDo: Check if not some factor is missing ... """
-          
+
     return -L / R / (2.0j * np.pi)
 
+def gradient_log_theta_phaseI(v, q, d):
+    """ Implements the directional log gradient
 
-def factorized_hidden_expectation(v, bh, w, q):
+        d : int for direction of gradient
+    """
+    Nh = q.shape[0]
+    D = np.zeros(Nh)
+    D[d] = 1
+
+    """ Restrict to unit lattice box """
+
+    re = np.divmod(v, q)
+
+    R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+
+    return (-L / R / (2.0j * np.pi)) - re[0].flatten()
+
+
+def hidden_expectations(v, bh, w, q):
+    """ Implements E(h|v) for non-diagonal q
+
+        Returns [ E(h_1|v), E(h_2|v), ... ] in vectorized form (each E is an array for the vs)
+    """
+    Nh = q.shape[0]
+
+    vW = np.transpose(v).dot(w)
+
+    E = np.zeros((Nh,v.shape[1]), dtype=complex)
+
+    for i in range(0, Nh):
+        E[i] = gradient_log_theta(vW + bh, q, i)
+
+    return E
+
+def factorized_hidden_expectation(v, bh, w, q, phaseI=False):
     """ Implements E(h|v) in factorized form for q diagonal
         Note: Does not check if q is actual diagonal (for performance)
 
@@ -64,11 +98,14 @@ def factorized_hidden_expectation(v, bh, w, q):
 
     vW = np.transpose(v).dot(w)
 
-    E = []
+    E = np.zeros((Nh,v.shape[1]), dtype=complex)
 
     for i in range(0, Nh):
         O = np.matrix([[q[i, i]]], dtype=np.complex)
 
-        E.append(gradient_log_theta((vW[:, [i]] + bh[i]), O, 0))
+        if(phaseI==True):
+            E[i] = gradient_log_theta_phaseI((vW[:, [i]] + bh[i]).real, O.real, 0)
+        else:
+            E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
 
     return E
