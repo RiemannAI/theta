@@ -30,7 +30,7 @@ extensions = [
 setup(
     name='RTBM',
     description='Riemann-Theta Boltzmann Machine',
-    version='0.1',
+    version='0.0.1',
     author='S. Carrazza, D. Krefl',
     author_email='stefano.carrazza@cern.ch',
     packages=find_packages(),
