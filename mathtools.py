@@ -100,7 +100,7 @@ def factorized_hidden_expectation(v, bh, w, q, phaseI=False):
 
     E = np.zeros((Nh,v.shape[1]), dtype=complex)
 
-    for i in range(0, Nh):
+    for i in range(Nh):
         O = np.matrix([[q[i, i]]], dtype=np.complex)
 
         if(phaseI==True):

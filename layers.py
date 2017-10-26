@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import factorized_hidden_expectation
+from mathtools import hidden_expectations, factorized_hidden_expectation
 
 
 class Layer(object):
@@ -75,7 +75,7 @@ class NormAddLayer(Layer):
         self._lower_bounds = [-self._param_bound for _ in range(self._Np)]
         self._upper_bounds = [ self._param_bound for _ in range(self._Np)]
 
-        return self._lower_bounds, self._upper_bounds 
+        return [self._lower_bounds, self._upper_bounds]
     
     def feedin(self, X):
         """ Feeds in the data X and returns the output of the layer 
@@ -114,7 +114,7 @@ class SoftMaxLayer(Layer):
         self._lower_bounds = []
         self._upper_bounds = []
 
-        return self._lower_bounds, self._upper_bounds 
+        return [self._lower_bounds, self._upper_bounds]
     
     def feedin(self, X):
         """ Feeds in the data X and returns the output of the layer 
@@ -151,7 +151,7 @@ class MaxPosLayer(Layer):
         self._lower_bounds = []
         self._upper_bounds = []
 
-        return self._lower_bounds, self._upper_bounds     
+        return [self._lower_bounds, self._upper_bounds]
     
     def feedin(self, X):
         """ Feeds in the data X and returns the output of the layer 
@@ -202,10 +202,7 @@ class ThetaUnitLayer(Layer):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
-        if(self._phase==1):
-            return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q, True))
-        else:
-            return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
+        return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array 
@@ -230,6 +227,5 @@ class ThetaUnitLayer(Layer):
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
-        
-        return self._lower_bounds, self._upper_bounds 
+        return [self._lower_bounds, self._upper_bounds]
     

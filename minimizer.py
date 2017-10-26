@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from cma import CMAEvolutionStrategy
-import numpy as np
 import multiprocessing as mp
 from contextlib import closing
-from rtbm import AssignError
+import numpy as np
 
 
 class Resource(object):
@@ -23,13 +22,8 @@ def worker_initialize(cost, model, x_data, y_data):
 
 
 def worker_compute(params):
-    try:
-        resource.model.set_parameters(params)
-    except AssignError:
-        return np.inf
+    resource.model.set_parameters(params)
     res = resource.cost_function(resource.model(resource.x_data), resource.y_data)
-    if np.isnan(res):
-        res = np.inf
     return res
 
 
@@ -46,12 +40,12 @@ class CMA(object):
     def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None):
         """The training algorithm"""
 
-        bmin, bmax = model.get_bounds()
-        args = {'bounds': [bmin, bmax],
+        initsol = model.get_parameters()
+        args = {'bounds': model.get_bounds(),
                 'tolfun': tolfun,
                 'verb_log': 0}
-        sigma = np.max(bmax)*0.1
-        initsol = np.real(model.get_parameters())
+        max_bound = np.max(model.get_bounds()[1])
+        sigma = 2 if max_bound is None else max_bound*0.1
 
         if popsize is not None:
             args['popsize'] = popsize
