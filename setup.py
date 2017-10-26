@@ -33,7 +33,7 @@ setup(
     version='0.1',
     author='S. Carrazza, D. Krefl',
     author_email='stefano.carrazza@cern.ch',
-    packages=['rtbm'],
+    packages=find_packages(),
     ext_modules=cythonize(extensions),
     url='https://github.com/scarrazza/RTBM',
     license='LICENSE.md',
