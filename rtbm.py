@@ -18,8 +18,18 @@ class RTBM(object):
         LogProbability = 1
         Expectation = 2
 
-    def __init__(self, visible_units, hidden_units, mode=Mode.Probability, param_bound=0.5):
-        """Setup operators for BM based on the number of visible and hidden units"""
+    def __init__(self, visible_units, hidden_units,
+                 mode=Mode.Probability, init_max_param_bound=0.5, phase=1):
+        """Setup operators for BM based on the number of visible and hidden units
+
+        Args:
+            visible_units: number of visible units
+            hidden_units: number of hidden units
+            mode: see Mode enumerator
+            init_max_param_bound: size of maximum parameters used in random initialization.
+            phase: accepted values [1,2], phase=2 uses complex W and Bh matrices.
+
+        """
         self._Nv = visible_units
         self._Nh = hidden_units
         self._bv = np.zeros([visible_units, 1], dtype=complex)
@@ -33,27 +43,17 @@ class RTBM(object):
         self._mode = None
         self._call = None
 
+        if phase != 1 or phase != 1:
+            raise AssertionError('RTBM phase out of range [1,2].')
+        self._phase = phase
+
         # Populate with random parameters
-        self._parameters = np.random.uniform(-param_bound, param_bound, self._size)
+        self._parameters = np.random.uniform(-init_max_param_bound,
+                                             init_max_param_bound, self._size)
         self.set_parameters(self._parameters)
 
         # set operation mode
         self.mode = mode
-
-    @property
-    def mode(self):
-        return self._mode
-
-    @mode.setter
-    def mode(self, value):
-        if value is self.Mode.Probability:
-            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
-        elif value is self.Mode.LogProbability:
-            self._call = lambda data: rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q)
-        elif value is self.Mode.Expectation:
-            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
-        else:
-            raise AssertionError('Mode %s not implemented.' % value)
 
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""
@@ -77,6 +77,10 @@ class RTBM(object):
         self._bv = params[self._a_size:self._a_size+self._Nv].reshape(self._bv.shape)
         self._bh = params[-self._Nh:].reshape(self._bh.shape)
 
+        if self._phase == 2:
+            self._w = 1.0j * self._w
+            self._bh = 1.0j * self._bh
+
         if not check_normalization_consistency(self._t, self._q, self._w):
             raise AssignError('not positive random initialization')
 
@@ -85,15 +89,19 @@ class RTBM(object):
         return self._parameters
 
     @property
-    def param_bound(self):
-        return self._param_bound
+    def mode(self):
+        return self._mode
 
-    @param_bound.setter
-    def param_bound(self, bound):
-        """ Set the global bound for the parameters """
-        if np.isnan(bound) or np.isinf(bound):
-            raise AssertionError('Bound is nan or inf')
-        self._param_bound = bound
+    @mode.setter
+    def mode(self, value):
+        if value is self.Mode.Probability:
+            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q)
+        elif value is self.Mode.LogProbability:
+            self._call = lambda data: rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q)
+        elif value is self.Mode.Expectation:
+            self._call = lambda data: factorized_hidden_expectation(data, self._bh, self._w, self._q)
+        else:
+            raise AssertionError('Mode %s not implemented.' % value)
 
     @property
     def bv(self):
