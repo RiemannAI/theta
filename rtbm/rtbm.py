@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
 from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability
 
 
