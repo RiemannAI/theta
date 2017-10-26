@@ -6,6 +6,7 @@ from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
 import numpy
 import os
+import rtbm
 
 extensions = [
     Extension('rtbm.riemann_theta.riemann_theta',
@@ -30,7 +31,7 @@ extensions = [
 setup(
     name='RTBM',
     description='Riemann-Theta Boltzmann Machine',
-    version='0.1',
+    version=rtbm.__version__,
     author='S. Carrazza, D. Krefl',
     author_email='stefano.carrazza@cern.ch',
     packages=['rtbm'],
