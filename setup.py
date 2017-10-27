@@ -54,7 +54,7 @@ setup(
     packages=find_packages(),
     ext_modules=cythonize(extensions),
     url='https://github.com/scarrazza/RTBM',
-    license='LICENSE.md',
+    license='LICENSE',
     long_description=open('README.md').read(),
     install_requires=[
         "numpy >= 1.13",
