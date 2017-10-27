@@ -16,7 +16,7 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units,
-                 mode=Mode.Probability, init_max_param_bound=0.5, phase=1):
+                 mode=Mode.Probability, init_max_param_bound=1, phase=1):
         """Setup operators for BM based on the number of visible and hidden units
 
         Args:
@@ -50,7 +50,8 @@ class RTBM(object):
         self.mode = mode
 
         # set boundaries
-        self._lower_bounds = self._upper_bounds = [None] * self._size
+        self._upper_bounds = [init_max_param_bound] * self._size
+        self._lower_bounds = [-init_max_param_bound] * self._size
 
     def __call__(self, data):
         """Evaluates the RTBM instance for a given data array"""

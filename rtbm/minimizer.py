@@ -43,8 +43,7 @@ class CMA(object):
         args = {'bounds': model.get_bounds(),
                 'tolfun': tolfun,
                 'verb_log': 0}
-        max_bound = np.max(model.get_bounds()[1])
-        sigma = 2 if max_bound is None else max_bound*0.1
+        sigma = np.max(model.get_bounds()[1])*0.1
 
         if popsize is not None:
             args['popsize'] = popsize
