@@ -5,7 +5,7 @@
 from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
 import numpy
-import os
+import os, io, re
 
 extensions = [
     Extension('rtbm.riemann_theta.riemann_theta',
@@ -27,10 +27,28 @@ extensions = [
     ),
 ]
 
+
+def read(*names, **kwargs):
+        with io.open(
+            os.path.join(os.path.dirname(__file__), *names),
+            encoding=kwargs.get("encoding", "utf8")
+        ) as fp:
+            return fp.read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+
 setup(
     name='RTBM',
     description='Riemann-Theta Boltzmann Machine',
-    version='0.0.1',
+    version=find_version("rtbm", "__init__.py"),
     author='S. Carrazza, D. Krefl',
     author_email='stefano.carrazza@cern.ch',
     packages=find_packages(),
