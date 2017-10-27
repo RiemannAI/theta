@@ -81,9 +81,10 @@ def hidden_expectations(v, bh, w, q):
     vW = np.transpose(v).dot(w)
 
     E = np.zeros((Nh,v.shape[1]), dtype=complex)
-
+    vWbhT = vW + bh.T
+    
     for i in range(0, Nh):
-        E[i] = gradient_log_theta(vW + bh, q, i)
+        E[i] = gradient_log_theta(vWbhT, q, i)
 
     return E
 

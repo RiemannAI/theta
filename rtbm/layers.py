@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import hidden_expectations, factorized_hidden_expectation
+from mathtools import hidden_expectations
 
 
 class Layer(object):
@@ -201,7 +201,7 @@ class ThetaUnitLayer(Layer):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
-        return 1.0/self._phase*np.array(factorized_hidden_expectation(X,self._bh,self._w,self._q))
+        return 1.0/self._phase*np.array(hidden_expectations(X,self._bh,self._w,self._q))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array 
