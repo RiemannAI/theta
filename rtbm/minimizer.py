@@ -50,7 +50,7 @@ class CMA(object):
 
         if maxiter is not None:
             args['maxiter'] = maxiter
-
+          
         es = CMAEvolutionStrategy(initsol, sigma, args)
         if self.num_cores > 1:
             with closing(mp.Pool(self.num_cores, initializer=worker_initialize,

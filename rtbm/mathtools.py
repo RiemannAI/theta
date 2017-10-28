@@ -29,7 +29,7 @@ def rtbm_log_probability(v, bv, bh, t, w, q):
     WtiTW = np.dot(np.dot(w.T, invT), w)
 
     ExpF = -0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1])
-
+  
     lnR1 = RiemannTheta.log_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
     lnR2 = RiemannTheta.log_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), epsilon=RTBM_precision)
 
@@ -48,9 +48,7 @@ def gradient_log_theta(v, q, d):
     R = RiemannTheta.log_eval(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
     L = RiemannTheta.log_eval(v / (2.0j * np.pi), -q / (2.0j * np.pi), derivs=[D], epsilon=RTBM_precision)
 
-    """ ToDo: Check if not some factor is missing ... """
-
-    return - np.exp(L-R)/ (2.0j * np.pi)
+    return  (- np.exp(L-R) / (2.0j * np.pi))
 
 def gradient_log_theta_phaseI(v, q, d):
     """ Implements the directional log gradient
@@ -88,7 +86,7 @@ def hidden_expectations(v, bh, w, q):
 
     return E
 
-def factorized_hidden_expectation(v, bh, w, q, phaseI=False):
+def factorized_hidden_expectations(v, bh, w, q):
     """ Implements E(h|v) in factorized form for q diagonal
         Note: Does not check if q is actual diagonal (for performance)
 
@@ -102,10 +100,6 @@ def factorized_hidden_expectation(v, bh, w, q, phaseI=False):
 
     for i in range(Nh):
         O = np.matrix([[q[i, i]]], dtype=np.complex)
-
-        if(phaseI==True):
-            E[i] = gradient_log_theta_phaseI((vW[:, [i]] + bh[i]).real, O.real, 0)
-        else:
-            E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
+        E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
 
     return E
