@@ -20,6 +20,10 @@ class Model(object):
             
             # Increase the parameter counter
             self._Np = self._Np + layer.size()
+        
+            # Re-compute bound vectors
+            self.build_bounds()
+        
         else: 
             print("Input of layer does not match output of previous layer! => Add ignored")
 
@@ -45,7 +49,7 @@ class Model(object):
             
         return np.concatenate(R)
 
-    def get_bounds(self):
+    def build_bounds(self):
         """ Collects the bounds of the individual layers """
         A_L = []
         A_U = []
@@ -58,6 +62,9 @@ class Model(object):
         self._lower_bounds = np.concatenate(A_L).tolist()
         self._upper_bounds = np.concatenate(A_U).tolist()
 
+    def get_bounds(self):
+        """ Returns the combined bounds of all layers """
+       
         return self._lower_bounds, self._upper_bounds
 
     def set_parameters(self, params):
