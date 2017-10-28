@@ -86,7 +86,49 @@ class NormAddLayer(Layer):
        
         return np.divide(O, S[:, np.newaxis])
     
+   
+    
+class Linear(Layer):
+    """ Linear layer """
+    def __init__(self, Nin, Nout, Wmax=1, paramBound=10):
+        self._Nin  = Nin
+        self._Nout = Nout
+        self._Np = Nin*Nout
+         
+        # Set W bounds
+        self._lower_bounds = [-paramBound for _ in range(self._Np)]
+        self._upper_bounds = [ paramBound for _ in range(self._Np)]    
+            
+        # Parameter init
+        self._w = np.random.uniform(-Wmax, Wmax,(Nout,Nin)).astype(float)
+        
+    def get_parameters(self):
+        """ Returns the parameters as a flat array 
+            [w]
+        """
 
+        return self._w.flatten()
+
+    def feedin(self, X):
+        """ Feeds in the data X and returns the output of the layer 
+            Note: Vectorized 
+        """
+        
+        return self._w.dot(X)
+    
+    
+    def set_parameters(self, params):
+        """ Set the matrices from flat input array P 
+            P = [w]
+        """
+        
+        self._w = params.reshape(self._w.shape)
+    
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        return [self._lower_bounds, self._upper_bounds]
+    
+    
 
 
 class SoftMaxLayer(Layer):
