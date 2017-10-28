@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import hidden_expectations
+from mathtools import factorized_hidden_expectations
 
 
 class Layer(object):
@@ -161,10 +161,10 @@ class MaxPosLayer(Layer):
     
  
         
-class ThetaUnitLayer(Layer):
+class DiagExpectationUnitLayer(Layer):
     """ A layer of log-gradient theta units """
 
-    def __init__(self, Nin, Nout, Wmax=1,Bmax=1,Qmax=10, phase=1):
+    def __init__(self, Nin, Nout, Wmax=1,Bmax=1,Qmax=10, phase=1, paramBound=10):
         self._Nin = Nin
         self._Nout = Nout
         self._phase = phase
@@ -183,25 +183,27 @@ class ThetaUnitLayer(Layer):
         self._Np = 2*self._Nout+self._Nout*self._Nin
         
         # Set B bounds
-        self._lower_bounds = [-Bmax for _ in range(self._Np)]
-        self._upper_bounds = [ Bmax for _ in range(self._Np)]
+        self._lower_bounds = [-paramBound for _ in range(self._Np)]
+        self._upper_bounds = [ paramBound for _ in range(self._Np)]
     
         # Set W bounds
         index = self._Np-self._q.shape[0]-self._w.shape[0]
-        self._lower_bounds[index:] = [-Wmax]*self._w.shape[0]
-        self._upper_bounds[index:] = [Wmax]*self._w.shape[0]
+        self._lower_bounds[index:] = [-paramBound]*self._w.shape[0]
+        self._upper_bounds[index:] = [paramBound]*self._w.shape[0]
         
         # set q bounds
         index = self._Np-self._q.shape[0]
         self._lower_bounds[index:] = [1E-5]*self._q.shape[0]
-        self._upper_bounds[index:] = [Qmax]*self._q.shape[0]
-        
+        self._upper_bounds[index:] = [paramBound]*self._q.shape[0]
         
     def feedin(self, X):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
-        return 1.0/self._phase*np.array(hidden_expectations(X,self._bh,self._w,self._q))
+        if(self._phase==1):
+            return 1.0/self._phase*np.array(factorized_hidden_expectations(X,self._bh,self._w,self._q, True))
+        else:
+            return 1.0/self._phase*np.array(factorized_hidden_expectations(X,self._bh,self._w,self._q, False))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array 
