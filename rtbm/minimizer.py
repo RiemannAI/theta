@@ -39,7 +39,7 @@ class CMA(object):
     def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None):
         """The training algorithm"""
 
-        initsol = model.get_parameters()
+        initsol = np.real(model.get_parameters())
         args = {'bounds': model.get_bounds(),
                 'tolfun': tolfun,
                 'verb_log': 0}
