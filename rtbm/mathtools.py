@@ -68,6 +68,21 @@ def gradient_log_1d_theta_phaseI(v, q, d):
 
     return (-(L/R) / (2.0j * np.pi)) - re[0].flatten()
 
+def gradient_log_1d_theta_phaseII(v, q, d):
+    """ Implements the directional log gradient
+
+        d : int for direction of gradient
+    """
+    Nh = q.shape[0]
+    D = np.zeros(Nh)
+    D[d] = 1
+
+    R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+
+    return (-(L/R) / (2.0j * np.pi))
+
+
 
 def hidden_expectations(v, bh, w, q):
     """ Implements E(h|v) for non-diagonal q
@@ -104,6 +119,6 @@ def factorized_hidden_expectations(v, bh, w, q, phaseI=False):
         if(phaseI==True):
             E[i] = gradient_log_1d_theta_phaseI(np.real((vW[:, [i]] + bh[i])), np.real(O), 0)
         else:
-            E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
+            E[i] = gradient_log_1d_theta_phaseII((vW[:, [i]] + bh[i]), O, 0)
 
     return E
