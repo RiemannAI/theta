@@ -50,7 +50,7 @@ def gradient_log_theta(v, q, d):
 
     return  (- np.exp(L-R) / (2.0j * np.pi))
 
-def gradient_log_theta_phaseI(v, q, d):
+def gradient_log_1d_theta_phaseI(v, q, d):
     """ Implements the directional log gradient
 
         d : int for direction of gradient
@@ -63,10 +63,10 @@ def gradient_log_theta_phaseI(v, q, d):
 
     re = np.divmod(v, q)
 
-    R = RiemannTheta.log_eval(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
-    L = RiemannTheta.log_eval(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+    R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
 
-    return (- np.exp(L-R) / (2.0j * np.pi)) - re[0].flatten()
+    return (-(L/R) / (2.0j * np.pi)) - re[0].flatten()
 
 
 def hidden_expectations(v, bh, w, q):
@@ -86,7 +86,7 @@ def hidden_expectations(v, bh, w, q):
 
     return E
 
-def factorized_hidden_expectations(v, bh, w, q):
+def factorized_hidden_expectations(v, bh, w, q, phaseI=False):
     """ Implements E(h|v) in factorized form for q diagonal
         Note: Does not check if q is actual diagonal (for performance)
 
@@ -99,7 +99,11 @@ def factorized_hidden_expectations(v, bh, w, q):
     E = np.zeros((Nh,v.shape[1]), dtype=complex)
 
     for i in range(Nh):
-        O = np.matrix([[q[i, i]]], dtype=np.complex)
-        E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
+        O = np.matrix([[q[i, i]]], dtype=complex)
+        
+        if(phaseI==True):
+            E[i] = gradient_log_1d_theta_phaseI(np.real((vW[:, [i]] + bh[i])), np.real(O), 0)
+        else:
+            E[i] = gradient_log_theta((vW[:, [i]] + bh[i]), O, 0)
 
     return E

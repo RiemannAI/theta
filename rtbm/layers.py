@@ -200,7 +200,10 @@ class DiagExpectationUnitLayer(Layer):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
-        return 1.0/self._phase*np.array(factorized_hidden_expectations(X,self._bh,self._w,self._q))
+        if(self._phase==1):
+            return 1.0/self._phase*np.array(factorized_hidden_expectations(X,self._bh,self._w,self._q, True))
+        else:
+            return 1.0/self._phase*np.array(factorized_hidden_expectations(X,self._bh,self._w,self._q, False))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array 
