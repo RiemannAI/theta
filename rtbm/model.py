@@ -27,13 +27,21 @@ class Model(object):
         else: 
             print("Input of layer does not match output of previous layer! => Add ignored")
 
-    def feed_through(self, X):
+    def feed_through(self, X, *calc_grad=False):
         """ Feeds the input X through all layers Vectorized """
         x = X
         for L in self._layers:
-            x = L.feedin(x)
+            x = L.feedin(x, calc_grad)
         return x
 
+    def backprop(self, E):
+        """ Backpropagates the error E through the network """
+        e = E
+        for L in self._layers:
+            e = L.backprop(e)
+        return e
+        
+        
     def __call__(self, data):
         """ Evaluates the model for a given data array """
         return self.feed_through(data)
@@ -49,6 +57,16 @@ class Model(object):
             
         return np.concatenate(R)
 
+    def get_gradients(self):
+        """ Collects all gradients and returns a flat array """
+        R = []
+        for L in self._layers:
+            R.append(L.get_gradients())
+            
+        return np.concatenate(R)
+    
+    
+    
     def build_bounds(self):
         """ Collects the bounds of the individual layers """
         A_L = []

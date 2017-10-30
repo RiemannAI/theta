@@ -103,6 +103,7 @@ class Linear(Layer):
         self._w = np.random.uniform(-Wmax, Wmax,(Nout,Nin)).astype(float)
         self._b = np.random.uniform(-Bmax, Bmax,(Nout,1)).astype(float)
         
+        
     def get_parameters(self):
         """ Returns the parameters as a flat array 
             [b,w]
@@ -110,20 +111,41 @@ class Linear(Layer):
 
         return np.concatenate([self._b.flatten(),self._w.flatten()])
 
-    def feedin(self, X, grad_calc=False):
+    def get_gradients(self):
+        """ Returns gradients as a flat array 
+            [b,w]
+        """
+        return np.concatenate([self._gradB.flatten(),self._gradW.flatten()])
+    
+    
+    def feedin(self, X, *grad_calc=False):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
         
+        # ToDo: Directly take mean ...
+        
         if(grad_calc==True):
-            # Calc gradient
-            self._grad = 0
+            # Calc outer derivative*input = input stacked
+            self._gradW = []
+            self._gradB = []
+            self._gradQ = []
             
+            for i in range(0,X.shape[1]):
+                self._gradW.append( np.tile(X[:,i], (self._Nout,1)) )
         
         return self._w.dot(X)+self._b
     
-    def backprop(self,X):
-        pass
+    def backprop(self, E):
+        """ Propagates the error E through the layer and stores gradient """
+        
+        # Continue grad calc from feedforward step
+        for i in range(0,len(self._gradW)):
+            self._gradW[i] = np.multiply(self._gradW[i],E)
+            self._gradB.append(E)
+        
+        # Propagate error
+        return W.T.dot(E)
     
     
     def set_parameters(self, params):

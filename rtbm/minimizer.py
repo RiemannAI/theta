@@ -87,3 +87,27 @@ class CMA(object):
             raise AssertionError('CMA: the requested number of CPU is <= 0')
         self._num_cores = cores
 
+
+        
+class SGD(object):
+    """ Implements standard stochastic gradient descent """
+    
+    def train(self, cost, model, x_data, y_data=None, maxiter=1000, lr=0.001):
+        
+        for i in range(0, maxiter):
+            model.feed_through(x_data,True)
+            C = cost.cost(x_data,y_data)
+            model.backprop(cost.gradient(x_data,y_data))
+            
+            # Get gradients
+            G = model.get_gradients()
+            W = model.get_parameters()
+            
+            # Adjust weights
+            W = W - lr*G
+            
+            # Set gradients
+            model.set_parameters(W)
+            
+            print(i," cost: ",C);
+        
