@@ -91,6 +91,7 @@ class CMA(object):
         
 class SGD(object):
     """ Implements standard stochastic gradient descent """
+    """ ToDo: Batch training """
     
     def train(self, cost, model, x_data, y_data=None, maxiter=100, lr=0.0001):
         
@@ -113,4 +114,4 @@ class SGD(object):
                 print(i," cost: ",C);
             
         print("SOL: ",W)
-        
+        return W

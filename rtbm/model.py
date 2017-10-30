@@ -37,8 +37,9 @@ class Model(object):
     def backprop(self, E):
         """ Backpropagates the error E through the network """
         e = E
-        for L in self._layers:
-            e = L.backprop(e)
+        
+        for i in reversed(range(len(self._layers))):
+            e = self._layers[i].backprop(e)
         return e
         
         

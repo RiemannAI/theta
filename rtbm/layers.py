@@ -137,7 +137,6 @@ class Linear(Layer):
         
         for i in range(0,self._X.shape[1]):
             T = E[:,i].reshape(E.shape[0],1).dot(self._X[:,i].reshape((1,self._X.shape[0])))
-            
             self._gradW = np.add(self._gradW,T)
           
         self._gradW = 1.0/self._X.shape[1]*self._gradW
