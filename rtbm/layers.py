@@ -11,7 +11,7 @@ class Layer(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def feedin(self, X):
+    def feedin(self, X, *grad_calc):
         pass
     
     @abstractmethod
@@ -90,39 +90,53 @@ class NormAddLayer(Layer):
     
 class Linear(Layer):
     """ Linear layer """
-    def __init__(self, Nin, Nout, Wmax=1, paramBound=10):
+    def __init__(self, Nin, Nout, Wmax=1, Bmax=1, paramBound=10):
         self._Nin  = Nin
         self._Nout = Nout
-        self._Np = Nin*Nout
+        self._Np = Nin*Nout+Nout
          
-        # Set W bounds
+        # Set bounds
         self._lower_bounds = [-paramBound for _ in range(self._Np)]
         self._upper_bounds = [ paramBound for _ in range(self._Np)]    
             
         # Parameter init
         self._w = np.random.uniform(-Wmax, Wmax,(Nout,Nin)).astype(float)
+        self._b = np.random.uniform(-Bmax, Bmax,(Nout,1)).astype(float)
         
     def get_parameters(self):
         """ Returns the parameters as a flat array 
-            [w]
+            [b,w]
         """
 
-        return self._w.flatten()
+        return np.concatenate([self._b.flatten(),self._w.flatten()])
 
-    def feedin(self, X):
+    def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
         
-        return self._w.dot(X)
+        if(grad_calc==True):
+            # Calc gradient
+            self._grad = 0
+            
+        
+        return self._w.dot(X)+self._b
+    
+    def backprop(self,X):
+        pass
     
     
     def set_parameters(self, params):
         """ Set the matrices from flat input array P 
-            P = [w]
+            P = [b,w]
         """
+        index = 0
         
-        self._w = params.reshape(self._w.shape)
+        self._b = params[index:index+self._b.shape[0]].reshape(self._b.shape)
+        index += self._b.shape[0]
+
+        self._w = params[index:index+self._w.size].reshape(self._w.shape)
+       
     
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
