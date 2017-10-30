@@ -22,7 +22,7 @@ def worker_initialize(cost, model, x_data, y_data):
 
 def worker_compute(params):
     resource.model.set_parameters(params)
-    res = resource.cost_function(resource.model(resource.x_data), resource.y_data)
+    res = resource.cost_function.cost(resource.model(resource.x_data), resource.y_data)
     return res
 
 
