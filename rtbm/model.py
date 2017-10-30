@@ -27,7 +27,7 @@ class Model(object):
         else: 
             print("Input of layer does not match output of previous layer! => Add ignored")
 
-    def feed_through(self, X, *calc_grad=False):
+    def feed_through(self, X, calc_grad=False):
         """ Feeds the input X through all layers Vectorized """
         x = X
         for L in self._layers:

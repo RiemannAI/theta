@@ -76,7 +76,7 @@ class NormAddLayer(Layer):
 
         return [self._lower_bounds, self._upper_bounds]
     
-    def feedin(self, X):
+    def feedin(self, X, *grad_calc):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
@@ -118,34 +118,32 @@ class Linear(Layer):
         return np.concatenate([self._gradB.flatten(),self._gradW.flatten()])
     
     
-    def feedin(self, X, *grad_calc=False):
+    def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
-        
-        # ToDo: Directly take mean ...
-        
         if(grad_calc==True):
-            # Calc outer derivative*input = input stacked
-            self._gradW = []
-            self._gradB = []
-            self._gradQ = []
+            self._X = X
             
-            for i in range(0,X.shape[1]):
-                self._gradW.append( np.tile(X[:,i], (self._Nout,1)) )
-        
         return self._w.dot(X)+self._b
     
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
+        # Mean bias gradient
+        self._gradB = np.mean(E, axis=1)
+      
+        # Mean weight gradient
+        self._gradW = np.zeros(self._w.shape)
         
-        # Continue grad calc from feedforward step
-        for i in range(0,len(self._gradW)):
-            self._gradW[i] = np.multiply(self._gradW[i],E)
-            self._gradB.append(E)
-        
+        for i in range(0,self._X.shape[1]):
+            T = E[:,i].reshape(E.shape[0],1).dot(self._X[:,i].reshape((1,self._X.shape[0])))
+            
+            self._gradW = np.add(self._gradW,T)
+          
+        self._gradW = 1.0/self._X.shape[1]*self._gradW
+               
         # Propagate error
-        return W.T.dot(E)
+        return self._w.T.dot(E)
     
     
     def set_parameters(self, params):
@@ -193,7 +191,7 @@ class SoftMaxLayer(Layer):
 
         return [self._lower_bounds, self._upper_bounds]
     
-    def feedin(self, X):
+    def feedin(self, X, *grad_calc):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
@@ -230,7 +228,7 @@ class MaxPosLayer(Layer):
 
         return [self._lower_bounds, self._upper_bounds]
     
-    def feedin(self, X):
+    def feedin(self, X, *grad_calc):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
@@ -274,7 +272,7 @@ class DiagExpectationUnitLayer(Layer):
         self._lower_bounds[index:] = [1E-5]*self._q.shape[0]
         self._upper_bounds[index:] = [paramBound]*self._q.shape[0]
         
-    def feedin(self, X):
+    def feedin(self, X, *grad_calc):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """

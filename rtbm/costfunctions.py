@@ -20,10 +20,10 @@ class mse(costfunction):
     """ Mean squared error """
 
     def cost(self, x, y):
-        return 0.5*np.mean((x-y)**2)
+        return 0.5*np.mean((y-x)**2)
 
-    def gradient(self,X):
-        return np.mean(x-y)
+    def gradient(self, x, y):
+        return (x-y)
     
     
         
