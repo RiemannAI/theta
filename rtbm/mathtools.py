@@ -68,7 +68,9 @@ def gradient_log_1d_theta_phaseI(v, q, d):
 
     return (-(L/R) / (2.0j * np.pi)) - re[0].flatten()
 
-def gradient_log_1d_theta_phaseII(v, q, d):
+
+
+def gradient_log_1d_theta_phaseI(v, q, d):
     """ Implements the directional log gradient
 
         d : int for direction of gradient
@@ -77,11 +79,30 @@ def gradient_log_1d_theta_phaseII(v, q, d):
     D = np.zeros(Nh)
     D[d] = 1
 
-    R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
-    L = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+    """ Restrict to unit lattice box """
 
-    return (-(L/R) / (2.0j * np.pi))
+    re = np.divmod(v, q)
 
+    R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+    L = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+
+    return (-(L/R) / (2.0j * np.pi)) - re[0].flatten()
+
+
+def theta_1d(v, q, d):
+    """ Wraps the RT for 1d subcase with dth order directional gradient
+
+        d : # of derivatives to take
+    """
+    
+    if(d > 0):
+        D = np.ones((1,d))
+        R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=D)
+    else:
+        R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+  
+    return R
+    
 
 
 def hidden_expectations(v, bh, w, q):
