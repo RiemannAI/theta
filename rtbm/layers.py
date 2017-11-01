@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import factorized_hidden_expectations,theta_1d,theta_1d_phaseI
+from mathtools import factorized_hidden_expectations,theta_1d,logtheta_1d_phaseI
 
 
 class Layer(object):
@@ -333,12 +333,19 @@ class DiagExpectationUnitLayer(Layer):
             for i in range(0,self._Nout):  
                 O = np.matrix([[np.real(self._q[i, i])]], dtype=float)
             
-                T0 = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 0)
-            
-                T1n[i] = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 1)/T0
-                T2n[i] = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 2)/T0
-                T3n[i] = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 3)/T0
+                T0 = logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 0)
+             
+                T1n[i] = np.exp(logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 1)-T0)
+                T2n[i] = np.exp(logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 2)-T0)
+                T3n[i] = np.exp(logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 3)-T0)
        
+        
+        if(np.isnan(T1n).any() or np.isnan(T2n).any() or np.isnan(T3n).any()   ):
+            print("NaN detected in T1n")
+            print("T1n:",T1n)
+            print("T2n:",T2n)
+            print("T3n:",T3n)
+        
         T1nSquare = T1n*T1n
         
         kappa = -(T2n-T1nSquare)
@@ -347,7 +354,7 @@ class DiagExpectationUnitLayer(Layer):
         self._gradB = np.mean(kappa*E,axis=1)
         
         # Q grad
-        rho = -2*(T3n - 3*T1n*T2n + 2*T1n*T1nSquare)*E
+        rho = -(T3n - 3*T1n*T2n + 2*T1n*T1nSquare)*E
         self._gradQ = np.diag(np.mean(rho, axis=1))
         
         # W grad 
@@ -355,9 +362,9 @@ class DiagExpectationUnitLayer(Layer):
         
         self._gradW = delta.dot(self._X.T).T/self._X.shape[1]
        
-        print("***")
-        print("gQ:",self._gradQ)
-        print("gB:",self._gradB)
-        print("gW:",self._gradW)
+        #print("***")
+        #print("gQ:",self._gradQ)
+        #print("gB:",self._gradB)
+        #print("gW:",self._gradW)
     
         return self._w.dot(delta)
