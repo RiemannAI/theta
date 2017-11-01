@@ -335,7 +335,7 @@ class DiagExpectationUnitLayer(Layer):
         self._gradB = np.mean(-(T21n)*E,axis=1)
         
         # Q grad (sign ???)
-        delta2 = 0.5*(T3n - T1n*T2n)*E
+        delta2 = (T3n - T1n*T2n)*E
         self._gradQ = np.diag(np.mean(delta2, axis=1))
         
         # W grad 
@@ -355,4 +355,4 @@ class DiagExpectationUnitLayer(Layer):
         # Feed on (REALLY ??)
         # Backpropagation: What to do with the Q part ?
         
-        return self._w.dot(delta1+delta2)
+        return self._w.dot(delta1)
