@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import time
 from cma import CMAEvolutionStrategy
 import multiprocessing as mp
 from contextlib import closing
 import numpy as np
+from scipy.optimize import minimize
 
 
 class Resource(object):
@@ -26,6 +28,13 @@ def worker_compute(params):
     return res
 
 
+def worker_gradient(params):
+    resource.model.set_parameters(params)
+    xout = resource.model.feed_through(resource.x_data, True)
+    resource.model.backprop(resource.cost_function.gradient(xout, resource.y_data))
+    return resource.model.get_gradients()
+
+
 class CMA(object):
     """Implements the GA using CMA library"""
     def __init__(self, parallel=False):
@@ -36,7 +45,7 @@ class CMA(object):
             self.num_cores = 1
         print('CMA on %d cpu(s) enabled' % self.num_cores)
 
-    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None):
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None, use_grad=False):
         """The training algorithm"""
 
         initsol = np.real(model.get_parameters())
@@ -50,13 +59,17 @@ class CMA(object):
 
         if maxiter is not None:
             args['maxiter'] = maxiter
+
+        grad = None
+        if use_grad:
+            grad = worker_gradient
           
         es = CMAEvolutionStrategy(initsol, sigma, args)
         if self.num_cores > 1:
             with closing(mp.Pool(self.num_cores, initializer=worker_initialize,
                                  initargs=(cost, model, x_data, y_data))) as pool:
                 while not es.stop():
-                    solutions = es.ask()
+                    solutions = es.ask(gradf=grad)
                     f_values = pool.map_async(worker_compute, solutions).get()
                     es.tell(solutions, f_values)
                     es.logger.add()
@@ -65,7 +78,7 @@ class CMA(object):
         else:
             worker_initialize(cost, model, x_data, y_data)
             while not es.stop():
-                solutions = es.ask()
+                solutions = es.ask(gradf=grad)
                 f_values = [ worker_compute(isol) for isol in solutions ]
                 es.tell(solutions, f_values)
                 es.logger.add()
@@ -94,7 +107,8 @@ class SGD(object):
     """ ToDo: Batch training """
     
     def train(self, cost, model, x_data, y_data=None, maxiter=100, lr=0.0001):
-        
+
+        t0 = time.time()
         for i in range(0, maxiter):
             Xout = model.feed_through(x_data, True)
             C = cost.cost(Xout,y_data)
@@ -111,8 +125,25 @@ class SGD(object):
             model.set_parameters(W)
             
             if(i % 100 == 0):
-                print(i," cost: ",C);
+                print("Iteration %d in %.2f(s), cost = %f" % (i,time.time()-t0,C))
             
         print("Cost: ",C)    
         print("Sol: ",W)
+        print("Time: %d s" % (time.time()-t0))
         return W
+
+
+class BFGS(object):
+    """Implements the BFGS method"""
+
+    def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, maxiter=100):
+        """The training algorithm"""
+        x0 = np.real(model.get_parameters())
+        worker_initialize(cost, model, x_data, y_data)
+        bounds = [ (model.get_bounds()[0][i],model.get_bounds()[1][i]) for i in range(model.size())]
+        res = minimize(worker_compute, x0, jac=worker_gradient,
+                       bounds=bounds, options = {'gtol': tolfun,
+                                                 'disp': True, 'maxiter': maxiter})
+        print(res)
+        model.set_parameters(res.x)
+        return res.x
