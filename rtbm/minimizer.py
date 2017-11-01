@@ -103,7 +103,9 @@ class SGD(object):
             # Get gradients
             G = model.get_gradients()
             W = model.get_parameters()
-           
+        
+            #print(G)
+        
             # Adjust weights
             W = W - lr*G
             

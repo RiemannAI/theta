@@ -94,16 +94,46 @@ def theta_1d(v, q, d):
 
         d : # of derivatives to take
     """
-    
+    # Cutoff if q is not positive definite
+    if(np.real(q[0,0])<=0):
+        q[0,0] = 1e-5
+            
     if(d > 0):
         D = np.ones((1,d))
+        
         R = 1.0/((2j*np.pi)**d) * RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=D)
     else:
+        
         R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
   
     return R
     
+def theta_1d_phaseI(v, q, d):
+    """ Wraps the RT for 1d subcase with dth order directional gradient
 
+        d : # of derivatives to take
+    """
+    # Cutoff if q is not positive definite
+    if(np.real(q[0,0])<=0):
+        q[0,0] = 1e-5
+            
+    if(d > 0):
+        D = np.ones((1,d))
+        
+        R = 1.0/((2j*np.pi)**d) * RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=D)
+    else:
+        # Make NaN safe via moving to fundamental box
+        re = np.divmod(v, q)
+        print(re[0].shape)
+        print(re[1].shape)
+        print(v.shape)
+        e = np.exp((re[0]*v -0.5*q* re[0]*re[0]))
+        R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+        print("e:",e.shape)
+        print("R:",R.shape)
+        
+        e*R
+    return R
 
 def hidden_expectations(v, bh, w, q):
     """ Implements E(h|v) for non-diagonal q
@@ -136,6 +166,10 @@ def factorized_hidden_expectations(v, bh, w, q, phaseI=False):
 
     for i in range(Nh):
         O = np.matrix([[q[i, i]]], dtype=complex)
+        
+        # Cutoff to keep positive definite
+        if(np.real(O[0,0])<=0):
+            O[0,0] = 1e-5
         
         if(phaseI==True):
             E[i] = gradient_log_1d_theta_phaseI(np.real((vW[:, [i]] + bh[i])), np.real(O), 0)

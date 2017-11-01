@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import factorized_hidden_expectations,theta_1d
+from mathtools import factorized_hidden_expectations,theta_1d,theta_1d_phaseI
 
 
 class Layer(object):
@@ -320,39 +320,44 @@ class DiagExpectationUnitLayer(Layer):
         T2n = np.zeros((self._Nout, self._X.shape[1]))
         T3n = np.zeros((self._Nout, self._X.shape[1]))
        
-        for i in range(0,self._Nout):  
-            O = np.matrix([[self._q[i, i]]], dtype=complex)
+        if(self._phase!=1):
+            for i in range(0,self._Nout):  
+                O = np.matrix([[self._q[i, i]]], dtype=complex)
             
-            T0 = theta_1d( vWb[:, [i]], O, 0)
+                T0 = theta_1d( vWb[:, [i]], O, 0)
+               
+                T1n[i] = theta_1d( vWb[:, [i]], O, 1)/T0
+                T2n[i] = theta_1d( vWb[:, [i]], O, 2)/T0
+                T3n[i] = theta_1d( vWb[:, [i]], O, 3)/T0
+        else:
+            for i in range(0,self._Nout):  
+                O = np.matrix([[np.real(self._q[i, i])]], dtype=float)
+            
+                T0 = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 0)
+            
+                T1n[i] = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 1)/T0
+                T2n[i] = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 2)/T0
+                T3n[i] = theta_1d_phaseI( np.real(vWb[:, [i]]), O, 3)/T0
+       
+        T1nSquare = T1n*T1n
         
-            T1n[i] = theta_1d( vWb[:, [i]], O, 1)/T0
-            T2n[i] = theta_1d( vWb[:, [i]], O, 2)/T0
-            T3n[i] = theta_1d( vWb[:, [i]], O, 3)/T0
-           
-        T21n = T2n-T1n*T1n
+        kappa = -(T2n-T1nSquare)
         
         # B grad
-        self._gradB = np.mean(-(T21n)*E,axis=1)
+        self._gradB = np.mean(kappa*E,axis=1)
         
-        # Q grad (sign ???)
-        delta2 = (T3n - T1n*T2n)*E
-        self._gradQ = np.diag(np.mean(delta2, axis=1))
+        # Q grad
+        rho = -2*(T3n - 3*T1n*T2n + 2*T1n*T1nSquare)*E
+        self._gradQ = np.diag(np.mean(rho, axis=1))
         
         # W grad 
-        delta1 = (-(T21n)*E)
+        delta = kappa*E
         
-        self._gradW = delta1.dot(self._X.T).T/self._X.shape[1]
-     
-        #print("***")
-      
-        #print("E: ",E.shape)
-        #print("B: ",self._gradB.shape)
-        #print("W: ",self._gradW.shape)
-        #print("Q: ",self._gradQ.shape)
-        #print("vW:",vWb.shape)
+        self._gradW = delta.dot(self._X.T).T/self._X.shape[1]
+       
+        print("***")
+        print("gQ:",self._gradQ)
+        print("gB:",self._gradB)
+        print("gW:",self._gradW)
     
-        
-        # Feed on (REALLY ??)
-        # Backpropagation: What to do with the Q part ?
-        
-        return self._w.dot(delta1)
+        return self._w.dot(delta)
