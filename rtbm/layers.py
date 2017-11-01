@@ -131,7 +131,7 @@ class Linear(Layer):
         """ Propagates the error E through the layer and stores gradient """
        
         # Mean bias gradient
-        self._gradB = np.mean(E, axis=1)
+        self._gradB = np.mean(E, axis=1,keepdims=True)
       
         # Mean weight gradient
         self._gradW = E.dot(self._X.T)/self._X.shape[1]
@@ -351,20 +351,31 @@ class DiagExpectationUnitLayer(Layer):
         kappa = -(T2n-T1nSquare)
         
         # B grad
-        self._gradB = np.mean(kappa*E,axis=1)
+        self._gradB = np.mean(kappa*E,axis=1,keepdims=True)
         
         # Q grad
         rho = -(T3n - 3*T1n*T2n + 2*T1n*T1nSquare)*E
-        self._gradQ = np.diag(np.mean(rho, axis=1))
+        
+        self._gradQ = np.diag(np.mean(rho, axis=1).flatten())
         
         # W grad 
         delta = kappa*E
         
         self._gradW = delta.dot(self._X.T).T/self._X.shape[1]
        
-        #print("***")
-        #print("gQ:",self._gradQ)
-        #print("gB:",self._gradB)
-        #print("gW:",self._gradW)
+        """
+        print("***")
+        print("gQ:",self._gradQ)
+        print("gQs:",self._gradQ.shape)
+        print("Qs:",self._q.shape)
+        
+        print("gB:",self._gradB)
+        print("gBs:",self._gradB.shape)
+        print("Bs:",self._bh.shape)
+        
+        print("gW:",self._gradW)
+        print("gWs:",self._gradW.shape)
+        print("Ws:",self._w.shape)
+        """
     
         return self._w.dot(delta)

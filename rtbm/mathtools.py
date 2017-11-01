@@ -114,8 +114,9 @@ def logtheta_1d_phaseI(v, q, d):
         d : # of derivatives to take
     """
     # Cutoff if q is not positive definite
-    #if(np.real(q[0,0])<=0):
-    #    q[0,0] = 1e-5
+    if(np.real(q[0,0])<=0 or np.isnan(q).any()):
+        print("NaN detected or negative value in phase I: ",q)   
+        q[0,0] = np.abs(q[0,0])
             
     if(d > 0):
         D = np.ones((1,d))
@@ -164,9 +165,11 @@ def factorized_hidden_expectations(v, bh, w, q, phaseI=False):
         O = np.matrix([[q[i, i]]], dtype=complex)
         
         # Cutoff to keep positive definite
-        #if(np.real(O[0,0])<=0):
-        #    O[0,0] = 1e-5
-        
+        if(np.real(O[0,0])<=0 or np.isnan(O).any()):
+            print("NaN detected or negative value: ",O)   
+            O[0,0] = np.abs(O[0,0])
+           
+            
         if(phaseI==True):
             E[i] = gradient_log_1d_theta_phaseI(np.real((vW[:, [i]] + bh[i])), np.real(O), 0)
         else:
