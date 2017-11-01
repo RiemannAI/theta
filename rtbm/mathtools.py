@@ -97,7 +97,7 @@ def theta_1d(v, q, d):
     
     if(d > 0):
         D = np.ones((1,d))
-        R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=D)
+        R = 1.0/((2j*np.pi)**d) * RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=D)
     else:
         R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
   

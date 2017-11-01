@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import factorized_hidden_expectations
+from mathtools import factorized_hidden_expectations,theta_1d
 
 
 class Layer(object):
@@ -124,23 +124,18 @@ class Linear(Layer):
         """
         if(grad_calc==True):
             self._X = X
-            
+        
         return self._w.dot(X)+self._b
     
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
+       
         # Mean bias gradient
         self._gradB = np.mean(E, axis=1)
       
         # Mean weight gradient
-        self._gradW = np.zeros(self._w.shape)
+        self._gradW = E.dot(self._X.T)/self._X.shape[1]
         
-        for i in range(0,self._X.shape[1]):
-            T = E[:,i].reshape(E.shape[0],1).dot(self._X[:,i].reshape((1,self._X.shape[0])))
-            self._gradW = np.add(self._gradW,T)
-          
-        self._gradW = 1.0/self._X.shape[1]*self._gradW
-               
         # Propagate error
         return self._w.T.dot(E)
     
@@ -271,10 +266,14 @@ class DiagExpectationUnitLayer(Layer):
         self._lower_bounds[index:] = [1E-5]*self._q.shape[0]
         self._upper_bounds[index:] = [paramBound]*self._q.shape[0]
         
-    def feedin(self, X, *grad_calc):
+    def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer 
             Note: Vectorized 
         """
+        
+        if(grad_calc==True):
+            self._X = X
+        
         if(self._phase==1):
             return 1.0/self._phase*np.array(factorized_hidden_expectations(X,self._bh,self._w,self._q, True))
         else:
@@ -305,3 +304,55 @@ class DiagExpectationUnitLayer(Layer):
         """Returns two arrays with min and max of each parameter for the GA"""
         return [self._lower_bounds, self._upper_bounds]
     
+    def get_gradients(self):
+        """ Returns gradients as a flat array 
+            [b,w,q]
+        """
+        return np.concatenate([self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()])
+    
+    def backprop(self, E):
+        """ Propagates the error E through the layer and stores gradient """
+       
+        # Calc ingredients
+        vWb = np.transpose(self._X).dot(self._w)+self._bh.T
+        
+        T1n = np.zeros((self._Nout, self._X.shape[1]))
+        T2n = np.zeros((self._Nout, self._X.shape[1]))
+        T3n = np.zeros((self._Nout, self._X.shape[1]))
+       
+        for i in range(0,self._Nout):  
+            O = np.matrix([[self._q[i, i]]], dtype=complex)
+            
+            T0 = theta_1d( vWb[:, [i]], O, 0)
+        
+            T1n[i] = theta_1d( vWb[:, [i]], O, 1)/T0
+            T2n[i] = theta_1d( vWb[:, [i]], O, 2)/T0
+            T3n[i] = theta_1d( vWb[:, [i]], O, 3)/T0
+           
+        T21n = T2n-T1n*T1n
+        
+        # B grad
+        self._gradB = np.mean(-(T21n)*E,axis=1)
+        
+        # Q grad (sign ???)
+        delta2 = 0.5*(T3n - T1n*T2n)*E
+        self._gradQ = np.diag(np.mean(delta2, axis=1))
+        
+        # W grad 
+        delta1 = (-(T21n)*E)
+        
+        self._gradW = delta1.dot(self._X.T).T/self._X.shape[1]
+     
+        #print("***")
+      
+        #print("E: ",E.shape)
+        #print("B: ",self._gradB.shape)
+        #print("W: ",self._gradW.shape)
+        #print("Q: ",self._gradQ.shape)
+        #print("vW:",vWb.shape)
+    
+        
+        # Feed on (REALLY ??)
+        # Backpropagation: What to do with the Q part ?
+        
+        return self._w.dot(delta1+delta2)

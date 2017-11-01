@@ -113,5 +113,6 @@ class SGD(object):
             if(i % 100 == 0):
                 print(i," cost: ",C);
             
-        print("SOL: ",W)
+        print("Cost: ",C)    
+        print("Sol: ",W)
         return W
