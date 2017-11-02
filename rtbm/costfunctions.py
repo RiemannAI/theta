@@ -21,10 +21,9 @@ class mse(costfunction):
 
     def cost(self, x, y):
         return 0.5*np.mean((y-x)**2)
-
+   
     def gradient(self, x, y):
         return (x-y)
-    
     
         
 class logarithmic(costfunction):

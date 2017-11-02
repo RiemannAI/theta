@@ -3,7 +3,12 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from mathtools import factorized_hidden_expectations,theta_1d,logtheta_1d_phaseI
+from mathtools import factorized_hidden_expectations,theta_1d,logtheta_1d_phaseI, logtheta_1d
+
+import time
+
+from multiprocessing import Pool
+pool = Pool()
 
 
 class Layer(object):
@@ -329,17 +334,32 @@ class DiagExpectationUnitLayer(Layer):
                 T1n[i] = theta_1d( vWb[:, [i]], O, 1)/T0
                 T2n[i] = theta_1d( vWb[:, [i]], O, 2)/T0
                 T3n[i] = theta_1d( vWb[:, [i]], O, 3)/T0
+              
         else:
             for i in range(0,self._Nout):  
                 O = np.matrix([[np.real(self._q[i, i])]], dtype=float)
-            
+                
                 T0 = logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 0)
-             
                 T1n[i] = np.exp(logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 1)-T0)
                 T2n[i] = np.exp(logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 2)-T0)
                 T3n[i] = np.exp(logtheta_1d_phaseI( np.real(vWb[:, [i]]), O, 3)-T0)
-       
-        
+                
+               # tic = time.clock()
+                """
+                r0 = pool.apply_async(logtheta_1d_phaseI, [np.real(vWb[:, [i]]), O, 0])  
+                r1 = pool.apply_async(logtheta_1d_phaseI, [np.real(vWb[:, [i]]), O, 1])  
+                r2 = pool.apply_async(logtheta_1d_phaseI, [np.real(vWb[:, [i]]), O, 2])  
+                r3 = pool.apply_async(logtheta_1d_phaseI, [np.real(vWb[:, [i]]), O, 3])  
+          
+                T0 = np.exp(r0.get(timeout=10))
+                T1n[i] = np.exp(r1.get(timeout=10)-T0)
+                T2n[i] = np.exp(r2.get(timeout=10)-T0)
+                T3n[i] = np.exp(r3.get(timeout=10)-T0)
+                """
+              
+               # toc = time.clock()
+               # print("4x logtheta: "+str(1000*(toc-tic))+"ms"+" O: ", O, "sV: ",vWb[:, [i]].shape ,"maxV: ",np.max(np.abs(np.real(vWb[:, [i]]))) )
+            
         if(np.isnan(T1n).any() or np.isnan(T2n).any() or np.isnan(T3n).any()   ):
             print("NaN detected in T1n")
             print("T1n:",T1n)
@@ -354,7 +374,7 @@ class DiagExpectationUnitLayer(Layer):
         self._gradB = np.mean(kappa*E,axis=1,keepdims=True)
         
         # Q grad
-        rho = -(T3n - 3*T1n*T2n + 2*T1n*T1nSquare)*E
+        rho = (T3n - T1n*T2n)*E
         
         self._gradQ = np.diag(np.mean(rho, axis=1).flatten())
         

@@ -4,6 +4,20 @@ import numpy as np
 from riemann_theta.riemann_theta import RiemannTheta
 RTBM_precision= 1e-8
 
+from numba import jit
+
+from sympy import *
+from sympy.abc import x,y
+
+import mpmath
+from numpy import frompyfunc
+
+
+# TESTS different 1D thetas
+test  = frompyfunc(lambda z, q: mpmath.jtheta(3, z, q), 2, 1)
+testD = frompyfunc(lambda z, q: mpmath.jtheta(3, z, q, derivative=1), 2, 1)
+vfunc = np.vectorize(mpmath.jtheta)
+
 
 def check_normalization_consistency(t, q, w):
     c = q - np.transpose(w).dot(np.linalg.inv(t).dot(w))
@@ -36,6 +50,7 @@ def rtbm_log_probability(v, bv, bh, t, w, q):
     return np.log(np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0]))) + ExpF + lnR1 - lnR2
 
 
+
 def gradient_log_theta(v, q, d):
     """ Implements the directional log gradient
 
@@ -65,28 +80,13 @@ def gradient_log_1d_theta_phaseI(v, q, d):
 
     R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
     L = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
+    #R = test(np.pi*v/(2j*np.pi),np.exp(-1j*np.pi*q[0,0]/(2j*np.pi)))
+    #L = np.pi*testD(np.pi*v/(2j*np.pi),np.exp(-1j*np.pi*q[0,0]/(2j*np.pi)))
+    #R = vfunc(3,np.pi*v/(2j*np.pi),np.exp(-1j*np.pi*q[0,0]/(2j*np.pi)))
+    #L = np.pi*vfunc(3,np.pi*v/(2j*np.pi),np.exp(-1j*np.pi*q[0,0]/(2j*np.pi)), derivative=1)
+    
+    return (-(L/R) / (2.0j * np.pi)).flatten() - re[0].flatten()
 
-    return (-(L/R) / (2.0j * np.pi)) - re[0].flatten()
-
-
-
-def gradient_log_1d_theta_phaseI(v, q, d):
-    """ Implements the directional log gradient
-
-        d : int for direction of gradient
-    """
-    Nh = q.shape[0]
-    D = np.zeros(Nh)
-    D[d] = 1
-
-    """ Restrict to unit lattice box """
-
-    re = np.divmod(v, q)
-
-    R = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
-    L = RiemannTheta(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=[D])
-
-    return (-(L/R) / (2.0j * np.pi)) - re[0].flatten()
 
 
 def theta_1d(v, q, d):
@@ -107,6 +107,7 @@ def theta_1d(v, q, d):
         R = RiemannTheta(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
   
     return R
+    
     
 def logtheta_1d_phaseI(v, q, d):
     """ Wraps the RT for 1d subcase with dth order directional gradient
@@ -129,6 +130,27 @@ def logtheta_1d_phaseI(v, q, d):
       
         e = (np.asarray(re[0])*v -0.5*q[0,0]*np.asarray(re[0])**2)[:,0]
         R = e + RiemannTheta.log_eval(re[1] / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
+       
+    return R
+
+
+def logtheta_1d(v, q, d):
+    """ Wraps the RT for 1d subcase with dth order directional gradient
+
+        d : # of derivatives to take
+    """
+    # Cutoff if q is not positive definite
+    if(np.real(q[0,0])<=0 or np.isnan(q).any()):
+        print("NaN detected or negative value in phase I: ",q)   
+        q[0,0] = np.abs(q[0,0])
+            
+    if(d > 0):
+        D = np.ones((1,d))
+        
+        R = -d*np.log(((2j*np.pi))) + RiemannTheta.log_eval(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision, derivs=D)
+        
+    else:
+        R = RiemannTheta.log_eval(v / (2.0j * np.pi), -q / (2.0j * np.pi), epsilon=RTBM_precision)
        
     return R
 
