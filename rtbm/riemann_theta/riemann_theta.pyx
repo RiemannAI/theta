@@ -187,7 +187,7 @@ cdef class RiemannTheta_Function(object):
         """
         return self.eval(*args, **kwds)
 
-    def eval(self, z, Omega, **kwds):
+    def eval(self, z, Omega, mode=0, **kwds):
         r"""Returns the value of the Riemann theta function at `z` and `Omega`.
 
         In many applications it's preferred to use :meth:`exponential_part` and
@@ -249,7 +249,7 @@ cdef class RiemannTheta_Function(object):
 
         return u + numpy.log(v)
 
-    def parts_eval(self, z, Omega, **kwds):
+    def parts_eval(self, z, Omega, mode=0, **kwds):
         r"""Returns the log(exponential) and oscillatory part
         """
         u = self.exponential_part(z, Omega, **kwds)
@@ -258,7 +258,7 @@ cdef class RiemannTheta_Function(object):
         return u, v
 
 
-    def normalized_eval(self, z, Omega, **kwds):
+    def normalized_eval(self, z, Omega, mode=0, **kwds):
         r"""Returns the value of the log Riemann theta function at `z` and `Omega`.
 
         In many applications it's preferred to use :meth:`exponential_part` and
