@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 class Model(object):
     
     def __init__(self):
@@ -67,6 +66,11 @@ class Model(object):
         return np.concatenate(R)
     
     
+    def get_layer(self, N):
+        if(N > len(self._layers)):
+            print("Layer does not exist")
+        else:
+            return self._layers[N-1]
     
     def build_bounds(self):
         """ Collects the bounds of the individual layers """
@@ -94,6 +98,8 @@ class Model(object):
             
             L.set_parameters(params[Nt:Nt+L.size()])
             Nt += L.size()
+
+        return True
 
     def predict(self, x):
         """ Performs prediction with the trained model """
