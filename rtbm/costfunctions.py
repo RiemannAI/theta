@@ -19,11 +19,11 @@ class costfunction(object):
 class mse(costfunction):
     """ Mean squared error """
 
-    def cost(self, x, y):
-        return 0.5*np.mean((y-x)**2)
+    def cost(self, x, y):   
+        return np.sum(np.mean((x-y)**2,axis=1))
    
     def gradient(self, x, y):
-        return (x-y)
+        return 2*(x-y)
     
         
 class logarithmic(costfunction):
@@ -32,7 +32,7 @@ class logarithmic(costfunction):
     def cost(self, x, *y):
         return -np.sum(np.log(x))
 
-    def gradient(self,X):
+    def gradient(self,x):
         sys.exit("Gradient not implemented!")
 
         
@@ -42,7 +42,7 @@ class sum(costfunction):
     def cost(self, x, *y):
         return -np.sum(x)
 
-    def gradient(self,X):
+    def gradient(self,x):
         sys.exit("Gradient not implemented!")
 
         
@@ -50,22 +50,19 @@ class rmse(costfunction):
     """ Root mean squared error """
     
     def cost(self, x, y):
-        return np.sqrt(np.mean((x-y)**2))
+        return np.sqrt(0.5*np.sum(np.mean((y-x)**2,axis=1)))
 
-    def gradient(self,X):
-        sys.exit("Gradient not implemented!")
-
+    def gradient(self,x):
+        return 0.5/np.sqrt(0.5*np.sum(np.mean((y-x)**2,axis=1)))*(x-y)
+     
         
 class crossentropy(costfunction):
     """ cross-entropy """
     
     def cost(self, x, y):
         lx  = np.log(x)
-        lmx = np.log(1-x)
-   
-        return -np.mean(np.multiply(y,lx)+np.multiply(1-y,lmx))
+        return -np.sum(np.mean(np.multiply(y,lx),axis=1))
     
-    def gradient(self,X):
-        sys.exit("Gradient not implemented!")
-
+    def gradient(self, x):
+        return -1.0/y.shape[1]*y/x
   
