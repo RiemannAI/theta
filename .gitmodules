@@ -1,0 +1,3 @@
+[submodule "rtbm/riemann_theta"]
+	path = rtbm/riemann_theta
+	url = git@github.com:RiemannAI/openRT.git
