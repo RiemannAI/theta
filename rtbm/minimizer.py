@@ -8,6 +8,7 @@ from contextlib import closing
 import numpy as np
 from scipy.optimize import minimize
 
+import sgd
 
 class Resource(object):
     """Resources container for the worker load"""
@@ -127,81 +128,11 @@ class SGD(object):
     """
 
     def train(self, cost, model, x_data, y_data=None, maxiter=100, batch_size=0,
-              lr=0.001, decay=0, momentum=0,nesterov=False, noise=0):
-        oldG = np.zeros(model.get_parameters().shape)
-
-        # Generate batches
-        RE = 0
-        if(batch_size > 0):
-            BS = x_data.shape[1] / batch_size
-            if(x_data.shape[1] % batch_size > 0):
-                RE = 1
-        else:
-            BS = 1
-            batch_size = x_data.shape[1]
-
-        # Switch on/off noise
-        nF = 0
-        if noise > 0 :
-            nF = 1
-
-        t0 = time.time()
-
-        # Loop over epoches
-        for i in range(0, maxiter):
-
-            # Loop over batches
-            for b in range(0, BS+RE):
-
-                data_x = x_data[:,b*batch_size:(b+1)*batch_size]
-                data_y = y_data[:,b*batch_size:(b+1)*batch_size]
-
-                Xout = model.feed_through(data_x, True)
-                C = cost.cost(Xout,data_y)
-                model.backprop(cost.gradient(Xout,data_y))
-
-                W = model.get_parameters()
-
-                # Nesterov update
-                if(nesterov==True):
-                    model.set_parameters(W-oldG)
-
-                # Get gradients
-                G = model.get_gradients()
-
-                # Adjust weights (with momentum)
-                U = lr*G + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
-                oldG = U
-
-                W = W - U
-
-                # Set gradients
-                model.set_parameters(W)
-
-            # Decay learning rate
-            lr = lr*(1-decay)
-
-            # print to screen
-            self.progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f" % (i+1, time.time()-t0, C))
-
-        return W
-
-    def progress_bar(self, iteration, total, suffix='', length=20, fill='█'):
-        """Call in a loop to create terminal progress bar
-        Args:
-            iteration   - Required  : current iteration (Int)
-            total       - Required  : total iterations (Int)
-            suffix      - Optional  : suffix string (Str)
-            length      - Optional  : character length of bar (Int)
-            fill        - Optional  : bar fill character (Str)
-        """
-        percent = ("{0:." + str(1) + "f}").format(100 * (iteration / float(total)))
-        filled = int(length * iteration // total)
-        bar = fill * filled + '-' * (length - filled)
-        print('\rProgress: |%s| %s%% %s' % (bar, percent, suffix), end='\r')
-        if iteration == total:
-            print()
-
+              lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
+        
+        return sgd.train(cost, model, x_data, y_data, maxiter, batch_size, lr, decay, momentum, nesterov, noise, cplot)
+        
+    
 
 class BFGS(object):
     """Implements the BFGS method"""
