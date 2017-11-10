@@ -51,21 +51,12 @@ class Model(object):
 
     def get_parameters(self):
         """ Collects all parameters and returns a flat array """
-        R = []
-        for L in self._layers:
-            R.append(L.get_parameters())
-            
-        return np.concatenate(R)
+        return np.concatenate([L.get_parameters() for L in self._layers]).ravel()
 
     def get_gradients(self):
         """ Collects all gradients and returns a flat array """
-        R = []
-        for L in self._layers:
-            R.append(L.get_gradients())
-            
-        return np.concatenate(R)
-    
-    
+        return np.concatenate([L.get_gradients() for L in self._layers]).ravel()
+
     def get_layer(self, N):
         if(N > len(self._layers)):
             print("Layer does not exist")
