@@ -18,40 +18,46 @@ class actfunc(object):
 class linear(actfunc):
     """ linear pass through """
     
-    def activation(self, x):
+    @staticmethod
+    def activation(x):
         return x
-
-    def gradient(self, x):
+    @staticmethod
+    def gradient(x):
         return np.ones(x.shape)
     
 class sigmoid(actfunc):
     """ The sigmoid """
 
-    def activation(self, x):   
+    @staticmethod
+    def activation(x):   
         return 1.0/(1+np.exp(-x))
-   
-    def gradient(self, x):
+    
+    @staticmethod
+    def gradient(x):
         e = np.exp(x)
         return e/((1+e)**2)
     
 class tanh(actfunc):
     """ The tanh """
 
-    def activation(self, x):   
+    @staticmethod
+    def activation(x):   
         return np.tanh(x)
-   
-    def gradient(self, x):
+    @staticmethod
+    def gradient(x):
         return 1.0/(np.cosh(x)**2)
 
     
 class softmax(actfunc):
     """ Softmax """
     
-    def activation(self,x):
+    @staticmethod
+    def activation(x):
         E = np.exp(x)
         S = np.sum(E,axis=0) 
     
         return np.divide(E, S[np.newaxis,:])
-        
-    def gradient(self, x):
+       
+    @staticmethod    
+    def gradient(x):
         return 0

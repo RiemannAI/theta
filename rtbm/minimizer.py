@@ -113,7 +113,6 @@ class CMA(object):
         self._num_cores = cores
 
 
-
 class SGD(object):
     """Stochastic gradient descent"""
 

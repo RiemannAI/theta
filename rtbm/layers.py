@@ -50,7 +50,13 @@ class Layer(object):
         """ Returns total # parameters """
         return self._Np
 
-
+    def set_bounds(self, param_bound):
+        # Set bounds
+        lower_bounds = [-param_bound for _ in range(self._Np)]
+        upper_bounds = [ param_bound for _ in range(self._Np)]
+        self._bounds = [lower_bounds, upper_bounds]
+        
+        
 class NormAddLayer(Layer):
     """ Linearly combines inputs with outputs normalized by sum of weights """
     """ (no bias) """
@@ -60,10 +66,7 @@ class NormAddLayer(Layer):
         self._Nout = Nout
 
         # Set paramter bounds
-        lower_bounds = [-param_bound for _ in range(self._Np)]
-        upper_bounds = [ param_bound for _ in range(self._Np)]
-
-        self._bounds = [lower_bounds, upper_bounds]
+        self.set_bounds(param_bound)
 
         # Parameter init
         self._w = np.random.uniform(-param_bound, param_bound,(Nout,Nin)).astype(complex)
@@ -111,28 +114,26 @@ class Linear(Layer):
         self._Nout = Nout
         self._Np = Nin*Nout+Nout
 
-        # Set bounds
-        lower_bounds = [-param_bound for _ in range(self._Np)]
-        upper_bounds = [ param_bound for _ in range(self._Np)]
-        self._bounds = [lower_bounds, upper_bounds]
+        self.set_bounds(param_bound)
 
         # Parameter init
         self._w = W_init.getinit((Nout,Nin) ).astype(float)
         self._b = B_init.getinit((Nout,1) ).astype(float)
 
+    
 
     def get_parameters(self):
         """ Returns the parameters as a flat array
             [b,w]
         """
 
-        return np.concatenate([self._b.flatten(),self._w.flatten()])
+        return np.concatenate((self._b.flatten(),self._w.flatten()))
 
     def get_gradients(self):
         """ Returns gradients as a flat array
             [b,w]
         """
-        return np.concatenate([self._gradB.flatten(),self._gradW.flatten()])
+        return np.concatenate((self._gradB.flatten(),self._gradW.flatten()))
 
 
     def feedin(self, X, grad_calc=False):
@@ -180,34 +181,32 @@ class Linear(Layer):
 class NonLinear(Layer):
     """ Non-Linear layer """
 
-    def __init__(self, Nin, Nout, activation=tanh(), W_init=glorot_uniform(), B_init=null(), param_bound=10):
+    def __init__(self, Nin, Nout, activation=tanh, W_init=glorot_uniform(), B_init=null(), param_bound=10):
         self._Nin  = Nin
         self._Nout = Nout
         self._Np = Nin*Nout+Nout
         self._act = activation
 
         # Set bounds
-        lower_bounds = [-param_bound for _ in range(self._Np)]
-        upper_bounds = [ param_bound for _ in range(self._Np)]
-        self._bounds = [lower_bounds, upper_bounds]
-
+        self.set_bounds(param_bound)
+        
         # Parameter init
         self._w = W_init.getinit((Nout,Nin)).astype(float)
         self._b = B_init.getinit((Nout,1)).astype(float)
 
-
+        
     def get_parameters(self):
         """ Returns the parameters as a flat array
             [b,w]
         """
 
-        return np.concatenate([self._b.flatten(),self._w.flatten()])
+        return np.concatenate((self._b.flatten(),self._w.flatten()))
 
     def get_gradients(self):
         """ Returns gradients as a flat array
             [b,w]
         """
-        return np.concatenate([self._gradB.flatten(),self._gradW.flatten()])
+        return np.concatenate((self._gradB.flatten(),self._gradW.flatten()))
 
 
     def feedin(self, X, grad_calc=False):
@@ -373,24 +372,24 @@ class DiagExpectationUnitLayer(Layer):
 
         self._Np = 2*self._Nout+self._Nout*self._Nin
 
-        # Set B bounds
-        lower_bounds = [-param_bound for _ in range(self._Np)]
-        upper_bounds = [ param_bound for _ in range(self._Np)]
-
-        # Set W bounds
-        index = self._Np-self._q.shape[0]-self._w.shape[0]
-        lower_bounds[index:] = [-param_bound]*self._w.shape[0]
-        upper_bounds[index:] = [param_bound]*self._w.shape[0]
-
-        # set q bounds
-        index = self._Np-self._q.shape[0]
-        lower_bounds[index:] = [1E-5]*self._q.shape[0]
-        upper_bounds[index:] = [param_bound]*self._q.shape[0]
-
-        self._bounds = [lower_bounds, upper_bounds]
-
+        #Set bounds
+        self.set_bounds(param_bound)
+        
         """ ToDo: bound check for init """
 
+    def set_bounds(self, param_bound):   
+        # Set bounds
+        lower_bounds = [-param_bound for _ in range(self._Np)]
+        upper_bounds = [ param_bound for _ in range(self._Np)]
+        self._bounds = [lower_bounds, upper_bounds]
+
+        # set special q bounds
+        index = self._Np-self._q.shape[0]
+        lower_bounds[index:] = [1e-5]*self._q.shape[0]
+        upper_bounds[index:] = [param_bound]*self._q.shape[0]
+
+        
+        
     def show_activation(self, N, bound=2):
         """
             Plots the Nth activation function on
@@ -424,16 +423,16 @@ class DiagExpectationUnitLayer(Layer):
             self._vWb = vWb
 
         if(self._phase==1):
-            return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, True))
+            return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, mode=1))
         else:
-            return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, False))
+            return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, mode=2))
 
     def get_parameters(self):
         """ Returns the parameters as a flat array
             [bh,w,q]
         """
 
-        return np.concatenate([1.0/self._phase*self._bh.flatten(),1.0/self._phase*self._w.flatten(),self._q.diagonal()])
+        return np.concatenate((1.0/self._phase*self._bh.flatten(),1.0/self._phase*self._w.flatten(),self._q.diagonal()))
 
     def set_parameters(self, params):
         """ Set the matrices from flat input array P
@@ -459,7 +458,7 @@ class DiagExpectationUnitLayer(Layer):
         """ Returns gradients as a flat array
             [b,w,q]
         """
-        return np.concatenate([self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()])
+        return np.concatenate((self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()))
 
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
@@ -486,21 +485,5 @@ class DiagExpectationUnitLayer(Layer):
 
         self._gradW = delta.dot(self._X.T).T/self._X.shape[1]
 
-        """
-        print("***")
-        print("gQ:",self._gradQ)
-        print("gQs:",self._gradQ.shape)
-        print("Qs:",self._q.shape)
-
-        print("gB:",self._gradB)
-        print("gBs:",self._gradB.shape)
-        print("Bs:",self._bh.shape)
-
-        print("gW:",self._gradW)
-        print("gWs:",self._gradW.shape)
-        print("Ws:",self._w.shape)
-        """
-
-        # Return this or total derivative ???
-
+        
         return self._w.dot(delta)

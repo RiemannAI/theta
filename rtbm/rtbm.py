@@ -46,9 +46,8 @@ class RTBM(object):
         self.mode = mode
 
         # set boundaries
-        self._upper_bounds = [init_max_param_bound] * self._size
-        self._lower_bounds = [-init_max_param_bound] * self._size
-
+        self.set_bounds(init_max_param_bound)
+        
         # Populate with random parameters using Schur complement
         # This guarantees an acceptable and instantaneous initial solution
         self.random_init(random_bound)
@@ -110,14 +109,14 @@ class RTBM(object):
         self._w = self._phase*params[index:index+self._Nv*self._Nh].reshape(self._w.shape)
         index += self._w.size
 
-        triu = np.triu_indices(self._Nv)
-        self._t[triu] = params[index:index+(self._Nv**2+self._Nv)/2]
-        self._t[np.tril_indices(self._Nv)] = self._t[triu]
+        inds = np.triu_indices_from(self._t)
+        self._t[inds] = params[index:index+(self._Nv**2+self._Nv)/2]
+        self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)/2]
         index += (self._Nv**2+self._Nv)/2
 
-        triu = np.triu_indices(self._Nh)
-        self._q[triu] = params[index:index+(self._Nh**2+self._Nh)/2]
-        self._q[np.tril_indices(self._Nh)] = self._q[triu]
+        inds = np.triu_indices_from(self._q)
+        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)/2]
+        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)/2]
 
         if not check_normalization_consistency(self._t, self._q, self._w) or \
                 not check_pos_def(self._q) or not check_pos_def(self._t):
@@ -131,8 +130,13 @@ class RTBM(object):
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
-        return [self._lower_bounds, self._upper_bounds]
+        return self._bounds
 
+    def set_bounds(self, param_bound):
+        upper_bounds = [param_bound] * self._size
+        lower_bounds = [-param_bound] * self._size
+        self._bounds = [lower_bounds, upper_bounds]
+    
     @property
     def mode(self):
         return self._mode
