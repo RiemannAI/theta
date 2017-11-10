@@ -126,7 +126,7 @@ class SGD(object):
 
     """
 
-    def train(self, cost, model, x_data, y_data=None, maxiter=100, batch_size=0,
+    def train(self, cost, model, x_data, y_data=None, scheme=None, maxiter=100, batch_size=0,
               lr=0.001, decay=0, momentum=0,nesterov=False, noise=0):
         oldG = np.zeros(model.get_parameters().shape)
 
@@ -164,13 +164,19 @@ class SGD(object):
 
                 # Nesterov update
                 if(nesterov==True):
-                    model.set_parameters(W-oldG)
+                    model.set_parameters(W-momentum*oldG)
 
                 # Get gradients
                 G = model.get_gradients()
 
-                # Adjust weights (with momentum)
-                U = lr*G + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
+                # Apply weight update scheme
+                if(scheme==None):
+                    B = lr*G
+                else:
+                    B = scheme.getupdate(G,lr)
+                   
+                # Adjust weights (add momentum + noise + nesterov)
+                U = B + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
                 oldG = U
 
                 W = W - U
