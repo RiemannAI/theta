@@ -189,14 +189,12 @@ def hidden_expectations(v, bh, w, q):
     return E
 
 
-def factorized_hidden_expectations(vWb, q, phaseI=False):
+def factorized_hidden_expectations(vWb, q, mode=1):
     """ Implements E(h|v) in factorized form for q diagonal
         Note: Does not check if q is actual diagonal (for performance)
 
         Returns [ E(h_1|v), E(h_2|v), ... ] in vectorized form (each E is an array for the vs)
     """
-    
-    # ToDo: Cytonize ! Move input linear combination out !
     
     Nh = q.shape[0]
 
@@ -210,10 +208,8 @@ def factorized_hidden_expectations(vWb, q, phaseI=False):
             print("NaN detected or negative value: ",O)   
             O[0,0] = np.abs(O[0,0])
         
-        if(phaseI==True):
-            E[i] = -1.0/(2j*np.pi)*RiemannTheta.normalized_eval(vWb[:, [i]] / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=1, epsilon=RTBM_precision, derivs=[[1]])
-        else:
-            E[i] = -1.0/(2j*np.pi)*RiemannTheta.normalized_eval(vWb[:, [i]] / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=2, epsilon=RTBM_precision, derivs=[[1]])
+        E[i] = -1.0/(2j*np.pi)*RiemannTheta.normalized_eval(vWb[:, [i]] / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=mode, epsilon=RTBM_precision, derivs=[[1]])
+
     return E
 
 
@@ -224,7 +220,7 @@ def factorized_hidden_expectation_backprop(vWb, q, mode=1):
     for i in range(0, vWb.shape[1]): 
         O = np.matrix([[q[i, i]]], dtype=complex)
        
-        Tn[:,i,:]  =  RiemannTheta.normalized_eval(vWb[:,[i]] / (2.0j * np.pi) , -O/ (2.0j * np.pi), mode=mode, derivs=np.array( [ [1], [1,1], [1,1,1] ]  )   )
+        Tn[:,i,:]  =  RiemannTheta.normalized_eval(vWb[:,[i]] / (2.0j * np.pi) , -O/ (2.0j * np.pi), mode=mode, derivs=np.array( [ [1], [1,1], [1,1,1] ]  ) , epsilon=RTBM_precision  )
     
     
     return Tn 

@@ -46,9 +46,8 @@ class RTBM(object):
         self.mode = mode
 
         # set boundaries
-        self._upper_bounds = [init_max_param_bound] * self._size
-        self._lower_bounds = [-init_max_param_bound] * self._size
-
+        self.set_bounds(init_max_param_bound)
+        
         # Populate with random parameters using Schur complement
         # This guarantees an acceptable and instantaneous initial solution
         self.random_init(random_bound)
@@ -131,8 +130,13 @@ class RTBM(object):
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
-        return [self._lower_bounds, self._upper_bounds]
+        return self._bounds
 
+    def set_bounds(self, param_bound):
+        upper_bounds = [param_bound] * self._size
+        lower_bounds = [-param_bound] * self._size
+        self._bounds = [lower_bounds, upper_bounds]
+    
     @property
     def mode(self):
         return self._mode
