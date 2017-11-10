@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import time
 from cma import CMAEvolutionStrategy
 import multiprocessing as mp
 from contextlib import closing
 import numpy as np
 from scipy.optimize import minimize
-
 import sgd
+
 
 class Resource(object):
     """Resources container for the worker load"""
@@ -114,24 +113,31 @@ class CMA(object):
         self._num_cores = cores
 
 
+
 class SGD(object):
-    """ Stochastic gradient descent
-
-        maxiter: Iterations
-        batch_size: Batch size
-        lr: learning rate
-        momentum: Momentum
-        Nesterov: Nesterov momentum
-        Noise: Gaussian noise
-        decay: Learning rate decay rate
-
-    """
+    """Stochastic gradient descent"""
 
     def train(self, cost, model, x_data, y_data=None, maxiter=100, batch_size=0,
               lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
+        """Trains the given model with stochastic gradient descent methods
+
+        :param cost: the cost fuction class
+        :param model: the model to be trained
+        :param x_data: the target data support
+        :param y_data: the target data prediction
+        :param maxiter: maximum number of allowed iterations
+        :param batch_size: the batch size
+        :param lr: learning rate
+        :param decay: learning rate decay rate
+        :param momentum: add momentum
+        :param nesterov: add nesterov momentum
+        :param noise: add gaussian noise
+        :param cplot: if True shows the cost function evolution
+        :return: dictionary with iterations and cost functions
+        """
         
-        return sgd.train(cost, model, x_data, y_data, maxiter, batch_size, lr, decay, momentum, nesterov, noise, cplot)
-        
+        return sgd.train(cost, model, x_data, y_data, maxiter, batch_size,
+                         lr, decay, momentum, nesterov, noise, cplot)
     
 
 class BFGS(object):

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 def train(cost, model, x_data, y_data, maxiter, batch_size,
-lr, decay, momentum,nesterov, noise, cplot):
+          lr, decay, momentum,nesterov, noise, cplot):
 
     oldG = np.zeros(model.get_parameters().shape)
 
@@ -67,14 +67,14 @@ lr, decay, momentum,nesterov, noise, cplot):
         # print to screen
         progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f" % (i+1, time.time()-t0, cost_hist[i]))
 
-    if(cplot==True):
-        I = (np.linspace(0, maxiter-1, maxiter))
+    I = (np.linspace(0, maxiter-1, maxiter))
+    if cplot:
         plt.figure(figsize=(3,2))
         plt.plot(I, cost_hist,"-")
         plt.ylabel("C", rotation=0, labelpad=10) 
         plt.show()
         
-    return W
+    return {'iterations': I, 'cost': cost_hist}
 
 
 
