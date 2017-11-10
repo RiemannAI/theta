@@ -110,14 +110,14 @@ class RTBM(object):
         self._w = self._phase*params[index:index+self._Nv*self._Nh].reshape(self._w.shape)
         index += self._w.size
 
-        triu = np.triu_indices(self._Nv)
-        self._t[triu] = params[index:index+(self._Nv**2+self._Nv)/2]
-        self._t[np.tril_indices(self._Nv)] = self._t[triu]
+        inds = np.triu_indices_from(self._t)
+        self._t[inds] = params[index:index+(self._Nv**2+self._Nv)/2]
+        self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)/2]
         index += (self._Nv**2+self._Nv)/2
 
-        triu = np.triu_indices(self._Nh)
-        self._q[triu] = params[index:index+(self._Nh**2+self._Nh)/2]
-        self._q[np.tril_indices(self._Nh)] = self._q[triu]
+        inds = np.triu_indices_from(self._q)
+        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)/2]
+        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)/2]
 
         if not check_normalization_consistency(self._t, self._q, self._w) or \
                 not check_pos_def(self._q) or not check_pos_def(self._t):
