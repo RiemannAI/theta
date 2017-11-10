@@ -73,6 +73,6 @@ class crossentropy(costfunction):
         return -np.sum(np.mean(np.multiply(y,lx),axis=1))
     
     @staticmethod
-    def gradient(self, x):
+    def gradient(x):
         return -1.0/y.shape[1]*y/x
   

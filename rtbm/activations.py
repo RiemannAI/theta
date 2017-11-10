@@ -41,10 +41,10 @@ class tanh(actfunc):
     """ The tanh """
 
     @staticmethod
-    def activation(self, x):   
+    def activation(x):   
         return np.tanh(x)
     @staticmethod
-    def gradient(self, x):
+    def gradient(x):
         return 1.0/(np.cosh(x)**2)
 
     
