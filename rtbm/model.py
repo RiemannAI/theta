@@ -95,3 +95,8 @@ class Model(object):
     def predict(self, x):
         """ Performs prediction with the trained model """
         return self.feed_through(x)
+
+    
+    def set_bound(self, bound):
+        for L in self._layers:
+            L.set_bounds(bound)
