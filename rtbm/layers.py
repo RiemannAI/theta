@@ -181,7 +181,7 @@ class Linear(Layer):
 class NonLinear(Layer):
     """ Non-Linear layer """
 
-    def __init__(self, Nin, Nout, activation=tanh(), W_init=glorot_uniform(), B_init=null(), param_bound=10):
+    def __init__(self, Nin, Nout, activation=tanh, W_init=glorot_uniform(), B_init=null(), param_bound=10):
         self._Nin  = Nin
         self._Nout = Nout
         self._Np = Nin*Nout+Nout
