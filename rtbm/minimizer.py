@@ -173,7 +173,7 @@ class SGD(object):
                 if(scheme==None):
                     B = lr*G
                 else:
-                    B = scheme.getupdate(G)*lr
+                    B = scheme.getupdate(G,lr)
                    
                 # Adjust weights (add momentum + noise + nesterov)
                 U = B + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
