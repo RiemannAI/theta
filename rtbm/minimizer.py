@@ -39,10 +39,13 @@ def worker_gradient(params):
 
 class CMA(object):
     """Implements the GA using CMA library"""
-    def __init__(self, parallel=False):
+    def __init__(self, parallel=False, ncores=0):
         super(CMA, self).__init__()
         if parallel:
-            self.num_cores = mp.cpu_count()
+            if(ncores==0):
+                self.num_cores = mp.cpu_count()
+            else:
+                self.num_cores = min(ncores,mp.cpu_count())
         else:
             self.num_cores = 1
         print('CMA on %d cpu(s) enabled' % self.num_cores)
