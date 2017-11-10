@@ -73,13 +73,14 @@ class Model(object):
             A_L.append(bl)
             A_U.append(bu)
          
-        self._lower_bounds = np.concatenate(A_L).tolist()
-        self._upper_bounds = np.concatenate(A_U).tolist()
-
+        lower_bounds = np.concatenate(A_L).tolist()
+        upper_bounds = np.concatenate(A_U).tolist()
+        self._bounds = [lower_bounds,upper_bounds]
+        
     def get_bounds(self):
         """ Returns the combined bounds of all layers """
        
-        return self._lower_bounds, self._upper_bounds
+        return self._bounds
 
     def set_parameters(self, params):
         """ Set to the given parameters """
