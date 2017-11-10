@@ -6,14 +6,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train(cost, model, x_data, y_data, maxiter, batch_size,
+def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
           lr, decay, momentum,nesterov, noise, cplot):
+    """Trains the given model with stochastic gradient descent methods
+
+    :param cost: the cost fuction class
+    :param model: the model to be trained
+    :param x_data: the target data support
+    :param y_data: the target data prediction
+    :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
+    :param maxiter: maximum number of allowed iterations
+    :param batch_size: the batch size
+    :param lr: learning rate
+    :param decay: learning rate decay rate
+    :param momentum: add momentum
+    :param nesterov: add nesterov momentum
+    :param noise: add gaussian noise
+    :param cplot: if True shows the cost function evolution
+    :return: dictionary with iterations and cost functions
+    """
 
     oldG = np.zeros(model.get_parameters().shape)
 
     # Generate batches
     RE = 0
-    if(batch_size > 0):
+    if batch_size > 0:
         BS = x_data.shape[1] / batch_size
         if(x_data.shape[1] % batch_size > 0):
             RE = 1
@@ -52,8 +69,13 @@ def train(cost, model, x_data, y_data, maxiter, batch_size,
             # Get gradients
             G = model.get_gradients()
 
+            if scheme is not None:
+                B= scheme.getupdate(G, lr)
+            else:
+                B = lr*G
+
             # Adjust weights (with momentum)
-            U = lr*G + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
+            U = B + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
             oldG = U
 
             W = W - U
