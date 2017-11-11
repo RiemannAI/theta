@@ -454,8 +454,8 @@ class DiagExpectationUnitLayer(Layer):
             [b,w,q]
         """
         D[0:self._Nout] = self._gradB.view().ravel()
-        D[self._Nout:self._Nout*self._Nin] = self._gradW.view().ravel()
-        D[self._Nout*self._Nin:] = self._gradQ.diagonal().view().ravel()
+        D[self._Nout:self._Nout*(1+self._Nin)] = self._gradW.view().ravel()
+        D[self._Nout*(1+self._Nin):]  = self._gradQ.diagonal().view().ravel()
     
         #return np.concatenate((self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()))
 
