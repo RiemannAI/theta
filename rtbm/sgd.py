@@ -47,30 +47,45 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
 
     cost_hist = np.zeros(maxiter)
     
+    # Get inital W parameter
+    W = model.get_parameters()
+    
     # Loop over epoches
     for i in range(0, maxiter):
 
         # Loop over batches
         for b in range(0, BS+RE):
-
+            
             data_x = x_data[:,b*batch_size:(b+1)*batch_size]
             data_y = y_data[:,b*batch_size:(b+1)*batch_size]
-
+            
+            #tic = time.clock()
             Xout = model.feed_through(data_x, True)
             cost_hist[i] = cost.cost(Xout,data_y)
             model.backprop(cost.gradient(Xout,data_y))
 
-            W = model.get_parameters()
+            #toc = time.clock()
+            #print("Feeding: ",(toc-tic))
+          
+            #tic = time.clock()
+          
+            
+            #toc = time.clock()
+            #print("GetW: ",(toc-tic))
 
             # Nesterov update
             if(nesterov==True):
                 model.set_parameters(W-momentum*oldG)
 
+            #tic = time.clock()
+          
             # Get gradients
             G = model.get_gradients()
+            #toc = time.clock()
+            #print("GetG: ",(toc-tic))
 
             if scheme is not None:
-                B= scheme.getupdate(G, lr)
+                B = scheme.getupdate(G, lr)
             else:
                 B = lr*G
 
@@ -81,8 +96,14 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
             W = W - U
 
             # Set gradients
+            #tic = time.clock()
+          
             model.set_parameters(W)
+            #toc = time.clock()
+            #print("SetW: ",(toc-tic))
 
+          
+            
         # Decay learning rate
         lr = lr*(1-decay)
 
