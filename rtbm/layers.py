@@ -191,22 +191,27 @@ class NonLinear(Layer):
         self.set_bounds(param_bound)
         
         # Parameter init
-        self._w = W_init.getinit((Nout,Nin)).astype(float)
-        self._b = B_init.getinit((Nout,1)).astype(float)
+        self._w = W_init.getinit((Nout,Nin))#.astype(float)
+        self._b = B_init.getinit((Nout,1))#.astype(float)
 
         
-    def get_parameters(self):
+    def get_parameters(self,D):
         """ Returns the parameters as a flat array
             [b,w]
         """
+        D[0:self._Nout] = self._b.view().ravel()
+        D[self._Nout:] = self._w.view().ravel()
+        
+        #return np.concatenate((self._b.view().ravel(),self._w.view().ravel()))
 
-        return np.concatenate((self._b.flatten(),self._w.flatten()))
-
-    def get_gradients(self):
+    def get_gradients(self, D):
         """ Returns gradients as a flat array
             [b,w]
         """
-        return np.concatenate((self._gradB.flatten(),self._gradW.flatten()))
+        D[0:self._Nout] = self._gradB.view().ravel()
+        D[self._Nout:] = self._gradW.view().ravel()
+        
+     
 
 
     def feedin(self, X, grad_calc=False):

@@ -19,6 +19,10 @@ class Model(object):
             
             # Increase the parameter counter
             self._Np = self._Np + layer.size()
+            
+            # Recompute parameter and gradient store matrix
+            self._P = np.empty(0)
+            self._G = np.empty(self._Np)
         
             # Re-compute bound vectors
             self.build_bounds()
@@ -51,11 +55,34 @@ class Model(object):
 
     def get_parameters(self):
         """ Collects all parameters and returns a flat array """
-        return np.concatenate([L.get_parameters() for L in self._layers]).ravel()
-
+        idx = 0
+        
+        if(len(self._P)==0):
+            # Create
+            self._P = np.empty(self._Np)
+            
+            # Loop over layers and fill R
+            for L in self._layers:
+                lp = idx+L.size()
+                L.get_parameters(self._P[idx:lp])
+                idx = lp
+       
+    
+        return self._P.view()
+    
     def get_gradients(self):
         """ Collects all gradients and returns a flat array """
-        return np.concatenate([L.get_gradients() for L in self._layers]).ravel()
+        idx = 0
+        
+        # Loop over layers and fill R
+        for L in self._layers:
+            lp = idx+L.size()
+            L.get_gradients(self._G[idx:lp])
+            idx = lp
+    
+        return self._G.view()
+    
+    #return np.concatenate([L.get_gradients() for L in self._layers]).ravel()
 
     def get_layer(self, N):
         if(N > len(self._layers)):
@@ -84,12 +111,14 @@ class Model(object):
 
     def set_parameters(self, params):
         """ Set to the given parameters """
+        self._P = params
+        
         Nt = 0
         
         for L in self._layers:
-            
-            L.set_parameters(params[Nt:Nt+L.size()])
-            Nt += L.size()
+            lp=Nt+L.size()
+            L.set_parameters(params[Nt:lp])
+            Nt = lp
 
         return True
 
