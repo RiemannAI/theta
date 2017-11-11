@@ -25,7 +25,7 @@ class Layer(object):
         pass
 
     @abstractmethod
-    def get_parameters(self):
+    def get_parameters(self,D):
         pass
 
     @abstractmethod
@@ -73,7 +73,7 @@ class NormAddLayer(Layer):
 
         self._Np = self._Nout*self._Nin
 
-    def get_parameters(self):
+    def get_parameters(self,D):
         """ Returns the parameters as a flat array
             [w]
         """
@@ -122,18 +122,23 @@ class Linear(Layer):
 
     
 
-    def get_parameters(self):
+    def get_parameters(self,D):
         """ Returns the parameters as a flat array
             [b,w]
         """
+        D[0:self._Nout] = self._b.view().ravel()
+        D[self._Nout:] = self._w.view().ravel()
+        
+        #return np.concatenate((self._b.view().ravel(),self._w.view().ravel()))
 
-        return np.concatenate((self._b.flatten(),self._w.flatten()))
-
-    def get_gradients(self):
+    def get_gradients(self,D):
         """ Returns gradients as a flat array
             [b,w]
         """
-        return np.concatenate((self._gradB.flatten(),self._gradW.flatten()))
+        D[0:self._Nout] = self._gradB.view().ravel()
+        D[self._Nout:] = self._gradW.view().ravel()
+        
+        #return np.concatenate((self._gradB.view().ravel(),self._gradW.view().ravel()))
 
 
     def feedin(self, X, grad_calc=False):
@@ -204,13 +209,15 @@ class NonLinear(Layer):
         
         #return np.concatenate((self._b.view().ravel(),self._w.view().ravel()))
 
-    def get_gradients(self, D):
+    def get_gradients(self,D):
         """ Returns gradients as a flat array
             [b,w]
         """
         D[0:self._Nout] = self._gradB.view().ravel()
         D[self._Nout:] = self._gradW.view().ravel()
         
+        #return np.concatenate((self._gradB.view().ravel(),self._gradW.view().ravel()))
+
      
 
 
@@ -272,13 +279,13 @@ class SoftMaxLayer(Layer):
         self._Np = 0
         self._param_bound = 0
 
-    def get_parameters(self):
+    def get_parameters(self,D):
         """ Returns the parameters as a flat array
             []
         """
         return np.empty(0)
 
-    def get_gradients(self):
+    def get_gradients(self,D):
         """ Returns gradients as a flat array
             []
         """
@@ -329,7 +336,7 @@ class MaxPosLayer(Layer):
         self._param_bound = 0
         self._startPos = startPos
 
-    def get_parameters(self):
+    def get_parameters(self,D):
         """ Returns the parameters as a flat array
             []
         """
@@ -432,13 +439,27 @@ class DiagExpectationUnitLayer(Layer):
         else:
             return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, mode=2))
 
-    def get_parameters(self):
+    def get_parameters(self,D):
         """ Returns the parameters as a flat array
             [bh,w,q]
         """
+        D[0:self._Nout] = 1.0/self._phase*self._bh.ravel()
+        D[self._Nout:self._Nout*(1+self._Nin)] = 1.0/self._phase*self._w.ravel()
+        D[self._Nout*(1+self._Nin):] = 1.0/self._phase*self._q.diagonal().ravel()
+        
+        #return np.concatenate((1.0/self._phase*self._bh.flatten(),1.0/self._phase*self._w.flatten(),self._q.diagonal()))
 
-        return np.concatenate((1.0/self._phase*self._bh.flatten(),1.0/self._phase*self._w.flatten(),self._q.diagonal()))
+    def get_gradients(self,D):
+        """ Returns gradients as a flat array
+            [b,w,q]
+        """
+        D[0:self._Nout] = self._gradB.view().ravel()
+        D[self._Nout:self._Nout*self._Nin] = self._gradW.view().ravel()
+        D[self._Nout*self._Nin:] = self._gradQ.diagonal().view().ravel()
+    
+        #return np.concatenate((self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()))
 
+    
     def set_parameters(self, params):
         """ Set the matrices from flat input array P
             P = [bh,w,q]
@@ -459,12 +480,7 @@ class DiagExpectationUnitLayer(Layer):
         """Returns two arrays with min and max of each parameter for the GA"""
         return self._bounds
 
-    def get_gradients(self):
-        """ Returns gradients as a flat array
-            [b,w,q]
-        """
-        return np.concatenate((self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()))
-
+    
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
 

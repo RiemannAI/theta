@@ -69,6 +69,7 @@ class Model(object):
        
     
         return self._P.view()
+        #return np.concatenate([L.get_parameters() for L in self._layers]).ravel()
     
     def get_gradients(self):
         """ Collects all gradients and returns a flat array """
@@ -82,7 +83,7 @@ class Model(object):
     
         return self._G.view()
     
-    #return np.concatenate([L.get_gradients() for L in self._layers]).ravel()
+        #return np.concatenate([L.get_gradients() for L in self._layers]).ravel()
 
     def get_layer(self, N):
         if(N > len(self._layers)):
@@ -111,7 +112,8 @@ class Model(object):
 
     def set_parameters(self, params):
         """ Set to the given parameters """
-        self._P = params
+        # Store locally in model class
+        #self._P = params.view()
         
         Nt = 0
         

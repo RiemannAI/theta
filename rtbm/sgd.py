@@ -26,8 +26,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     :return: dictionary with iterations and cost functions
     """
 
-    oldG = np.zeros(model.get_parameters().shape)
-
+    
     # Generate batches
     RE = 0
     if batch_size > 0:
@@ -49,60 +48,56 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     
     # Get inital W parameter
     W = model.get_parameters()
-    
+    oldG = np.zeros(W.shape)
+
     # Loop over epoches
     for i in range(0, maxiter):
 
         # Loop over batches
         for b in range(0, BS+RE):
             
+            # Prepare data    
             data_x = x_data[:,b*batch_size:(b+1)*batch_size]
             data_y = y_data[:,b*batch_size:(b+1)*batch_size]
             
             #tic = time.clock()
+            
+            # Feedforward
             Xout = model.feed_through(data_x, True)
+            
+            # Calc cost
             cost_hist[i] = cost.cost(Xout,data_y)
+            
+            # Backprop
             model.backprop(cost.gradient(Xout,data_y))
 
-            #toc = time.clock()
-            #print("Feeding: ",(toc-tic))
-          
-            #tic = time.clock()
-          
-            
-            #toc = time.clock()
-            #print("GetW: ",(toc-tic))
-
-            # Nesterov update
-            if(nesterov==True):
-                model.set_parameters(W-momentum*oldG)
-
-            #tic = time.clock()
-          
             # Get gradients
             G = model.get_gradients()
-            #toc = time.clock()
-            #print("GetG: ",(toc-tic))
-
+         
             if scheme is not None:
-                B = scheme.getupdate(G, lr)
+                G = scheme.getupdate(G, lr)
             else:
-                B = lr*G
+                G = lr*G
 
             # Adjust weights (with momentum)
-            U = B + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
-            oldG = U
-
-            W = W - U
-
-            # Set gradients
-            #tic = time.clock()
+            if(momentum!=0):
+                G = G + momentum*oldG 
+                oldG = G
+            
+            # Set new weights
+            if(nF == 0):
+                W = W - G
+            else:
+                W = W - G - np.random.normal(0, lr/(1+i)**noise, oldG.shape)
           
-            model.set_parameters(W)
-            #toc = time.clock()
-            #print("SetW: ",(toc-tic))
-
-          
+        
+            if(nesterov==True):
+                # Nesterov update
+                 model.set_parameters(W-momentum*oldG)
+            else:    
+                model.set_parameters(W)
+            
+            
             
         # Decay learning rate
         lr = lr*(1-decay)
