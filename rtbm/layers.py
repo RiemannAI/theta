@@ -7,13 +7,9 @@ from mathtools import factorized_hidden_expectations,factorized_hidden_expectati
 from riemann_theta.riemann_theta import RiemannTheta
 from initializers import uniform, normal, glorot_uniform, glorot_normal, null
 from activations import sigmoid, tanh
-
-import time
+from rtbm import RTBM
 
 import matplotlib.pyplot as plt
-
-from multiprocessing import Pool
-pool = Pool()
 
 
 class Layer(object):
@@ -372,7 +368,7 @@ class DiagExpectationUnitLayer(Layer):
 
         self._Np = 2*self._Nout+self._Nout*self._Nin
 
-        #Set bounds
+        # Set bounds
         self.set_bounds(param_bound)
         
         """ ToDo: bound check for init """
@@ -387,8 +383,6 @@ class DiagExpectationUnitLayer(Layer):
         index = self._Np-self._q.shape[0]
         lower_bounds[index:] = [1e-5]*self._q.shape[0]
         upper_bounds[index:] = [param_bound]*self._q.shape[0]
-
-        
         
     def show_activation(self, N, bound=2):
         """
@@ -410,7 +404,6 @@ class DiagExpectationUnitLayer(Layer):
                 E = -1.0/(2j*np.pi)*1.0/self._phase*RiemannTheta.normalized_eval(D / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=2, derivs=[[1]])
 
             plt.plot(1.0/self._phase*D.flatten(), E.flatten(),"b-")
-
 
     def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
@@ -487,3 +480,77 @@ class DiagExpectationUnitLayer(Layer):
 
         
         return self._w.dot(delta)
+
+
+class ThetaUnitLayer(Layer):
+    """ A layer of theta units """
+
+    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1):
+        self._Nin = Nin
+        self._Nout = Nout
+
+        self._rtbm = []
+        for m in range(Nout):
+            self._rtbm.append(RTBM(Nin, Nhidden, init_max_param_bound=init_max_param_bound,
+                                   random_bound=random_bound, phase=phase))
+
+        self._Np = np.sum([r.size() for r in self._rtbm])
+
+        self._bounds = None
+        self.set_bounds()
+
+    def feedin(self, X, grad_calc=False):
+        """ Feeds in the data X and returns the output of the layer
+            Note: Vectorized
+        """
+        result = np.zeros(shape=(self._Nout, X.shape[1]), dtype=float)
+        for i, m in enumerate(self._rtbm):
+            result[i] = m(X)
+        return result
+
+    def get_parameters(self):
+        """ Returns the parameters as a flat array
+            [bh,w,q]
+        """
+        params = np.zeros(shape=(self._Np))
+
+        index = 0
+        for m in self._rtbm:
+            params[index:index+m.size()] = m.get_parameters()
+            index += m.size()
+
+        return params
+
+    def set_parameters(self, params):
+        """ Set parameters"""
+        index = 0
+        for m in self._rtbm:
+            if not m.set_parameters(params[index:index+m.size()]):
+                return False
+            index += 0
+        return True
+
+    def set_bounds(self, *params):
+        """Compute bounds"""
+        lower_bounds = np.zeros(shape=(self._Np))
+        upper_bounds = np.zeros(shape=(self._Np))
+        index = 0
+        for m in self._rtbm:
+            bound = m.get_bounds()
+            lower_bounds[index:index+m.size()] = bound[0]
+            upper_bounds[index:index+m.size()] = bound[1]
+            index += m.size()
+        self._bounds = [lower_bounds.tolist(), upper_bounds.tolist()]
+
+    def get_bounds(self):
+        """Returns two arrays with min and max of each parameter for the GA"""
+        return self._bounds
+
+    def get_gradients(self):
+        """ Returns gradients as a flat array [b,w,q]
+        """
+        pass
+
+    def backprop(self, E):
+        """ Propagates the error E through the layer and stores gradient """
+        pass
