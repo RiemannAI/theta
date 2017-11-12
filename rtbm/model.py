@@ -88,7 +88,8 @@ class Model(object):
         
         for L in self._layers:
             
-            L.set_parameters(params[Nt:Nt+L.size()])
+            if not L.set_parameters(params[Nt:Nt+L.size()]):
+                return False
             Nt += L.size()
 
         return True

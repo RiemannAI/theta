@@ -60,6 +60,7 @@ class NormAddLayer(Layer):
     def __init__(self, Nin, Nout, param_bound=10):
         self._Nin = Nin
         self._Nout = Nout
+        self._Np = self._Nout*self._Nin
 
         # Set paramter bounds
         self.set_bounds(param_bound)
@@ -67,7 +68,6 @@ class NormAddLayer(Layer):
         # Parameter init
         self._w = np.random.uniform(-param_bound, param_bound,(Nout,Nin)).astype(complex)
 
-        self._Np = self._Nout*self._Nin
 
     def get_parameters(self):
         """ Returns the parameters as a flat array
