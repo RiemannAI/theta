@@ -215,7 +215,7 @@ class NonLinear(Layer):
         """
         # Calc linear map to activation ( X = previous outputs)
         L = self._w.dot(X)+self._b;
-
+        
         # Calc and store activation grad
         if(grad_calc==True):
             self._pO = X
@@ -354,7 +354,7 @@ class MaxPosLayer(Layer):
 class DiagExpectationUnitLayer(Layer):
     """ A layer of log-gradient theta units """
 
-    def __init__(self, Nin, Nout, W_init=uniform(2,0),B_init=uniform(2,0),Q_init=uniform(5,5+1e-5), param_bound=11, phase=1):
+    def __init__(self, Nin, Nout, W_init=glorot_uniform(),B_init=null(),Q_init=uniform(5,10+1e-5), param_bound=16, phase=1):
         self._Nin = Nin
         self._Nout = Nout
         self._phase = phase
@@ -407,32 +407,18 @@ class DiagExpectationUnitLayer(Layer):
             if(self._phase==1):
                 E = -1.0/(2j*np.pi)*RiemannTheta.normalized_eval(D / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=1, derivs=[[1]])
             else:
-                E = -1.0/(2j*np.pi)*1.0/self._phase*RiemannTheta.normalized_eval(D / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=2, derivs=[[1]])
+                E = -1.0/(2j*np.pi)*self._phase*RiemannTheta.normalized_eval(D / (2.0j * np.pi), -O/ (2.0j * np.pi), mode=2, derivs=[[1]])
 
             plt.plot(1.0/self._phase*D.flatten(), E.flatten(),"b-")
 
 
-    def feedin(self, X, grad_calc=False):
-        """ Feeds in the data X and returns the output of the layer
-            Note: Vectorized
-        """
-        vWb = np.transpose(X).dot(self._w)+self._bh.T
-
-        if(grad_calc==True):
-            self._X = X
-            self._vWb = vWb
-
-        if(self._phase==1):
-            return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, mode=1))
-        else:
-            return 1.0/self._phase*np.array(factorized_hidden_expectations(vWb,self._q, mode=2))
-
+    
     def get_parameters(self):
         """ Returns the parameters as a flat array
             [bh,w,q]
         """
 
-        return np.concatenate((1.0/self._phase*self._bh.flatten(),1.0/self._phase*self._w.flatten(),self._q.diagonal()))
+        return np.concatenate((self._phase*self._bh.flatten(),1.0/self._phase*self._w.flatten(),self._q.diagonal()))
 
     def set_parameters(self, params):
         """ Set the matrices from flat input array P
@@ -460,30 +446,43 @@ class DiagExpectationUnitLayer(Layer):
         """
         return np.concatenate((self._gradB.flatten(),self._gradW.flatten(),self._gradQ.diagonal()))
 
+    def feedin(self, X, grad_calc=False):
+        """ Feeds in the data X and returns the output of the layer
+            Note: Vectorized
+        """
+        vWb = np.transpose(X).dot(self._w)+self._bh.T
+
+        if(grad_calc==True):
+            self._X = X
+            self._vWb = vWb
+
+        if(self._phase==1):
+            return factorized_hidden_expectations(vWb, self._q, mode=1)
+        else:
+            return self._phase*factorized_hidden_expectations(vWb, self._q, mode=2)
+
+    
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
-
+        
         if(self._phase==1):
             Tn = factorized_hidden_expectation_backprop(self._vWb, self._q, mode=1)
         else:
             Tn = factorized_hidden_expectation_backprop(self._vWb, self._q, mode=2)
 
-        T1nSquare = Tn[0]*Tn[0]*1.0/(2j*np.pi)**2
-
-        kappa = -(Tn[1]*1.0/(2j*np.pi)**2 - T1nSquare)
+        kappa = -( ( Tn[1] - Tn[0]*Tn[0] )*1.0/(2j*np.pi)**2 )*1.0/self._phase**2
 
         # B grad
         self._gradB = np.mean(kappa*E,axis=1,keepdims=True)
 
         # Q grad
-        rho = (Tn[2] - Tn[0]*Tn[1])*E*1.0/(2j*np.pi)**3
+        rho = + ( (Tn[2] - Tn[0]*Tn[1] )*E*1.0/(2j*np.pi)**3 )*1.0/self._phase**3
 
-        self._gradQ = np.diag(np.mean(rho, axis=1).flatten())
+        self._gradQ = 0.5 * np.diag(np.mean(rho, axis=1).flatten())
 
         # W grad
         delta = kappa*E
 
         self._gradW = delta.dot(self._X.T).T/self._X.shape[1]
 
-        
-        return self._w.dot(delta)
+        return 1.0/self._phase*self._w.dot(delta)
