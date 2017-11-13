@@ -102,3 +102,46 @@ class Model(object):
     def set_bound(self, bound):
         for L in self._layers:
             L.set_bounds(bound)
+            
+            
+    def gradient_check(self, g, x, epsilon):
+        """ Performs numerical check of gth gradient 
+            g      : id of gradient to check 
+            x      : input data
+            epsilon: infinitesimal variation of parameter 
+        """
+        print("I: ",x)
+        
+        # Prepare parameters
+        W = self.get_parameters()
+        print("P: ", W)
+        O = self.feed_through(x, True)
+        print("O: ",O)
+        print("=======")
+        
+        Wp = W.copy()
+        Wm = W.copy()
+        
+        Wp[g] = Wp[g] + epsilon
+        Wm[g] = Wm[g] - epsilon
+        
+        # Calc numerical derivative
+        self.set_parameters(Wp)
+        P = self.feed_through(x)
+        self.set_parameters(Wm)
+        M = self.feed_through(x)
+        
+        D = (P-M)/(2*epsilon)
+        
+        print g,"th (mean) numerical gradient: "
+        print(np.mean(D,axis=1))
+        
+        # Calc backprop derivative
+        self.set_parameters(W)
+        
+        
+        self.backprop(np.ones(O.shape))
+        G = self.get_gradients()
+        
+        print g,"th (mean) backprop gradient: "
+        print(G[g])
