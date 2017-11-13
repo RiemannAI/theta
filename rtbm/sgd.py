@@ -51,14 +51,19 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     oldG = np.zeros(W.shape)
 
     # Loop over epoches
+    shuffled_indexes = np.arange(x_data.shape[1])
     for i in range(0, maxiter):
+
+        np.random.shuffle(shuffled_indexes)
+        train_data_x = x_data[:, shuffled_indexes]
+        train_data_y = y_data[:, shuffled_indexes]
 
         # Loop over batches
         for b in range(0, BS+RE):
             
             # Prepare data    
-            data_x = x_data[:,b*batch_size:(b+1)*batch_size]
-            data_y = y_data[:,b*batch_size:(b+1)*batch_size]
+            data_x = train_data_x[:,b*batch_size:(b+1)*batch_size]
+            data_y = train_data_y[:,b*batch_size:(b+1)*batch_size]
             
             # Feedforward
             Xout = model.feed_through(data_x, True)
