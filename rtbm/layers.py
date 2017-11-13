@@ -485,14 +485,25 @@ class DiagExpectationUnitLayer(Layer):
 class ThetaUnitLayer(Layer):
     """ A layer of theta units """
 
-    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1):
+    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
+        """Allocate a Theta Unit Layer working in probability mode
+
+        :param Nin: number of input nodes
+        :param Nout: number of output nodes (i.e. # of RTBMs)
+        :param Nhidden: number of hidden layers per RTBM
+        :param init_max_param_bound: maximum bound value for CMA
+        :param random_bound: the maximum value for the random matrix X used by the Schur complement
+        :param phase: number which multiplies w and bh
+        :param diagonal_T: force T diagonal, by default T is symmetric
+        """
+
         self._Nin = Nin
         self._Nout = Nout
 
         self._rtbm = []
         for m in range(Nout):
             self._rtbm.append(RTBM(Nin, Nhidden, init_max_param_bound=init_max_param_bound,
-                                   random_bound=random_bound, phase=phase))
+                                   random_bound=random_bound, phase=phase, diagonal_T=diagonal_T))
 
         self._Np = np.sum([r.size() for r in self._rtbm])
 
