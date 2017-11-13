@@ -26,8 +26,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     :return: dictionary with iterations and cost functions
     """
 
-    oldG = np.zeros(model.get_parameters().shape)
-
+    
     # Generate batches
     RE = 0
     if batch_size > 0:
@@ -47,42 +46,57 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
 
     cost_hist = np.zeros(maxiter)
     
+    # Get inital W parameter
+    W = model.get_parameters()
+    oldG = np.zeros(W.shape)
+
     # Loop over epoches
     for i in range(0, maxiter):
 
         # Loop over batches
         for b in range(0, BS+RE):
-
+            
+            # Prepare data    
             data_x = x_data[:,b*batch_size:(b+1)*batch_size]
             data_y = y_data[:,b*batch_size:(b+1)*batch_size]
-
+            
+            # Feedforward
             Xout = model.feed_through(data_x, True)
+            
+            # Calc cost
             cost_hist[i] = cost.cost(Xout,data_y)
+            
+            # Backprop
             model.backprop(cost.gradient(Xout,data_y))
-
-            W = model.get_parameters()
-
-            # Nesterov update
-            if(nesterov==True):
-                model.set_parameters(W-momentum*oldG)
 
             # Get gradients
             G = model.get_gradients()
-
+         
             if scheme is not None:
-                B= scheme.getupdate(G, lr)
+                G = scheme.getupdate(G, lr)
             else:
-                B = lr*G
+                G = lr*G
 
             # Adjust weights (with momentum)
-            U = B + momentum*oldG + nF*np.random.normal(0, lr/(1+i)**noise, oldG.shape)
-            oldG = U
-
-            W = W - U
-
-            # Set gradients
-            model.set_parameters(W)
-
+            if(momentum!=0):
+                G = G + momentum*oldG 
+                oldG = G
+            
+            # Set new weights
+            if(nF == 0):
+                W = W - G
+            else:
+                W = W - G - np.random.normal(0, lr/(1+i)**noise, oldG.shape)
+          
+        
+            if(nesterov==True):
+                # Nesterov update
+                 model.set_parameters(W-momentum*oldG)
+            else:    
+                model.set_parameters(W)
+            
+            
+            
         # Decay learning rate
         lr = lr*(1-decay)
 
