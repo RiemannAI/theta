@@ -119,7 +119,7 @@ class CMA(object):
 class SGD(object):
     """Stochastic gradient descent"""
 
-    def train(self, cost, model, x_data, y_data=None, scheme=None, maxiter=100, batch_size=0,
+    def train(self, cost, model, x_data, y_data=None, scheme=None, maxiter=100, batch_size=0,shuffle=False,
               lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
         """Trains the given model with stochastic gradient descent methods
 
@@ -130,6 +130,7 @@ class SGD(object):
         :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
         :param maxiter: maximum number of allowed iterations
         :param batch_size: the batch size
+        :param shuffle: shuffle the data on each iteration
         :param lr: learning rate
         :param decay: learning rate decay rate
         :param momentum: add momentum
@@ -139,7 +140,7 @@ class SGD(object):
         :return: dictionary with iterations and cost functions
         """
         
-        return sgd.train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
+        return sgd.train(cost, model, x_data, y_data, scheme, maxiter, batch_size,shuffle,
                          lr, decay, momentum, nesterov, noise, cplot)
     
 

@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
+def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
           lr, decay, momentum,nesterov, noise, cplot):
     """Trains the given model with stochastic gradient descent methods
 
@@ -17,6 +17,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
     :param maxiter: maximum number of allowed iterations
     :param batch_size: the batch size
+    :param shuffle : shuffle the data on each iteration
     :param lr: learning rate
     :param decay: learning rate decay rate
     :param momentum: add momentum
@@ -51,14 +52,21 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     oldG = np.zeros(W.shape)
 
     # Loop over epoches
+    shuffled_indexes = np.arange(x_data.shape[1])
     for i in range(0, maxiter):
+
+        if(shuffle==True): 
+            np.random.shuffle(shuffled_indexes)
+        
+        train_data_x = x_data[:, shuffled_indexes]
+        train_data_y = y_data[:, shuffled_indexes]
 
         # Loop over batches
         for b in range(0, BS+RE):
             
             # Prepare data    
-            data_x = x_data[:,b*batch_size:(b+1)*batch_size]
-            data_y = y_data[:,b*batch_size:(b+1)*batch_size]
+            data_x = train_data_x[:,b*batch_size:(b+1)*batch_size]
+            data_y = train_data_y[:,b*batch_size:(b+1)*batch_size]
             
             # Feedforward
             Xout = model.feed_through(data_x, True)
