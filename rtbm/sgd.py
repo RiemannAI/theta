@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
+def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
           lr, decay, momentum,nesterov, noise, cplot):
     """Trains the given model with stochastic gradient descent methods
 
@@ -17,6 +17,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
     :param maxiter: maximum number of allowed iterations
     :param batch_size: the batch size
+    :param shuffle : shuffle the data on each iteration
     :param lr: learning rate
     :param decay: learning rate decay rate
     :param momentum: add momentum
@@ -54,7 +55,9 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size,
     shuffled_indexes = np.arange(x_data.shape[1])
     for i in range(0, maxiter):
 
-        np.random.shuffle(shuffled_indexes)
+        if(shuffle==True): 
+            np.random.shuffle(shuffled_indexes)
+        
         train_data_x = x_data[:, shuffled_indexes]
         train_data_y = y_data[:, shuffled_indexes]
 
