@@ -2,7 +2,7 @@
 
 import numpy as np
 from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
-    check_normalization_consistency, check_pos_def
+    check_normalization_consistency, check_pos_def, rtbm_prefactor
 
 
 class AssignError(Exception):
@@ -57,8 +57,14 @@ class RTBM(object):
         # This guarantees an acceptable and instantaneous initial solution
         self.random_init(random_bound)
 
-    def __call__(self, data):
+    def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM instance for a given data array"""
+        
+        # Store for backprop
+        if(grad_calc==True)
+            self._X = data
+            # Store also full rtbm_part
+            
         return self._call(data)
 
     def size(self):
@@ -144,9 +150,16 @@ class RTBM(object):
         return True
 
     def get_parameters(self):
-        """Return flat array with current matrices weights"""
+        """Return flat array with current matrices weights """
         return self._parameters
 
+    def get_gradients(self):
+        """Return flat array with calculated gradients 
+           [Gbh,Gbv,Gw,Gt,Gq]
+        """
+        return self._gradients
+
+    
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
         return self._bounds
@@ -178,6 +191,38 @@ class RTBM(object):
         else:
             raise AssertionError('Mode %s not implemented.' % value)
 
+    def backprop(self, E)
+        
+        if diagonal_T == True:
+            
+            # Probability gradients
+               
+            # Overall constant factor 
+            # ToDo: Precompute in feedforward pass (same as original RT evaluation)
+            c, P  = rtbm_parts(self._X, self._bv,self._bh, self._t, self._w, self._q, self._mode)
+            
+            
+            # Generate derivative vector
+            # ToDo: Generate and store on init
+            
+            
+            # Grad Bh
+            gradBh = c*(1-P*1) #... 
+            
+            # Grad Bv
+            
+            # Grad W
+            
+            # Grad T
+            
+            # Grad Q
+            
+            
+    
+        else:
+            raise AssertionError("Gradients for non-diagonal T not implemented.')
+            
+            
     @property
     def bv(self):
         return self._bv

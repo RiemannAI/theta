@@ -556,10 +556,28 @@ class ThetaUnitLayer(Layer):
         return self._bounds
 
     def get_gradients(self):
-        """ Returns gradients as a flat array [b,w,q]
+        """ Returns gradients as a flat array
         """
-        pass
+        grads = np.zeros(shape=(self._Np))
 
+        index = 0
+        for m in self._rtbm:
+            grads[index:index+m.size()] = m.get_gradients()
+            index += m.size()
+        
+        return grads
+            
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
+        
+        result = np.zeros(shape=(self._Nout, E.shape[1]), dtype=float)
+        
+        for i, m in enumerate(self._rtbm):
+            result[i] = m.backprop(E)
+            
+        """ Currently only as one layer supported 
+            Flows from individual RTBMs need to be aggregated before 
+            moved back further into shared inputs
+        """
         pass
+        
