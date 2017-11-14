@@ -41,6 +41,8 @@ class RTBM(object):
         self._mode = None
         self._call = None
         self._parameters = None
+        self._gradients = None
+        self._X = None
         self._phase = phase
         if diagonal_T:
             self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)/2 + self._Nv*self._Nh
@@ -61,7 +63,7 @@ class RTBM(object):
         """Evaluates the RTBM instance for a given data array"""
         
         # Store for backprop
-        if(grad_calc==True)
+        if grad_calc:
             self._X = data
             # Store also full rtbm_part
             
@@ -159,7 +161,6 @@ class RTBM(object):
         """
         return self._gradients
 
-    
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
         return self._bounds
@@ -191,9 +192,9 @@ class RTBM(object):
         else:
             raise AssertionError('Mode %s not implemented.' % value)
 
-    def backprop(self, E)
+    def backprop(self, E):
         
-        if diagonal_T == True:
+        if self._diagonal_T:
             
             # Probability gradients
                
@@ -220,8 +221,7 @@ class RTBM(object):
             
     
         else:
-            raise AssertionError("Gradients for non-diagonal T not implemented.')
-            
+            raise AssertionError('Gradients for non-diagonal T not implemented.')
             
     @property
     def bv(self):
