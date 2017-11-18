@@ -2,8 +2,9 @@
 
 import numpy as np
 from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
-    check_normalization_consistency, check_pos_def
+    check_normalization_consistency, check_pos_def, rtbm_parts
 
+from riemann_theta.riemann_theta import RiemannTheta
 
 class AssignError(Exception):
     pass
@@ -17,7 +18,7 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
-                 init_max_param_bound=2, random_bound=1, phase=1):
+                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
         """Setup operators for BM based on the number of visible and hidden units
 
         Args:
@@ -27,6 +28,7 @@ class RTBM(object):
             init_max_param_bound: size of maximum parameters used in random initialization.
             random_bound: selects the maximum random value for the Schur complement initialization
             phase: number which multiplies w and bh
+            diagonal_T: force T diagonal, by default T is symmetric
 
         """
         self._Nv = visible_units
@@ -36,11 +38,16 @@ class RTBM(object):
         self._bh = np.zeros([hidden_units, 1])
         self._w = np.zeros([visible_units, hidden_units])
         self._q = np.zeros([hidden_units, hidden_units])
-        self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)/2+self._Nv*self._Nh
+        self._diagonal_T = diagonal_T
         self._mode = None
         self._call = None
         self._parameters = None
+        self._X = None
         self._phase = phase
+        if diagonal_T:
+            self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)/2 + self._Nv*self._Nh
+        else:
+            self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)/2+self._Nv*self._Nh
 
         # set operation mode
         self.mode = mode
@@ -51,27 +58,67 @@ class RTBM(object):
         # Populate with random parameters using Schur complement
         # This guarantees an acceptable and instantaneous initial solution
         self.random_init(random_bound)
-
-    def __call__(self, data):
+        
+        # Generate vector for gradient calc call
+        self._D1 = []
+       
+        for i in range(0, hidden_units):
+            tmp = [0] * hidden_units
+            tmp[i] = 1
+            self._D1.append(tmp)
+            
+        self._D1 = np.array(self._D1) 
+        
+        print("D1: ",self._D1)
+        
+        # Generate vector for hessian calc call
+        self._D2 = []
+        for i in range(0, hidden_units):
+            
+            for j in range(0, hidden_units):
+                tmp = [0] * hidden_units**2
+                tmp[i] = 1
+                tmp[j+hidden_units] = 1
+            
+                self._D2.append(tmp)
+            
+        self._D2 = np.array(self._D2) 
+        
+        print(self._D2)
+    
+    def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM instance for a given data array"""
-        return self._call(data)
+        
+        P = self._call(data)
+        # Store for backprop
+       
+        if grad_calc:
+            self._X = data
+            self._P = P
+            
+        return P
 
     def size(self):
         """Get size of RTBM"""
         return self._size
 
     def random_init(self, bound):
-        """A fast random initializer based on Schur complement
+        """A fast random initializer based on Schur complement, if diagonal_T=True
+        the initial Schur complement is defined diagonal, so Q and T are diagonal and W is zero.
 
         Args:
             bound: the maximum value for the random matrix X used by the Schur complement
         """
-
         a_shape = ((self._Nv+self._Nh), (self._Nv+self._Nh))
         a_size = (self._Nv+self._Nh)**2
 
         params = np.random.uniform(-bound, bound, a_size+self._Nv+self._Nh)
-        x = params[:a_size].reshape(a_shape)
+        if self._diagonal_T:
+            x = np.eye(a_shape[0])
+            np.fill_diagonal(x, params[:self._Nv+self._Nh])
+        else:
+            x = params[:a_size].reshape(a_shape)
+
         a = np.transpose(x).dot(x)
 
         self._q = a[:self._Nh, :self._Nh]
@@ -81,9 +128,14 @@ class RTBM(object):
         self._bh = self._phase * params[-self._Nh:].reshape(self._bh.shape)
 
         # store parameters having in mind that Q and T are symmetric.
-        self._parameters = np.concatenate([self._bv.flatten(), self._bh.flatten(),
-                                           self._w.flatten(), self._t[np.triu_indices(self._Nv)],
-                                           self._q[np.triu_indices(self._Nh)]])
+        if self._diagonal_T:
+            self._parameters = np.concatenate([self._bv.flatten(), self._bh.flatten(),
+                                               self._w.flatten(), self._t.diagonal(),
+                                               self._q[np.triu_indices(self._Nh)]])
+        else:
+            self._parameters = np.concatenate([self._bv.flatten(), self._bh.flatten(),
+                                               self._w.flatten(), self._t[np.triu_indices(self._Nv)],
+                                               self._q[np.triu_indices(self._Nh)]])
 
     def set_parameters(self, params):
         """Assigns a flat array of parameters to the RTBM matrices.
@@ -109,10 +161,14 @@ class RTBM(object):
         self._w = self._phase*params[index:index+self._Nv*self._Nh].reshape(self._w.shape)
         index += self._w.size
 
-        inds = np.triu_indices_from(self._t)
-        self._t[inds] = params[index:index+(self._Nv**2+self._Nv)/2]
-        self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)/2]
-        index += (self._Nv**2+self._Nv)/2
+        if self._diagonal_T:
+            np.fill_diagonal(self._t, params[index:index+self._Nv])
+            index += self._Nv
+        else:
+            inds = np.triu_indices_from(self._t)
+            self._t[inds] = params[index:index+(self._Nv**2+self._Nv)/2]
+            self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)/2]
+            index += (self._Nv**2+self._Nv)/2
 
         inds = np.triu_indices_from(self._q)
         self._q[inds] = params[index:index+(self._Nh**2+self._Nh)/2]
@@ -125,8 +181,21 @@ class RTBM(object):
         return True
 
     def get_parameters(self):
-        """Return flat array with current matrices weights"""
+        """Return flat array with current matrices weights """
         return self._parameters
+
+    def get_gradients(self):
+        """Return flat array with calculated gradients 
+           [Gbh,Gbv,Gw,Gt,Gq]
+        """
+        
+        inds = np.triu_indices_from(self._gradQ)
+        
+        if(self._diagonal_T):
+            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  ))
+
+        else:
+            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  ))
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -159,6 +228,46 @@ class RTBM(object):
         else:
             raise AssertionError('Mode %s not implemented.' % value)
 
+    def backprop(self, E):
+        
+        if self._diagonal_T:
+            
+            vWb = np.transpose(self._X).dot(self._w)+self._bh.T
+            iT  = np.linalg.inv(self._t)
+            iTW = iT.dot(self._w)
+            
+            # Gradients
+            Da = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D1   )
+            
+            Db = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D1)
+            
+            # Hessians
+            DDa = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D2   )
+            
+            DDb = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D2)
+            
+            
+            # Grad Bv
+            self._gradBv = np.mean( self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db) ), axis=1)
+            
+            # Grad Bh
+            self._gradBh = np.mean( self._P*(Da-Db), axis=1) 
+           
+            # Grad W
+            self._gradW = np.zeros(self._w.shape)
+            
+            # Grad T
+            self._gradT = np.zeros(self._t.shape)
+            
+            # Grad Q
+            self._gradQ = np.mean(-self._P*( DDa - DDb ), axis=1 ).reshape(self._q.shape)
+            self._gradQ[np.diag_indices_from(self._gradQ)] = self._gradQ[np.diag_indices_from(self._gradQ)]*0.5   
+            
+          
+    
+        else:
+            raise AssertionError('Gradients for non-diagonal T not implemented.')
+            
     @property
     def bv(self):
         return self._bv
