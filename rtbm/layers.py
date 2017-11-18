@@ -514,7 +514,7 @@ class ThetaUnitLayer(Layer):
         """
         result = np.zeros(shape=(self._Nout, X.shape[1]), dtype=float)
         for i, m in enumerate(self._rtbm):
-            result[i] = m(X)
+            result[i] = m(X, grad_calc=grad_calc)
         return result
 
     def get_parameters(self):

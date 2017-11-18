@@ -2,8 +2,9 @@
 
 import numpy as np
 from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
-    check_normalization_consistency, check_pos_def, rtbm_prefactor
+    check_normalization_consistency, check_pos_def, rtbm_parts
 
+from riemann_theta.riemann_theta import RiemannTheta
 
 class AssignError(Exception):
     pass
@@ -41,7 +42,6 @@ class RTBM(object):
         self._mode = None
         self._call = None
         self._parameters = None
-        self._gradients = None
         self._X = None
         self._phase = phase
         if diagonal_T:
@@ -58,16 +58,28 @@ class RTBM(object):
         # Populate with random parameters using Schur complement
         # This guarantees an acceptable and instantaneous initial solution
         self.random_init(random_bound)
-
+        
+        # Generate vector for gradient calc call
+        self._D1 = []
+       
+        for i in range(0, hidden_units):
+            tmp = [0] * hidden_units
+            tmp[i] = 1
+            self._D1.append(tmp)
+            
+        print(self._D1)
+     
     def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM instance for a given data array"""
         
+        P = self._call(data)
         # Store for backprop
+       
         if grad_calc:
             self._X = data
-            # Store also full rtbm_part
+            self._P = P
             
-        return self._call(data)
+        return P
 
     def size(self):
         """Get size of RTBM"""
@@ -159,7 +171,11 @@ class RTBM(object):
         """Return flat array with calculated gradients 
            [Gbh,Gbv,Gw,Gt,Gq]
         """
-        return self._gradients
+        if(self._diagonal_T):
+            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ.flatten()  ))
+
+        else:
+            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ.flatten()  ))
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -196,28 +212,44 @@ class RTBM(object):
         
         if self._diagonal_T:
             
-            # Probability gradients
-               
-            # Overall constant factor 
-            # ToDo: Precompute in feedforward pass (same as original RT evaluation)
-            c, P  = rtbm_parts(self._X, self._bv,self._bh, self._t, self._w, self._q, self._mode)
+            vWb = np.transpose(self._X).dot(self._w)+self._bh.T
+            iT  = np.linalg.inv(self._t)
+            iTW = iT.dot(self._w)
             
+            print("X:",self._X)
+            print("iT:",iT)
+            print("iTW:",iTW)
+            print("W:",self._w)
             
-            # Generate derivative vector
-            # ToDo: Generate and store on init
+            # Generate derivative vectors
+            Da = 1.0/(2j*np.pi)*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D1   )
             
+            Db = 1.0/(2j*np.pi)*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D1)
             
+            print("Da:",Da)
+            print("Db:",Db)
+            print("P: ",self._P)
+           
             # Grad Bh
-            gradBh = c*(1-P*1) #... 
+            # ToDo: Still have to take mean ...
+            self._gradBh = self._P*(Da-Db) 
+            
+            print("gradBh: ",self._gradBh)
             
             # Grad Bv
+            # ToDo: Still have to take mean ...
+            self._gradBv = self._P*( -self._X -2*iT.dot(self._bv) + iTW.dot(Db) )
+            
+            print("gradBv: ",self._gradBh)
             
             # Grad W
+            self._gradW = 0
             
             # Grad T
+            self._gradT = 0
             
             # Grad Q
-            
+            self._gradQ = 0
             
     
         else:
