@@ -67,8 +67,25 @@ class RTBM(object):
             tmp[i] = 1
             self._D1.append(tmp)
             
-        print(self._D1)
-     
+        self._D1 = np.array(self._D1) 
+        
+        print("D1: ",self._D1)
+        
+        # Generate vector for hessian calc call
+        self._D2 = []
+        for i in range(0, hidden_units):
+            
+            for j in range(0, hidden_units):
+                tmp = [0] * hidden_units**2
+                tmp[i] = 1
+                tmp[j+hidden_units] = 1
+            
+                self._D2.append(tmp)
+            
+        self._D2 = np.array(self._D2) 
+        
+        print(self._D2)
+    
     def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM instance for a given data array"""
         
@@ -171,11 +188,14 @@ class RTBM(object):
         """Return flat array with calculated gradients 
            [Gbh,Gbv,Gw,Gt,Gq]
         """
+        
+        inds = np.triu_indices_from(self._gradQ)
+        
         if(self._diagonal_T):
-            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ.flatten()  ))
+            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  ))
 
         else:
-            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ.flatten()  ))
+            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  ))
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -216,41 +236,34 @@ class RTBM(object):
             iT  = np.linalg.inv(self._t)
             iTW = iT.dot(self._w)
             
-            print("X:",self._X)
-            print("iT:",iT)
-            print("iTW:",iTW)
-            print("W:",self._w)
+            # Gradients
+            Da = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D1   )
             
-            # Generate derivative vectors
-            Da = 1.0/(2j*np.pi)*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D1   )
+            Db = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D1)
             
-            Db = 1.0/(2j*np.pi)*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D1)
+            # Hessians
+            DDa = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D2   )
             
-            print("Da:",Da)
-            print("Db:",Db)
-            print("P: ",self._P)
-           
-            # Grad Bh
-            # ToDo: Still have to take mean ...
-            self._gradBh = self._P*(Da-Db) 
+            DDb = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D2)
             
-            print("gradBh: ",self._gradBh)
             
             # Grad Bv
-            # ToDo: Still have to take mean ...
-            self._gradBv = self._P*( -self._X -2*iT.dot(self._bv) + iTW.dot(Db) )
+            self._gradBv = np.mean( self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db) ), axis=1)
             
-            print("gradBv: ",self._gradBh)
-            
+            # Grad Bh
+            self._gradBh = np.mean( self._P*(Da-Db), axis=1) 
+           
             # Grad W
-            self._gradW = 0
+            self._gradW = np.zeros(self._w.shape)
             
             # Grad T
-            self._gradT = 0
+            self._gradT = np.zeros(self._t.shape)
             
             # Grad Q
-            self._gradQ = 0
+            self._gradQ = np.mean(-self._P*( DDa - DDb ), axis=1 ).reshape(self._q.shape)
+            self._gradQ[np.diag_indices_from(self._gradQ)] = self._gradQ[np.diag_indices_from(self._gradQ)]*0.5   
             
+          
     
         else:
             raise AssertionError('Gradients for non-diagonal T not implemented.')
