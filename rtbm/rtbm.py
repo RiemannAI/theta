@@ -69,7 +69,7 @@ class RTBM(object):
             
         self._D1 = np.array(self._D1) 
         
-        print("D1: ",self._D1)
+        #print("D1: ",self._D1)
         
         # Generate vector for hessian calc call
         self._D2 = []
@@ -78,13 +78,14 @@ class RTBM(object):
             for j in range(0, hidden_units):
                 tmp = [0] * hidden_units**2
                 tmp[i] = 1
-                tmp[j+hidden_units] = 1
+                if(hidden_units > 1):
+                    tmp[j+hidden_units] = 1
             
                 self._D2.append(tmp)
             
         self._D2 = np.array(self._D2) 
         
-        print(self._D2)
+        #print(self._D2)
     
     def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM instance for a given data array"""
