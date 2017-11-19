@@ -238,7 +238,7 @@ class RTBM(object):
             vWb = np.transpose(self._X).dot(self._w)+self._bh.T
             iT  = np.linalg.inv(self._t)
             iTW = iT.dot(self._w)
-            Wtit = self._w.T.dot(iT)
+            #Wtit = self._w.T.dot(iT)
             
             # Gradients
             Da = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D1   )
@@ -250,13 +250,14 @@ class RTBM(object):
             
             DDb = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D2)
             
-            # ToDo: H from DDb
-            print("DDb:",DDb)
-            print("DDbf:",DDb.flatten()) 
+            # H from DDb
+            #print("DDb:",DDb)
+            #print("DDbf:",DDb.flatten()) 
+            # Try to invert Hb ordering
             Hb = DDb.flatten().reshape(self._q.shape)
             Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5   
             
-            print("Hb:",Hb)
+            #print("Hb:",Hb)
             
             # Grad Bv
             self._gradBv = np.mean( self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db) ), axis=1)
@@ -267,26 +268,27 @@ class RTBM(object):
             # Grad W
             # ToDo
             # + self._bv.T.dot(iT).dot(Db.T) -Hb.dot(Wtit).T - iTW.dot(Hb)  
-            print("X",self._X.shape)
-            print("Db",Db.shape)
-            print("P",self._P.shape)
+            #print("X",self._X.shape)
+            #print("Db",Db.shape)
+            #print("P",self._P.shape)
             
-            self._gradW =   (self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean( self._P,axis=1)*( self._bv.T.dot(Db.T) - Hb.dot(Wtit).T - iTW.dot(Hb)   ) 
-            
-            print("gW :",self._gradW)
-            print("gWs:",self._gradW.shape)
-            print("Ws :",self._w.shape)
+            #self._gradW = (self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean( self._P, axis=1)*( self._bv.T.dot(Db.T) - 2*iTW.dot(Hb) ) 
+            # Something not correct with the Bv part above ...
+            self._gradW = (self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean( self._P, axis=1)*( self._bv.T.dot(iT).dot(Db.T) - 2*iTW.dot(Hb) ) 
+            #print("gW :",self._gradW)
+            #print("gWs:",self._gradW.shape)
+            #print("Ws :",self._w.shape)
             
             # Grad T
-            # ToDo
-            self._gradT = np.zeros(self._t.shape)
+            iT = 1.0/self._t
+            iT2 = iT**2
+            
+            self._gradT = np.mean( self._P*(0.5*( iT-self._X**2 )+self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*(self._w.dot(Hb).dot(self._w.T) ) ) ,axis=1, keepdims=True)
             
             # Grad Q
             self._gradQ = np.mean(-self._P*( DDa - DDb ), axis=1 ).reshape(self._q.shape)
             self._gradQ[np.diag_indices_from(self._gradQ)] = self._gradQ[np.diag_indices_from(self._gradQ)]*0.5   
-            
-            print("Q:",self._gradQ)
-    
+           
         else:
             raise AssertionError('Gradients for non-diagonal T not implemented.')
             

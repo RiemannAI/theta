@@ -508,6 +508,12 @@ class ThetaUnitLayer(Layer):
         self._bounds = None
         self.set_bounds()
 
+    def get_unit(self, N):
+        if(N >0 and N <= len(self._rtbm)):
+            return self._rtbm[N-1]
+        else:
+           print("Layer consists of only",len(self._rtbm),"units")
+        
     def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
             Note: Vectorized
