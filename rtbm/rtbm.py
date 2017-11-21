@@ -269,12 +269,21 @@ class RTBM(object):
             # ToDo
             # + self._bv.T.dot(iT).dot(Db.T) -Hb.dot(Wtit).T - iTW.dot(Hb)  
             #print("X",self._X.shape)
+            #print("W",self._w.shape)
             #print("Db",Db.shape)
             #print("P",self._P.shape)
+            #print("bv",self._bv.shape)
+            #print("iT",iT.shape)
+            #print("iTW",iTW.shape)
+            #x = self._bv.T.dot(iT)
+            #print("bvtiT",x.shape)
             
-            #self._gradW = (self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean( self._P, axis=1)*( self._bv.T.dot(Db.T) - 2*iTW.dot(Hb) ) 
-            # Something not correct with the Bv part above ...
-            self._gradW = (self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean( self._P, axis=1)*( self._bv.T.dot(iT).dot(Db.T) - 2*iTW.dot(Hb) ) 
+            self._gradW = (self._P*self._X).dot(Da.T)/self._X.shape[1] +  np.mean( self._P, axis=1)*(  self._bv.T.dot(iT).T.dot(Db.T)  - 2*iTW.dot(Hb))
+            
+            
+            #  Db.dot( )
+            
+            
             #print("gW :",self._gradW)
             #print("gWs:",self._gradW.shape)
             #print("Ws :",self._w.shape)
@@ -283,7 +292,17 @@ class RTBM(object):
             iT = 1.0/self._t
             iT2 = iT**2
             
-            self._gradT = np.mean( self._P*(0.5*( iT-self._X**2 )+self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*(self._w.dot(Hb).dot(self._w.T) ) ) ,axis=1, keepdims=True)
+            #print("X:",self._X.shape)
+            #print("P:",self._P.shape)
+            
+            #print("iT:",iT.shape)
+            #x = -0.5*self._P*self._X**2 
+            #print(x.shape)
+            
+            self._gradT = np.diag(np.mean(-0.5*self._P*self._X**2, axis=1)) + np.mean(self._P, axis=1)*(0.5*iT + self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*self._w.dot(Hb).dot(self._w.T) )   # np.mean( self._P*(0.5*( iT-np.eye(2)*self._X**2 )    ) ,axis=1, keepdims=True)
+            
+            # + ) 
+            #print(self._gradT.shape)
             
             # Grad Q
             self._gradQ = np.mean(-self._P*( DDa - DDb ), axis=1 ).reshape(self._q.shape)

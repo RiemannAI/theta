@@ -36,8 +36,8 @@ class logarithmic(costfunction):
         return -np.sum(np.log(x))
 
     @staticmethod
-    def gradient(x):
-        sys.exit("Gradient not implemented!")
+    def gradient(x, *y):
+        return -1.0/x*x.shape[1]
 
         
 class sum(costfunction):
