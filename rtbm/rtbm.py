@@ -232,6 +232,8 @@ class RTBM(object):
             raise AssertionError('Mode %s not implemented.' % value)
 
     def backprop(self, E):
+        #print("E:",E.shape)
+        #print(E)
         
         if self._diagonal_T:
             
@@ -260,10 +262,10 @@ class RTBM(object):
             #print("Hb:",Hb)
             
             # Grad Bv
-            self._gradBv = np.mean( self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db) ), axis=1)
+            self._gradBv = np.mean(E*(self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db)) ), axis=1)
             
             # Grad Bh
-            self._gradBh = np.mean( self._P*(Da-Db), axis=1) 
+            self._gradBh = np.mean(E*self._P*(Da-Db), axis=1) 
            
             # Grad W
             # ToDo
@@ -278,7 +280,7 @@ class RTBM(object):
             #x = self._bv.T.dot(iT)
             #print("bvtiT",x.shape)
             
-            self._gradW = (self._P*self._X).dot(Da.T)/self._X.shape[1] +  np.mean( self._P, axis=1)*(  self._bv.T.dot(iT).T.dot(Db.T)  - 2*iTW.dot(Hb))
+            self._gradW = (E*self._P*self._X).dot(Da.T)/self._X.shape[1] +  np.mean(E*self._P, axis=1)*(  self._bv.T.dot(iT).T.dot(Db.T)  - 2*iTW.dot(Hb))
             
             
             #  Db.dot( )
@@ -299,13 +301,13 @@ class RTBM(object):
             #x = -0.5*self._P*self._X**2 
             #print(x.shape)
             
-            self._gradT = np.diag(np.mean(-0.5*self._P*self._X**2, axis=1)) + np.mean(self._P, axis=1)*(0.5*iT + self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*self._w.dot(Hb).dot(self._w.T) )   # np.mean( self._P*(0.5*( iT-np.eye(2)*self._X**2 )    ) ,axis=1, keepdims=True)
+            self._gradT = np.diag(np.mean(-0.5*self._P*self._X**2*E, axis=1)) + np.mean(E*self._P, axis=1)*(0.5*iT + self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*self._w.dot(Hb).dot(self._w.T) )   # np.mean( self._P*(0.5*( iT-np.eye(2)*self._X**2 )    ) ,axis=1, keepdims=True)
             
             # + ) 
             #print(self._gradT.shape)
             
             # Grad Q
-            self._gradQ = np.mean(-self._P*( DDa - DDb ), axis=1 ).reshape(self._q.shape)
+            self._gradQ = np.mean(-self._P*( DDa - DDb )*E, axis=1 ).reshape(self._q.shape)
             self._gradQ[np.diag_indices_from(self._gradQ)] = self._gradQ[np.diag_indices_from(self._gradQ)]*0.5   
            
         else:
