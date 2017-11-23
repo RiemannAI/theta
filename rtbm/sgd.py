@@ -59,7 +59,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
             np.random.shuffle(shuffled_indexes)
         
         train_data_x = x_data[:, shuffled_indexes]
-        if(y_data!=None):
+        if(y_data.all()!=None):
             train_data_y = y_data[:, shuffled_indexes]
 
         # Loop over batches
@@ -67,7 +67,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
             
             # Prepare data    
             data_x = train_data_x[:,b*batch_size:(b+1)*batch_size]
-            if(y_data!=None):
+            if(y_data.all()!=None):
                 data_y = train_data_y[:,b*batch_size:(b+1)*batch_size]
             else:
                 data_y = None
