@@ -55,19 +55,21 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
     shuffled_indexes = np.arange(x_data.shape[1])
     for i in range(0, maxiter):
 
-        if(shuffle==True): 
+        if shuffle:
             np.random.shuffle(shuffled_indexes)
         
         train_data_x = x_data[:, shuffled_indexes]
-        if(y_data.all()!=None):
+        if y_data is not None:
             train_data_y = y_data[:, shuffled_indexes]
 
+        partial_cost_batch = 0
+
         # Loop over batches
-        for b in range(0, BS+RE):
+        for b in range(BS+RE):
             
             # Prepare data    
             data_x = train_data_x[:,b*batch_size:(b+1)*batch_size]
-            if(y_data.all()!=None):
+            if y_data is not None:
                 data_y = train_data_y[:,b*batch_size:(b+1)*batch_size]
             else:
                 data_y = None
@@ -76,7 +78,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
             Xout = model.feed_through(data_x, True)
             
             # Calc cost
-            cost_hist[i] = cost.cost(Xout,data_y)
+            partial_cost_batch += cost.cost(Xout,data_y)
             
             # Backprop
             model.backprop(cost.gradient(Xout,data_y))
@@ -90,27 +92,27 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
                 G = lr*G
 
             # Adjust weights (with momentum)
-            if(momentum!=0):
+            if momentum != 0:
                 G = G + momentum*oldG 
                 oldG = G
             
             # Set new weights
-            if(nF == 0):
+            if nF == 0:
                 W = W - G
             else:
                 W = W - G - np.random.normal(0, lr/(1+i)**noise, oldG.shape)
-          
         
-            if(nesterov==True):
+            if nesterov:
                 # Nesterov update
                  model.set_parameters(W-momentum*oldG)
             else:    
                 model.set_parameters(W)
             
-            
-            
         # Decay learning rate
         lr = lr*(1-decay)
+
+        # fill cost histogram
+        cost_hist[i] = partial_cost_batch/(BS+RE)
 
         # print to screen
         progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f" % (i+1, time.time()-t0, cost_hist[i]))
