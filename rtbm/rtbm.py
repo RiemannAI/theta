@@ -18,7 +18,8 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
-                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
+                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False,
+                 check_positivity=True):
         """Setup operators for BM based on the number of visible and hidden units
 
         Args:
@@ -29,6 +30,7 @@ class RTBM(object):
             random_bound: selects the maximum random value for the Schur complement initialization
             phase: number which multiplies w and bh
             diagonal_T: force T diagonal, by default T is symmetric
+            check_positivity: verifies if set_parameters satisfy positivity condition
 
         """
         self._Nv = visible_units
@@ -44,6 +46,7 @@ class RTBM(object):
         self._parameters = None
         self._X = None
         self._phase = phase
+        self._check_positivity = check_positivity
         if diagonal_T:
             self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)/2 + self._Nv*self._Nh
         else:
@@ -61,16 +64,13 @@ class RTBM(object):
         
         # Generate vector for gradient calc call
         self._D1 = []
-       
-        for i in range(0, hidden_units):
+        for i in range(hidden_units):
             tmp = [0] * hidden_units
             tmp[i] = 1
             self._D1.append(tmp)
-            
-        self._D1 = np.array(self._D1) 
-        
-        #print("D1: ",self._D1)
-        
+
+        self._D1 = np.array(self._D1)
+
         # Generate vector for hessian calc call
         self._D2 = []
         
@@ -86,8 +86,6 @@ class RTBM(object):
             self._D2 = np.array(self._D2) 
         else:
             self._D2.append([1,1])
-            
-        print(self._D2)
     
     def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM instance for a given data array"""
@@ -177,10 +175,10 @@ class RTBM(object):
         self._q[inds] = params[index:index+(self._Nh**2+self._Nh)/2]
         self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)/2]
 
-        if not check_normalization_consistency(self._t, self._q, self._w) or \
-                not check_pos_def(self._q) or not check_pos_def(self._t):
-            return False
-
+        if self._check_positivity:
+            if not check_normalization_consistency(self._t, self._q, self._w) or \
+                    not check_pos_def(self._q) or not check_pos_def(self._t):
+                return False
         return True
 
     def get_parameters(self):
@@ -240,24 +238,28 @@ class RTBM(object):
             vWb = np.transpose(self._X).dot(self._w)+self._bh.T
             iT  = np.linalg.inv(self._t)
             iTW = iT.dot(self._w)
-            #Wtit = self._w.T.dot(iT)
-            
+
             # Gradients
-            Da = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D1   )
+            arg1 = vWb / (2.0j * np.pi)
+            arg2 = -self._q/ (2.0j * np.pi)
+            arg3 = (self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi)
+            arg4 = -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi)
+
+            Da = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D1)
             
-            Db = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D1)
+            Db = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D1)
             
             # Hessians
-            DDa = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(vWb / (2.0j * np.pi) , -self._q/ (2.0j * np.pi), mode=1, derivs=self._D2   )
+            DDa = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D2)
             
-            DDb = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval((self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi) , -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi), mode=1, derivs=self._D2)
+            DDb = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D2)
             
             # H from DDb
             #print("DDb:",DDb)
             #print("DDbf:",DDb.flatten()) 
             # Try to invert Hb ordering
             Hb = DDb.flatten().reshape(self._q.shape)
-            Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5   
+            Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5
             
             #print("Hb:",Hb)
             
