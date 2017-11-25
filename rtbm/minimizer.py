@@ -119,14 +119,17 @@ class CMA(object):
 class SGD(object):
     """Stochastic gradient descent"""
 
-    def train(self, cost, model, x_data, y_data=None, validation_split=0, scheme=None, maxiter=100, batch_size=0,shuffle=False,
-              lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
+    def train(self, cost, model, x_data, y_data=None, validation_split=0, validation_x_data=None, validation_y_data=None,
+              scheme=None, maxiter=100, batch_size=0,shuffle=False, lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
         """Trains the given model with stochastic gradient descent methods
 
         :param cost: the cost fuction class
         :param model: the model to be trained
         :param x_data: the target data support
         :param y_data: the target data prediction
+        :param validation_split: fraction of data used for validation only
+        :param validation_x_data: external set of validation support
+        :param validation_y_data: external set of validation target
         :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
         :param maxiter: maximum number of allowed iterations
         :param batch_size: the batch size
@@ -139,9 +142,8 @@ class SGD(object):
         :param cplot: if True shows the cost function evolution
         :return: dictionary with iterations and cost functions
         """
-        
-        return sgd.train(cost, model, x_data, y_data, validation_split, scheme, maxiter, batch_size,shuffle,
-                         lr, decay, momentum, nesterov, noise, cplot)
+        return sgd.train(cost, model, x_data, y_data, validation_split, validation_x_data, validation_y_data,
+                         scheme, maxiter, batch_size,shuffle, lr, decay, momentum, nesterov, noise, cplot)
     
 
 class BFGS(object):

@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train(cost, model, input_x_data, input_y_data, validation_split, scheme, maxiter, batch_size, shuffle,
-          lr, decay, momentum,nesterov, noise, cplot):
+def train(cost, model, input_x_data, input_y_data, validation_split, validation_x_data, validation_y_data,
+          scheme, maxiter, batch_size, shuffle, lr, decay, momentum,nesterov, noise, cplot):
     """Trains the given model with stochastic gradient descent methods
 
     :param cost: the cost fuction class
@@ -16,6 +16,8 @@ def train(cost, model, input_x_data, input_y_data, validation_split, scheme, max
     :param y_data: the target data prediction
     :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
     :param validation_split: fraction of data used for validation only
+    :param validation_x_data: external set of validation support
+    :param validation_y_data: external set of validation target
     :param maxiter: maximum number of allowed iterations
     :param batch_size: the batch size
     :param shuffle : shuffle the data on each iteration
@@ -30,16 +32,22 @@ def train(cost, model, input_x_data, input_y_data, validation_split, scheme, max
 
     # verify x and y data have the same length
     if input_y_data is not None:
-        assert input_x_data.shape[1] == input_y_data.shape[1], 'input x_data and y_data sizes does not match'
+        assert input_x_data.shape == input_y_data.shape, 'input x_data and y_data shape does not match'
 
-    # check validation split
+    # check if validation_split and validation_x_data are set simultaneously
+    if validation_split > 0 and validation_x_data is not None:
+        raise AssertionError('validation_split and validation_x_data cannot be used simultaneously')
+
+    # if validation_y_data is passed, check it matches the shape of its support
+    if validation_y_data is not None:
+        assert validation_x_data.shape == validation_y_data.shape, 'validation x and y data shapes do not match'
+
+    # verify that validation_split doesn't kill all training points
     assert validation_split < 1, 'validation_split too large, no training data'
 
     # prepare trainng and validation data
     training_x_data = input_x_data
     training_y_data = input_y_data
-    validation_x_data = None
-    validation_y_data = None
 
     # create validation set
     if validation_split > 0:
@@ -102,16 +110,14 @@ def train(cost, model, input_x_data, input_y_data, validation_split, scheme, max
             # Feedforward
             Xout = model.feed_through(data_x, True)
             
-            # Calc cost
-            partial_cost_tr_batch += cost.cost(Xout,data_y)
-
-            # calc validation
+            # Calc cost for training and validation
+            partial_cost_tr_batch += cost.cost(Xout, data_y)
             if validation_x_data is not None:
                 Xval = model.feed_through(validation_x_data, False)
                 partial_cost_val_batch += cost.cost(Xval, validation_y_data)
 
             # Backprop
-            model.backprop(cost.gradient(Xout,data_y))
+            model.backprop(cost.gradient(Xout, data_y))
 
             # Get gradients
             G = model.get_gradients()
@@ -133,8 +139,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, scheme, max
                 W = W - G - np.random.normal(0, lr/(1+i)**noise, oldG.shape)
         
             if nesterov:
-                # Nesterov update
-                 model.set_parameters(W-momentum*oldG)
+                model.set_parameters(W-momentum*oldG) # Nesterov update
             else:    
                 model.set_parameters(W)
             
@@ -146,7 +151,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, scheme, max
         cost_val_hist[i] = partial_cost_val_batch/(BS+RE)
 
         # print to screen
-        progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f | val = %f" % (i+1, time.time()-t0, cost_tr_hist[i],cost_val_hist[i]))
+        progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f | val = %f" % (i+1, time.time()-t0, cost_tr_hist[i], cost_val_hist[i]))
 
     I = (np.linspace(0, maxiter-1, maxiter))
     if cplot:
