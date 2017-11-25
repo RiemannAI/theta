@@ -82,7 +82,7 @@ class RTBM(object):
                     tmp[j+hidden_units] = 1
             
                     self._D2.append(tmp)
-            
+
             self._D2 = np.array(self._D2) 
         else:
             self._D2.append([1,1])
@@ -236,7 +236,7 @@ class RTBM(object):
         if self._diagonal_T:
             
             vWb = np.transpose(self._X).dot(self._w)+self._bh.T
-            iT  = np.linalg.inv(self._t)
+            iT  = 1.0/self._t
             iTW = iT.dot(self._w)
 
             # Gradients
@@ -244,27 +244,30 @@ class RTBM(object):
             arg2 = -self._q/ (2.0j * np.pi)
             arg3 = (self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi)
             arg4 = -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi)
+            coeff1 = 1.0/(2.0j*np.pi)
+            coeff2 = np.square(coeff1)
 
-            Da = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D1)
+            Da = coeff1*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D1)
             
-            Db = 1.0/(2.0j*np.pi)*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D1)
+            Db = coeff1*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D1)
             
             # Hessians
-            DDa = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D2)
+            DDa = coeff2*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D2)
             
-            DDb = 1.0/(2.0j*np.pi)**2*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D2)
+            DDb = coeff2*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D2)
             
             # H from DDb
             #print("DDb:",DDb)
             #print("DDbf:",DDb.flatten()) 
             # Try to invert Hb ordering
-            Hb = DDb.flatten().reshape(self._q.shape)
-            Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5
+            Hb = DDb.reshape(self._q.shape)
+            np.fill_diagonal(Hb, Hb.diagonal()*0.5)
+            #Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5
             
             #print("Hb:",Hb)
             
             # Grad Bv
-            self._gradBv = np.mean(E*(self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db)) ), axis=1)
+            self._gradBv = np.mean(E*(self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db))), axis=1)
             
             # Grad Bh
             self._gradBh = np.mean(E*self._P*(Da-Db), axis=1) 
@@ -293,8 +296,7 @@ class RTBM(object):
             #print("Ws :",self._w.shape)
             
             # Grad T
-            iT = 1.0/self._t
-            iT2 = iT**2
+            iT2 = np.square(iT)
             
             #print("X:",self._X.shape)
             #print("P:",self._P.shape)
@@ -309,9 +311,8 @@ class RTBM(object):
             #print(self._gradT.shape)
             
             # Grad Q
-            self._gradQ = np.mean(-self._P*( DDa - DDb )*E, axis=1 ).reshape(self._q.shape)
-            self._gradQ[np.diag_indices_from(self._gradQ)] = self._gradQ[np.diag_indices_from(self._gradQ)]*0.5   
-           
+            self._gradQ = np.mean(-self._P*( DDa - DDb )*E, axis=1).reshape(self._q.shape)
+            np.fill_diagonal(self._gradQ, self._gradQ.diagonal()*0.5)
         else:
             raise AssertionError('Gradients for non-diagonal T not implemented.')
             
