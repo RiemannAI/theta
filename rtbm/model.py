@@ -26,11 +26,11 @@ class Model(object):
         else: 
             print("Input of layer does not match output of previous layer! => Add ignored")
 
-    def feed_through(self, X, calc_grad=False):
+    def feed_through(self, X, grad_calc=False):
         """ Feeds the input X through all layers Vectorized """
         x = X
         for L in self._layers:
-            x = L.feedin(x, calc_grad)
+            x = L.feedin(x, grad_calc)
         return x
 
     def backprop(self, E):
