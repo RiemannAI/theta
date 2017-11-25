@@ -119,7 +119,7 @@ class CMA(object):
 class SGD(object):
     """Stochastic gradient descent"""
 
-    def train(self, cost, model, x_data, y_data=None, scheme=None, maxiter=100, batch_size=0,shuffle=False,
+    def train(self, cost, model, x_data, y_data=None, validation_split=0, scheme=None, maxiter=100, batch_size=0,shuffle=False,
               lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
         """Trains the given model with stochastic gradient descent methods
 
@@ -140,7 +140,7 @@ class SGD(object):
         :return: dictionary with iterations and cost functions
         """
         
-        return sgd.train(cost, model, x_data, y_data, scheme, maxiter, batch_size,shuffle,
+        return sgd.train(cost, model, x_data, y_data, validation_split, scheme, maxiter, batch_size,shuffle,
                          lr, decay, momentum, nesterov, noise, cplot)
     
 

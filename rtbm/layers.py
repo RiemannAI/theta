@@ -483,7 +483,7 @@ class DiagExpectationUnitLayer(Layer):
 class ThetaUnitLayer(Layer):
     """ A layer of theta units """
 
-    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
+    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False, check_positivity=False):
         """Allocate a Theta Unit Layer working in probability mode
 
         :param Nin: number of input nodes
@@ -502,7 +502,7 @@ class ThetaUnitLayer(Layer):
         for m in range(Nout):
             self._rtbm.append(RTBM(Nin, Nhidden, init_max_param_bound=init_max_param_bound,
                                    random_bound=random_bound, phase=phase, diagonal_T=diagonal_T,
-                                   check_positivity=False))
+                                   check_positivity=check_positivity))
 
         self._Np = np.sum([r.size() for r in self._rtbm])
 

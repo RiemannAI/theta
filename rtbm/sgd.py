@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
+def train(cost, model, input_x_data, input_y_data, validation_split, scheme, maxiter, batch_size, shuffle,
           lr, decay, momentum,nesterov, noise, cplot):
     """Trains the given model with stochastic gradient descent methods
 
@@ -15,6 +15,7 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
     :param x_data: the target data support
     :param y_data: the target data prediction
     :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
+    :param validation_split: fraction of data used for validation only
     :param maxiter: maximum number of allowed iterations
     :param batch_size: the batch size
     :param shuffle : shuffle the data on each iteration
@@ -27,59 +28,88 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
     :return: dictionary with iterations and cost functions
     """
 
-    
+    # verify x and y data have the same length
+    if input_y_data is not None:
+        assert input_x_data.shape[1] == input_y_data.shape[1], 'input x_data and y_data sizes does not match'
+
+    # check validation split
+    assert validation_split < 1, 'validation_split too large, no training data'
+
+    # prepare trainng and validation data
+    training_x_data = input_x_data
+    training_y_data = input_y_data
+    validation_x_data = None
+    validation_y_data = None
+
+    # create validation set
+    if validation_split > 0:
+        size = int(input_x_data.shape[1] * validation_split)
+        training_x_data = input_x_data[:,:-size]
+        validation_x_data = input_x_data[:,input_x_data.shape[1]-size:]
+        if input_y_data is not None:
+            training_y_data = input_y_data[:, :-size]
+            validation_y_data = input_y_data[:,input_y_data.shape[1]-size:]
+
     # Generate batches
     RE = 0
     if batch_size > 0:
-        BS = x_data.shape[1] / batch_size
-        if(x_data.shape[1] % batch_size > 0):
+        BS = training_x_data.shape[1] / batch_size
+        if training_x_data.shape[1] % batch_size > 0:
             RE = 1
     else:
         BS = 1
-        batch_size = x_data.shape[1]
+        batch_size = training_x_data.shape[1]
 
     # Switch on/off noise
     nF = 0
-    if noise > 0 :
+    if noise > 0:
         nF = 1
 
     t0 = time.time()
 
-    cost_hist = np.zeros(maxiter)
+    cost_tr_hist = np.zeros(maxiter)
+    cost_val_hist = np.zeros(maxiter)
     
     # Get inital W parameter
     W = model.get_parameters()
     oldG = np.zeros(W.shape)
 
     # Loop over epoches
-    shuffled_indexes = np.arange(x_data.shape[1])
-    for i in range(0, maxiter):
+    shuffled_indexes = np.arange(training_x_data.shape[1])
+    for i in range(maxiter):
 
         if shuffle:
             np.random.shuffle(shuffled_indexes)
         
-        train_data_x = x_data[:, shuffled_indexes]
-        if y_data is not None:
-            train_data_y = y_data[:, shuffled_indexes]
+        shuffled_x_data = training_x_data[:, shuffled_indexes]
+        shuffled_y_data = None
 
-        partial_cost_batch = 0
+        if training_y_data is not None:
+            shuffled_y_data = training_y_data[:, shuffled_indexes]
+
+        partial_cost_tr_batch = 0
+        partial_cost_val_batch = 0
 
         # Loop over batches
         for b in range(BS+RE):
             
             # Prepare data    
-            data_x = train_data_x[:,b*batch_size:(b+1)*batch_size]
-            if y_data is not None:
-                data_y = train_data_y[:,b*batch_size:(b+1)*batch_size]
-            else:
-                data_y = None
-                
+            data_x = shuffled_x_data[:,b*batch_size:(b+1)*batch_size]
+            data_y = None
+            if shuffled_y_data is not None:
+                data_y = shuffled_y_data[:,b*batch_size:(b+1)*batch_size]
+
             # Feedforward
             Xout = model.feed_through(data_x, True)
             
             # Calc cost
-            partial_cost_batch += cost.cost(Xout,data_y)
-            
+            partial_cost_tr_batch += cost.cost(Xout,data_y)
+
+            # calc validation
+            if validation_x_data is not None:
+                Xval = model.feed_through(validation_x_data, False)
+                partial_cost_val_batch += cost.cost(Xval, validation_y_data)
+
             # Backprop
             model.backprop(cost.gradient(Xout,data_y))
 
@@ -112,20 +142,23 @@ def train(cost, model, x_data, y_data, scheme, maxiter, batch_size, shuffle,
         lr = lr*(1-decay)
 
         # fill cost histogram
-        cost_hist[i] = partial_cost_batch/(BS+RE)
+        cost_tr_hist[i] = partial_cost_tr_batch/(BS+RE)
+        cost_val_hist[i] = partial_cost_val_batch/(BS+RE)
 
         # print to screen
-        progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f" % (i+1, time.time()-t0, cost_hist[i]))
+        progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f | val = %f" % (i+1, time.time()-t0, cost_tr_hist[i],cost_val_hist[i]))
 
     I = (np.linspace(0, maxiter-1, maxiter))
     if cplot:
-        plt.figure(figsize=(3,2))
-        plt.plot(I, cost_hist,"-")
-        plt.ylabel("C", rotation=0, labelpad=10) 
+        f, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,2))
+        ax1.plot(I, cost_tr_hist, '-', label='training')
+        ax1.set_ylabel("C", rotation=0, labelpad=10)
+        ax1.legend()
+        ax2.plot(I, cost_val_hist, 'r-', label='validation')
+        ax2.legend()
         plt.show()
         
-    return {'iterations': I, 'cost': cost_hist}
-
+    return {'iterations': I, 'cost_tr': cost_tr_hist, 'cost_val': cost_val_hist}
 
 
 def progress_bar(iteration, total, suffix='', length=20, fill='█'):
