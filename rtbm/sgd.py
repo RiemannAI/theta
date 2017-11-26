@@ -161,8 +161,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
         ax1.legend()
         ax2.plot(I, cost_val_hist, 'r-', label='validation')
         ax2.legend()
-        plt.show()
-        
+
     return {'iterations': I, 'cost_tr': cost_tr_hist, 'cost_val': cost_val_hist}
 
 
