@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train(cost, model, input_x_data, input_y_data, validation_split, validation_x_data, validation_y_data,
+def train(cost, model, input_x_data, input_y_data, validation_split, validation_x_data, validation_y_data, stopping,
           scheme, maxiter, batch_size, shuffle, lr, decay, momentum,nesterov, noise, cplot):
     """Trains the given model with stochastic gradient descent methods
 
@@ -18,6 +18,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
     :param validation_split: fraction of data used for validation only
     :param validation_x_data: external set of validation support
     :param validation_y_data: external set of validation target
+    :param stopping: the stopping class (see stopping.py)
     :param maxiter: maximum number of allowed iterations
     :param batch_size: the batch size
     :param shuffle : shuffle the data on each iteration
@@ -57,6 +58,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
         if input_y_data is not None:
             training_y_data = input_y_data[:, :-size]
             validation_y_data = input_y_data[:,input_y_data.shape[1]-size:]
+        print('Split summary: training size %d | validation size %d' % (training_x_data.shape[1], size))
 
     # Generate batches
     RE = 0
@@ -83,6 +85,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
     oldG = np.zeros(W.shape)
 
     # Loop over epoches
+    stop_iteration = maxiter
     shuffled_indexes = np.arange(training_x_data.shape[1])
     for i in range(maxiter):
 
@@ -153,13 +156,22 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
         # print to screen
         progress_bar(i+1, maxiter, suffix="| iteration %d in %.2f(s) | cost = %f | val = %f" % (i+1, time.time()-t0, cost_tr_hist[i], cost_val_hist[i]))
 
-    I = (np.linspace(0, maxiter-1, maxiter))
+        # stop condition
+        if stopping is not None:
+            if stopping.do_stop(cost_val_hist[:i]):
+                print('\nStopping condition achieved at iteration %d' % (i+1))
+                stop_iteration = i + 1
+                break
+
+    I = np.linspace(1, maxiter, maxiter)
     if cplot:
         f, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,2))
         ax1.plot(I, cost_tr_hist, '-', label='training')
         ax1.set_ylabel("C", rotation=0, labelpad=10)
+        ax1.axvline(stop_iteration, c='g', label='stop iteration')
         ax1.legend()
         ax2.plot(I, cost_val_hist, 'r-', label='validation')
+        ax2.axvline(stop_iteration, c='g', label='stop iteration')
         ax2.legend()
 
     return {'iterations': I, 'cost_tr': cost_tr_hist, 'cost_val': cost_val_hist}
