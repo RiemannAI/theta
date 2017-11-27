@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import numpy as np
-from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
-    check_normalization_consistency, check_pos_def, rtbm_parts
+from rtbm.mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
+    check_normalization_consistency, check_pos_def
 
-from riemann_theta.riemann_theta import RiemannTheta
+from rtbm.riemann_theta.riemann_theta import RiemannTheta
 
 class AssignError(Exception):
     pass
@@ -48,9 +48,9 @@ class RTBM(object):
         self._phase = phase
         self._check_positivity = check_positivity
         if diagonal_T:
-            self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)/2 + self._Nv*self._Nh
+            self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)//2 + self._Nv*self._Nh
         else:
-            self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)/2+self._Nv*self._Nh
+            self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)//2+self._Nv*self._Nh
 
         # set operation mode
         self.mode = mode
@@ -167,13 +167,13 @@ class RTBM(object):
             index += self._Nv
         else:
             inds = np.triu_indices_from(self._t)
-            self._t[inds] = params[index:index+(self._Nv**2+self._Nv)/2]
-            self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)/2]
-            index += (self._Nv**2+self._Nv)/2
+            self._t[inds] = params[index:index+(self._Nv**2+self._Nv)//2]
+            self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)//2]
+            index += (self._Nv**2+self._Nv)//2
 
         inds = np.triu_indices_from(self._q)
-        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)/2]
-        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)/2]
+        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)//2]
+        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)//2]
 
         if self._check_positivity:
             if not check_normalization_consistency(self._t, self._q, self._w) or \

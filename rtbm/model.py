@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import numpy as np
+
 
 class Model(object):
     
@@ -133,7 +133,7 @@ class Model(object):
         
         D = (P-M)/(2*epsilon)
         
-        print g,"th (mean) numerical gradient: "
+        print (g,"th (mean) numerical gradient: ")
         print(np.mean(D,axis=1))
         
         # Calc backprop derivative
@@ -143,5 +143,5 @@ class Model(object):
         self.backprop(np.ones(O.shape))
         G = self.get_gradients()
         
-        print g,"th (mean) backprop gradient: "
+        print (g,"th (mean) backprop gradient: ")
         print(G[g])

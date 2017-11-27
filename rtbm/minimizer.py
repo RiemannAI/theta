@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function, absolute_import
 
-from __future__ import print_function
-from cma import CMAEvolutionStrategy
-import multiprocessing as mp
-from contextlib import closing
 import numpy as np
+import multiprocessing as mp
+
+from cma import CMAEvolutionStrategy
+from contextlib import closing
 from scipy.optimize import minimize
-import sgd
+
+import rtbm.sgd as sgd
 
 
 class Resource(object):
