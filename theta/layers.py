@@ -4,11 +4,11 @@ from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
-from rtbm.mathtools import factorized_hidden_expectations,factorized_hidden_expectation_backprop
-from rtbm.initializers import uniform, glorot_uniform, null
-from rtbm.activations import tanh
-from rtbm.riemann_theta.riemann_theta import RiemannTheta
-from rtbm.rtbm import RTBM
+from theta.mathtools import factorized_hidden_expectations,factorized_hidden_expectation_backprop
+from theta.initializers import uniform, glorot_uniform, null
+from theta.activations import tanh
+from theta.riemann_theta.riemann_theta import RiemannTheta
+from theta.rtbm import RTBM
 
 import matplotlib.pyplot as plt
 

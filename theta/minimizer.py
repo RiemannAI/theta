@@ -8,7 +8,7 @@ from cma import CMAEvolutionStrategy
 from contextlib import closing
 from scipy.optimize import minimize
 
-import rtbm.sgd as sgd
+import theta.sgd as sgd
 
 
 class Resource(object):

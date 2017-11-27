@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import numpy as np
-from rtbm.mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
+from theta.mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
     check_normalization_consistency, check_pos_def
 
-from rtbm.riemann_theta.riemann_theta import RiemannTheta
+from theta.riemann_theta.riemann_theta import RiemannTheta
 
 class AssignError(Exception):
     pass
