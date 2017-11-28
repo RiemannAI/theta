@@ -57,7 +57,7 @@ class NormAddLayer(Layer):
     """ Linearly combines inputs with outputs normalized by sum of weights """
     """ (no bias) """
 
-    def __init__(self, Nin, Nout, param_bound=10):
+    def __init__(self, Nin, Nout, W_init=glorot_uniform(), param_bound=10):
         self._Nin = Nin
         self._Nout = Nout
         self._Np = self._Nout*self._Nin
@@ -66,7 +66,7 @@ class NormAddLayer(Layer):
         self.set_bounds(param_bound)
 
         # Parameter init
-        self._w = np.random.uniform(-param_bound, param_bound,(Nout,Nin)).astype(complex)
+        self._w = W_init.getinit((Nout,Nin))
 
 
     def get_parameters(self):
@@ -85,22 +85,53 @@ class NormAddLayer(Layer):
 
         return True
 
+    def get_gradients(self): 
+        """ Returns gradients as a flat array
+            [w]
+        """
+        return self._gradW.flatten()
+    
+    
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
 
         return self._bounds
 
 
-    def feedin(self, X, *grad_calc):
+    def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
             Note: Vectorized
         """
-
+        
         S = np.sum(self._w,axis=1)
         O = self._w.dot(X)
 
-        return np.divide(O, S[:, np.newaxis])
+        # Store data for grad calc
+        if grad_calc:
+            self._X = X
+            self._O = O
+            self._S = S
+            
+        print("S:",S)
+        print("O:",O)
+        #print("Sn:",S[:, np.newaxis])
+        
+        return O / S#[:, np.newaxis]
 
+    def backprop(self, E):
+        #print("Es:",E.shape)
+        #print("Xs:",self._X.shape)
+        
+        delta = self._X/self._S - self._O / self._S**2
+        
+        self._gradW = E.dot(delta.T)/self._X.shape[1]
+        
+        #print("Gws:",self._gradW.shape)
+        #print("Ws:",self._w.shape)
+        
+        # That's a problem ?:
+        #return self._w.T.dot(np.sum(delta,axis=0)*E)
+        return delta*E
 
 
 class Linear(Layer):
@@ -578,9 +609,10 @@ class ThetaUnitLayer(Layer):
         """ Propagates the error E through the layer and stores gradient """
         
         result = np.zeros(shape=(self._Nout, E.shape[1]), dtype=float)
+        print("E:",E.shape)
         
         for i, m in enumerate(self._rtbm):
-            result[i] = m.backprop(E)
+            result[i] = m.backprop(E[i,:])
             
         """ Currently only as one layer supported 
             Flows from individual RTBMs need to be aggregated before 
