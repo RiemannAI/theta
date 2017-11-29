@@ -1,0 +1,7 @@
+site_name: Theta
+pages:
+  - Home: index.md
+  - User Guide:
+      - 'Getting Started': getting_started.md
+      
+theme: readthedocs
