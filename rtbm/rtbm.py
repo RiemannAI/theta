@@ -99,6 +99,9 @@ class RTBM(object):
             
         return P
 
+    def feed_through(self, X, grad_calc=False):
+        return self.__call__(X, grad_calc=grad_calc)
+
     def size(self):
         """Get size of RTBM"""
         return self._size
