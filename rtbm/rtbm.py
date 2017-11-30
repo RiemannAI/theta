@@ -260,7 +260,7 @@ class RTBM(object):
             #print("DDb:",DDb)
             #print("DDbf:",DDb.flatten()) 
             # Try to invert Hb ordering
-            Hb = DDb.reshape(self._q.shape)
+            Hb = DDb.flatten().reshape(self._q.shape)
             np.fill_diagonal(Hb, Hb.diagonal()*0.5)
             #Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5
             
