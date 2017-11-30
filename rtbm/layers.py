@@ -543,7 +543,7 @@ class ThetaUnitLayer(Layer):
         for m in self._rtbm:
             if not m.set_parameters(params[index:index+m.size()]):
                 return False
-            index += 0
+            index += m.size()
         return True
 
     def set_bounds(self, *params):
