@@ -55,7 +55,7 @@ class Layer(object):
         
 class NormAddLayer(Layer):
     """ Linearly combines inputs with outputs normalized by sum of weights """
-    """ Weights are exponentiated such that > 0 """
+    """ Weights are exponentiated """
     """ (no bias) """
 
     def __init__(self, Nin, Nout, W_init=null(), param_bound=10):
@@ -540,7 +540,7 @@ class ThetaUnitLayer(Layer):
         if(N >0 and N <= len(self._rtbm)):
             return self._rtbm[N-1]
         else:
-           print("Layer consists of only",len(self._rtbm),"units")
+            print("Layer consists of only",len(self._rtbm),"units")
         
     def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
