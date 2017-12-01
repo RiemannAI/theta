@@ -33,7 +33,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
 
     # verify x and y data have the same length
     if input_y_data is not None:
-        assert input_x_data.shape == input_y_data.shape, 'input x_data and y_data shape does not match'
+        assert input_x_data.shape[-1] == input_y_data.shape[-1], 'input x_data and y_data shape does not match'
 
     # check if validation_split and validation_x_data are set simultaneously
     if validation_split > 0 and validation_x_data is not None:
@@ -41,7 +41,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
 
     # if validation_y_data is passed, check it matches the shape of its support
     if validation_y_data is not None:
-        assert validation_x_data.shape == validation_y_data.shape, 'validation x and y data shapes do not match'
+        assert validation_x_data.shape[-1] == validation_y_data.shape[-1], 'validation x and y data shapes do not match'
 
     # verify that validation_split doesn't kill all training points
     assert validation_split < 1, 'validation_split too large, no training data'
