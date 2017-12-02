@@ -119,6 +119,11 @@ class Model(object):
         print("O: ",O)
         print("=======")
         
+         
+        # Calc backprop derivative
+        self.backprop(np.ones(O.shape))
+        G = self.get_gradients()
+        
         Wp = W.copy()
         Wm = W.copy()
         

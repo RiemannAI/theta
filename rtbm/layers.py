@@ -55,9 +55,11 @@ class Layer(object):
         
 class NormAddLayer(Layer):
     """ Linearly combines inputs with outputs normalized by sum of weights """
+    """ Weights are exponentiated """
     """ (no bias) """
 
-    def __init__(self, Nin, Nout, param_bound=10):
+    def __init__(self, Nin, Nout, W_init=null(), param_bound=10):
+        
         self._Nin = Nin
         self._Nout = Nout
         self._Np = self._Nout*self._Nin
@@ -66,7 +68,7 @@ class NormAddLayer(Layer):
         self.set_bounds(param_bound)
 
         # Parameter init
-        self._w = np.random.uniform(-param_bound, param_bound,(Nout,Nin)).astype(complex)
+        self._w = W_init.getinit((Nout,Nin))
 
 
     def get_parameters(self):
@@ -85,22 +87,47 @@ class NormAddLayer(Layer):
 
         return True
 
+    def get_gradients(self): 
+        """ Returns gradients as a flat array
+            [w]
+        """
+        return self._gradW.flatten()
+    
+    
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
 
         return self._bounds
 
 
-    def feedin(self, X, *grad_calc):
+    def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
             Note: Vectorized
         """
+        eW = np.exp(self._w)
+        S = np.sum(eW,axis=1)
+        O = eW.dot(X)
 
-        S = np.sum(self._w,axis=1)
-        O = self._w.dot(X)
+        # Store data for grad calc
+        if grad_calc:
+            self._eW = eW
+            self._X = X
+            self._O = O
+            self._S = S
+            
+        #print("S:",S)
+        #print("O:",O)
+        #print("Sn:",S[:, np.newaxis])
+        
+        return O / S#[:, np.newaxis]
 
-        return np.divide(O, S[:, np.newaxis])
-
+    def backprop(self, E):
+       
+        delta = self._X/self._S - self._O / self._S**2
+        
+        self._gradW = self._eW*E.dot(delta.T)/self._X.shape[1]
+    
+        return (self._eW/self._S).T.dot(E)
 
 
 class Linear(Layer):
@@ -483,7 +510,7 @@ class DiagExpectationUnitLayer(Layer):
 class ThetaUnitLayer(Layer):
     """ A layer of theta units """
 
-    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False, check_positivity=False):
+    def __init__(self, Nin, Nout, Nhidden=1, init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False, check_positivity=True):
         """Allocate a Theta Unit Layer working in probability mode
 
         :param Nin: number of input nodes
@@ -513,7 +540,7 @@ class ThetaUnitLayer(Layer):
         if(N >0 and N <= len(self._rtbm)):
             return self._rtbm[N-1]
         else:
-           print("Layer consists of only",len(self._rtbm),"units")
+            print("Layer consists of only",len(self._rtbm),"units")
         
     def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
@@ -578,9 +605,9 @@ class ThetaUnitLayer(Layer):
         """ Propagates the error E through the layer and stores gradient """
         
         result = np.zeros(shape=(self._Nout, E.shape[1]), dtype=float)
-        
+       
         for i, m in enumerate(self._rtbm):
-            result[i] = m.backprop(E)
+            result[i] = m.backprop(E[i,:])
             
         """ Currently only as one layer supported 
             Flows from individual RTBMs need to be aggregated before 

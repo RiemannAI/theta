@@ -233,8 +233,6 @@ class RTBM(object):
             raise AssertionError('Mode %s not implemented.' % value)
 
     def backprop(self, E):
-        #print("E:",E.shape)
-        #print(E)
         
         if self._diagonal_T:
             
@@ -260,14 +258,8 @@ class RTBM(object):
             DDb = coeff2*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D2)
             
             # H from DDb
-            #print("DDb:",DDb)
-            #print("DDbf:",DDb.flatten()) 
-            # Try to invert Hb ordering
-            Hb = DDb.reshape(self._q.shape)
+            Hb = DDb.flatten().reshape(self._q.shape)
             np.fill_diagonal(Hb, Hb.diagonal()*0.5)
-            #Hb[np.diag_indices_from(Hb)] = Hb[np.diag_indices_from(Hb)]*0.5
-            
-            #print("Hb:",Hb)
             
             # Grad Bv
             self._gradBv = np.mean(E*(self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db))), axis=1)
@@ -276,42 +268,12 @@ class RTBM(object):
             self._gradBh = np.mean(E*self._P*(Da-Db), axis=1) 
            
             # Grad W
-            # ToDo
-            # + self._bv.T.dot(iT).dot(Db.T) -Hb.dot(Wtit).T - iTW.dot(Hb)  
-            #print("X",self._X.shape)
-            #print("W",self._w.shape)
-            #print("Db",Db.shape)
-            #print("P",self._P.shape)
-            #print("bv",self._bv.shape)
-            #print("iT",iT.shape)
-            #print("iTW",iTW.shape)
-            #x = self._bv.T.dot(iT)
-            #print("bvtiT",x.shape)
-            
-            self._gradW = (E*self._P*self._X).dot(Da.T)/self._X.shape[1] +  np.mean(E*self._P, axis=1)*(  self._bv.T.dot(iT).T.dot(Db.T)  - 2*iTW.dot(Hb))
-            
-            
-            #  Db.dot( )
-            
-            
-            #print("gW :",self._gradW)
-            #print("gWs:",self._gradW.shape)
-            #print("Ws :",self._w.shape)
-            
+            self._gradW = (E*self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean(E*self._P, axis=1)*(  self._bv.T.dot(iT).T.dot(Db.T)  - 2*iTW.dot(Hb))
+   
             # Grad T
             iT2 = np.square(iT)
             
-            #print("X:",self._X.shape)
-            #print("P:",self._P.shape)
-            
-            #print("iT:",iT.shape)
-            #x = -0.5*self._P*self._X**2 
-            #print(x.shape)
-            
-            self._gradT = np.diag(np.mean(-0.5*self._P*self._X**2*E, axis=1)) + np.mean(E*self._P, axis=1)*(0.5*iT + self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*self._w.dot(Hb).dot(self._w.T) )   # np.mean( self._P*(0.5*( iT-np.eye(2)*self._X**2 )    ) ,axis=1, keepdims=True)
-            
-            # + ) 
-            #print(self._gradT.shape)
+            self._gradT = np.diag(np.mean(-0.5*self._P*self._X**2*E, axis=1)) + np.mean(E*self._P, axis=1)*(0.5*iT + self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*self._w.dot(Hb).dot(self._w.T) )   
             
             # Grad Q
             self._gradQ = np.mean(-self._P*( DDa - DDb )*E, axis=1).reshape(self._q.shape)
