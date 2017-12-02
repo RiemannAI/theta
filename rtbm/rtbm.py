@@ -99,6 +99,9 @@ class RTBM(object):
             
         return P
 
+    def feed_through(self, X, grad_calc=False):
+        return self.__call__(X, grad_calc=grad_calc)
+
     def size(self):
         """Get size of RTBM"""
         return self._size
@@ -193,10 +196,10 @@ class RTBM(object):
         inds = np.triu_indices_from(self._gradQ)
         
         if(self._diagonal_T):
-            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  ))
+            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  )))
 
         else:
-            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  ))
+            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  )))
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -221,11 +224,11 @@ class RTBM(object):
             mode = 2
 
         if value is self.Mode.Probability:
-            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode)
+            self._call = lambda data: np.real(rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
         elif value is self.Mode.LogProbability:
-            self._call = lambda data: rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode)
+            self._call = lambda data: np.real(rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
         elif value is self.Mode.Expectation:
-            self._call = lambda data: self._phase*hidden_expectations(data, self._bh, self._w, self._q)
+            self._call = lambda data: np.real(self._phase*hidden_expectations(data, self._bh, self._w, self._q))
         else:
             raise AssertionError('Mode %s not implemented.' % value)
 
