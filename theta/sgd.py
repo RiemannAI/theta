@@ -63,7 +63,7 @@ def train(cost, model, input_x_data, input_y_data, validation_split, validation_
     # Generate batches
     RE = 0
     if batch_size > 0:
-        BS = training_x_data.shape[1] / batch_size
+        BS = training_x_data.shape[1] // batch_size
         if training_x_data.shape[1] % batch_size > 0:
             RE = 1
     else:

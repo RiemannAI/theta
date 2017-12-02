@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
-
 import numpy as np
-from mathtools import factorized_hidden_expectations,factorized_hidden_expectation_backprop
-from riemann_theta.riemann_theta import RiemannTheta
-from initializers import uniform, normal, glorot_uniform, glorot_normal, null
-from activations import sigmoid, tanh
-from rtbm import RTBM
+
+from theta.mathtools import factorized_hidden_expectations,factorized_hidden_expectation_backprop
+from theta.initializers import uniform, glorot_uniform, null
+from theta.activations import tanh
+from theta.riemann_theta.riemann_theta import RiemannTheta
+from theta.rtbm import RTBM
 
 import matplotlib.pyplot as plt
 
