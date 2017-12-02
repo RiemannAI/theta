@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
 import numpy as np
-import sys
+
 
 class actfunc(object):
     """ Abstract class for cost functions """

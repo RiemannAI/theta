@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Setup script for the RTBM package
+"""Setup script for the theta package
 """
 
 from setuptools import setup, find_packages, Extension
@@ -8,20 +8,20 @@ import numpy
 import os, io, re
 
 extensions = [
-    Extension('rtbm.riemann_theta.riemann_theta',
-              sources=[os.path.join('rtbm','riemann_theta','riemann_theta.pyx'),
-                       os.path.join('rtbm','riemann_theta','finite_sum.c')],
+    Extension('theta.riemann_theta.riemann_theta',
+              sources=[os.path.join('theta','riemann_theta','riemann_theta.pyx'),
+                       os.path.join('theta','riemann_theta','finite_sum.c')],
               include_dirs=[numpy.get_include()],
               extra_compile_args=['-std=c99'],
     ),    
-    Extension('rtbm.riemann_theta.radius',
-              sources=[os.path.join('rtbm','riemann_theta','radius.pyx'),
-                       os.path.join('rtbm','riemann_theta','lll_reduce.c')],
+    Extension('theta.riemann_theta.radius',
+              sources=[os.path.join('theta','riemann_theta','radius.pyx'),
+                       os.path.join('theta','riemann_theta','lll_reduce.c')],
               include_dirs=[numpy.get_include()],
               extra_compile_args=['-std=c99'],
     ),
-    Extension('rtbm.riemann_theta.integer_points',
-              sources=[os.path.join('rtbm','riemann_theta','integer_points.pyx')],
+    Extension('theta.riemann_theta.integer_points',
+              sources=[os.path.join('theta','riemann_theta','integer_points.pyx')],
               include_dirs=[numpy.get_include()],
               extra_compile_args=['-std=c99'],
     ),
@@ -46,14 +46,14 @@ def find_version(*file_paths):
 
 
 setup(
-    name='RTBM',
+    name='theta',
     description='Riemann-Theta Boltzmann Machine',
-    version=find_version("rtbm", "__init__.py"),
+    version=find_version("theta", "__init__.py"),
     author='S. Carrazza, D. Krefl',
     author_email='stefano.carrazza@cern.ch',
     packages=find_packages(),
     ext_modules=cythonize(extensions),
-    url='https://github.com/scarrazza/RTBM',
+    url='https://github.com/RiemannAI/theta',
     license='LICENSE',
     long_description=open('README.md').read(),
     install_requires=[

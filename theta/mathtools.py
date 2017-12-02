@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 import numpy as np
-from riemann_theta.riemann_theta import RiemannTheta
+from theta.riemann_theta.riemann_theta import RiemannTheta
 RTBM_precision= 1e-8
 
 
@@ -12,6 +13,28 @@ def check_normalization_consistency(t, q, w):
 
 def check_pos_def(x):
     return np.all(np.linalg.eigvals(x) > 0)
+
+
+def rtbm_parts(v, bv, bh, t, w, q, mode=1):
+    """ Calculates P(v), split into parts """
+    detT = np.linalg.det(t)
+    invT = np.linalg.inv(t)
+    vT = v.T
+    vTv = np.dot(np.dot(vT, t), v)
+    BvT = bv.T
+    BhT = bh.T
+    Bvv = np.dot(BvT, v)
+    BiTB = np.dot(np.dot(BvT, invT), bv)
+    BtiTW = np.dot(np.dot(BvT, invT), w)
+    WtiTW = np.dot(np.dot(w.T, invT), w)
+    
+    ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1]))
+    
+    uR1, vR1 = RiemannTheta.parts_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
+    uR2, vR2 = RiemannTheta.parts_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
+   
+    return ( np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF ), ( vR1 / vR2 * np.exp(uR1-uR2) )
+
 
 
 def rtbm_probability(v, bv, bh, t, w, q, mode=1):
