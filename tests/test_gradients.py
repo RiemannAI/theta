@@ -1,8 +1,8 @@
 """Python Unit testing for gradients"""
 
 import numpy as np
-from rtbm.model import Model
-from rtbm.layers import ThetaUnitLayer, DiagExpectationUnitLayer, Linear, NonLinear, SoftMaxLayer
+from theta.model import Model
+from theta.layers import ThetaUnitLayer, DiagExpectationUnitLayer, Linear, NonLinear, SoftMaxLayer
 
 
 def run_check(mdl, diffepsilon=1e-5, epsilon=1e-5):
