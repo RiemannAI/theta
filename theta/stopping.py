@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
 
+
 class stopping(object):
     """ Abstract class for stopping condition """
     __metaclass__ = ABCMeta

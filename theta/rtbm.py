@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import numpy as np
-from mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
-    check_normalization_consistency, check_pos_def, rtbm_parts
+from theta.mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
+    check_normalization_consistency, check_pos_def
 
-from riemann_theta.riemann_theta import RiemannTheta
+from theta.riemann_theta.riemann_theta import RiemannTheta
 
 class AssignError(Exception):
     pass
@@ -48,9 +48,9 @@ class RTBM(object):
         self._phase = phase
         self._check_positivity = check_positivity
         if diagonal_T:
-            self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)/2 + self._Nv*self._Nh
+            self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)//2 + self._Nv*self._Nh
         else:
-            self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)/2+self._Nv*self._Nh
+            self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)//2+self._Nv*self._Nh
 
         # set operation mode
         self.mode = mode
@@ -98,6 +98,9 @@ class RTBM(object):
             self._P = P
             
         return P
+
+    def feed_through(self, X, grad_calc=False):
+        return self.__call__(X, grad_calc=grad_calc)
 
     def size(self):
         """Get size of RTBM"""
@@ -167,13 +170,13 @@ class RTBM(object):
             index += self._Nv
         else:
             inds = np.triu_indices_from(self._t)
-            self._t[inds] = params[index:index+(self._Nv**2+self._Nv)/2]
-            self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)/2]
-            index += (self._Nv**2+self._Nv)/2
+            self._t[inds] = params[index:index+(self._Nv**2+self._Nv)//2]
+            self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)//2]
+            index += (self._Nv**2+self._Nv)//2
 
         inds = np.triu_indices_from(self._q)
-        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)/2]
-        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)/2]
+        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)//2]
+        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)//2]
 
         if self._check_positivity:
             if not check_normalization_consistency(self._t, self._q, self._w) or \
@@ -193,10 +196,10 @@ class RTBM(object):
         inds = np.triu_indices_from(self._gradQ)
         
         if(self._diagonal_T):
-            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  ))
+            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  )))
 
         else:
-            return np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  ))
+            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  )))
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -221,11 +224,11 @@ class RTBM(object):
             mode = 2
 
         if value is self.Mode.Probability:
-            self._call = lambda data: rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode)
+            self._call = lambda data: np.real(rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
         elif value is self.Mode.LogProbability:
-            self._call = lambda data: rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode)
+            self._call = lambda data: np.real(rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
         elif value is self.Mode.Expectation:
-            self._call = lambda data: self._phase*hidden_expectations(data, self._bh, self._w, self._q)
+            self._call = lambda data: np.real(self._phase*hidden_expectations(data, self._bh, self._w, self._q))
         else:
             raise AssertionError('Mode %s not implemented.' % value)
 

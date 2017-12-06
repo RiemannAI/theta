@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 import numpy as np
-from riemann_theta.riemann_theta import RiemannTheta
+from theta.riemann_theta.riemann_theta import RiemannTheta
 RTBM_precision= 1e-8
 
 
