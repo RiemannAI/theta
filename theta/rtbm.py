@@ -18,8 +18,7 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
-                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False,
-                 check_positivity=True):
+                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
         """Setup operators for BM based on the number of visible and hidden units
 
         Args:
@@ -46,7 +45,7 @@ class RTBM(object):
         self._parameters = None
         self._X = None
         self._phase = phase
-        self._check_positivity = check_positivity
+        self._check_positivity = True
         if diagonal_T:
             self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)//2 + self._Nv*self._Nh
         else:
@@ -96,6 +95,9 @@ class RTBM(object):
         if grad_calc:
             self._X = data
             self._P = P
+            self._check_positivity = False
+        else:
+            self._check_positivity = True
             
         return P
 
