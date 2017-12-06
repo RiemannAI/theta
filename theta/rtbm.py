@@ -211,6 +211,20 @@ class RTBM(object):
         upper_bounds = [param_bound] * self._size
         lower_bounds = [-param_bound] * self._size
         self._bounds = [lower_bounds, upper_bounds]
+
+    def mean(self):
+        """compute mean estimator"""
+        if self._mode is self.Mode.Probability:
+            invT = np.linalg.inv(self._t)
+            BvT = self._bv.T
+            BhT = self._bh.T
+            BtiTW = np.dot(np.dot(BvT, invT), self._w)
+            WtiTW = np.dot(np.dot(self._w.T, invT), self._w)
+            return np.real(1.0 / (2j * np.pi) * invT * self._w *
+                           RiemannTheta.normalized_eval((BhT - BtiTW) / (2.0j * np.pi), (-self._q + WtiTW) / (2.0j * np.pi),
+                                                        mode=self._mode, derivs=np.array([[1]])))
+        else:
+            assert AssertionError('Mean for mode %s not implemented' % self._mode)
     
     @property
     def mode(self):
@@ -233,6 +247,9 @@ class RTBM(object):
             self._call = lambda data: np.real(self._phase*hidden_expectations(data, self._bh, self._w, self._q))
         else:
             raise AssertionError('Mode %s not implemented.' % value)
+
+        self._mode = value
+
 
     def backprop(self, E):
         
