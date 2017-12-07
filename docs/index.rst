@@ -3,9 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:github_url:
-
-
 Welcome to theta's documentation!
 =================================
 
@@ -23,7 +20,6 @@ The theoretical paper with the initial explanation of the code is available in
 
    install
    theta
-   examples
 
 ..
   Indices and tables
@@ -32,3 +28,12 @@ The theoretical paper with the initial explanation of the code is available in
   * :ref:`genindex`
   * :ref:`modindex`
   * :ref:`search`
+
+
+License and citation policy
+---------------------------
+
+The theta package is an open-source package under AGPLv3. If you use the theta
+package please cite the following article::
+
+  Authors... Riemann Theta Boltzmann Machine
