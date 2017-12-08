@@ -22,9 +22,23 @@ _______________________
 RTBM
 ----
 
-.. autoclass:: theta.rtbm.RTBM
-    :members:
+The ``theta.rtbm`` module contains the definition of ``class
+RTBM``. This object provides the simplest interface to the parameters
+of the RTMB and to the probability and expectation values.
 
+.. figure:: rtbm.png
+   :scale: 30 %
+   :align: center
+
+where :math:`T` is the connection matrix of the visible sector with
+:math:`N_v` visible units, :math:`Q` of the hidden sector with
+:math:`N_h` hidden units and :math:`W` the inter-connections.
+      
+.. autoclass:: theta.rtbm.RTBM
+   :members:
+   :inherited-members:
+   :member-order: bysource
+   
 _______________________
 
 .. _Model:

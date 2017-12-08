@@ -11,27 +11,43 @@ class AssignError(Exception):
 
 
 class RTBM(object):
-    """This class implements the Riemann Theta Boltzmann Machine"""
+    """This class implements the Riemann-Theta Boltzmann Machine.
+    Setup operators for BM based on the number of visible and hidden units
+
+    Args:
+        visible_units (int): number of visible units.
+        hidden_units (int): number of hidden units.
+        mode (theta.rtbm.RTBM.Mode): set the working mode among: `probability mode` (``Mode.Probability``),
+            `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.
+        init_max_param_bound (float): size of maximum parameters used in random initialization.
+        random_bound (float): selects the maximum random value for the Schur complement initialization.
+        phase (complex): number which multiplies w and bh.
+        diagonal_T (bool): force T diagonal, by default T is symmetric.
+        check_positivity (bool): verifies if set_parameters satisfy positivity condition.
+
+    Example:
+        Here a short example showing how to allocate the RTBM class::
+
+            from theta.rtbm import RTBM
+            m = RTBM(1, 2)  # allocates a RTBM with Nv=1 and Nh=2
+            print(m.size()) # returns the total number of parameters
+            output = m(x)   # evaluate prediction
+    """
+
     class Mode:
+        """Select the RTBM output mode when ``__call__`` is invoked through the ``()`` operator.
+
+        Possible options are:
+            * ``Mode.Probability``: set the output to probability mode.
+            * ``Mode.LogProbability``: set the output to log probability mode.
+            * ``Mode.Expectation``: set the output to expectation mode.
+        """
         Probability = 0
         LogProbability = 1
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
                  init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
-        """Setup operators for BM based on the number of visible and hidden units
-
-        Args:
-            visible_units: number of visible units
-            hidden_units: number of hidden units
-            mode: see Mode enumerator
-            init_max_param_bound: size of maximum parameters used in random initialization.
-            random_bound: selects the maximum random value for the Schur complement initialization
-            phase: number which multiplies w and bh
-            diagonal_T: force T diagonal, by default T is symmetric
-            check_positivity: verifies if set_parameters satisfy positivity condition
-
-        """
         self._Nv = visible_units
         self._Nh = hidden_units
         self._bv = np.zeros([visible_units, 1])
@@ -73,7 +89,7 @@ class RTBM(object):
         # Generate vector for hessian calc call
         self._D2 = []
         
-        if(hidden_units > 1):
+        if hidden_units > 1:
             for i in range(0, hidden_units):
                 for j in range(0, hidden_units):
                     tmp = [0] * hidden_units**2
@@ -90,8 +106,8 @@ class RTBM(object):
         """Evaluates the RTBM instance for a given data array"""
         
         P = self._call(data)
+
         # Store for backprop
-       
         if grad_calc:
             self._X = data
             self._P = P
@@ -102,18 +118,30 @@ class RTBM(object):
         return P
 
     def feed_through(self, X, grad_calc=False):
+        """Evaluates the RTBM. This method is equivalent in calling ``__call__`` or simply ``()``.
+
+        Args:
+            X (numpy.array): the feedin data, shape (Nv, Ndata).
+            grad_calc (bool): if True stores useful data for backpropagation.
+
+        Returns:
+            numpy.array: predictions for the RTBM.
+        """
         return self.__call__(X, grad_calc=grad_calc)
 
     def size(self):
-        """Get size of RTBM"""
+        """
+        Returns:
+            int: the size of the RTBM.
+        """
         return self._size
 
     def random_init(self, bound):
-        """A fast random initializer based on Schur complement, if diagonal_T=True
+        """A fast random initializer based on Schur complement, if ``diagonal_T=True``
         the initial Schur complement is defined diagonal, so Q and T are diagonal and W is zero.
 
         Args:
-            bound: the maximum value for the random matrix X used by the Schur complement
+            bound (float): the maximum value for the random matrix X used by the Schur complement.
         """
         a_shape = ((self._Nv+self._Nh), (self._Nv+self._Nh))
         a_size = (self._Nv+self._Nh)**2
@@ -146,11 +174,11 @@ class RTBM(object):
     def set_parameters(self, params):
         """Assigns a flat array of parameters to the RTBM matrices.
 
-        Args
-            params: list of parameters to populate Bv, Bh, W, T, Q
+        Args:
+            params (numpy.array): list of parameters to populate Bv, Bh, W, T, Q
 
         Returns:
-            True if Q, T and Q-WtTW are positive, False otherwise.
+            bool: True if Q, T and Q-WtTW are positive, False otherwise.
         """
 
         if len(params) != self._size:
@@ -187,12 +215,16 @@ class RTBM(object):
         return True
 
     def get_parameters(self):
-        """Return flat array with current matrices weights """
+        """
+        Returns:
+            numpy.array: flat array with current matrices weights.
+        """
         return self._parameters
 
     def get_gradients(self):
-        """Return flat array with calculated gradients 
-           [Gbh,Gbv,Gw,Gt,Gq]
+        """
+        Returns:
+            numpy array: flat array with calculated gradients [Gbh,Gbv,Gw,Gt,Gq].
         """
         
         inds = np.triu_indices_from(self._gradQ)
@@ -204,16 +236,31 @@ class RTBM(object):
             return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  )))
 
     def get_bounds(self):
-        """Returns two arrays with min and max of each parameter for the GA"""
+        """
+        Returns:
+            list of numpy.array: two arrays with min and max of each parameter for the GA."""
         return self._bounds
 
     def set_bounds(self, param_bound):
+        """Sets the parameter bound for each parameter.
+
+        Args:
+            param_bound (float): the maximum absolute value for parameter variation.
+        """
         upper_bounds = [param_bound] * self._size
         lower_bounds = [-param_bound] * self._size
         self._bounds = [lower_bounds, upper_bounds]
 
     def mean(self):
-        """compute mean estimator"""
+        """Computes the first moment estimator (mean).
+
+        Returns:
+            float: the mean of the probability distribution.
+
+        Raises:
+            theta.rtbm.AssertionError: if ``mode`` is not ``theta.rtbm.RTBM.Mode.Probability``.
+
+        """
         if self._mode is self.Mode.Probability:
             invT = np.linalg.inv(self._t)
             BvT = self._bv.T
@@ -225,34 +272,19 @@ class RTBM(object):
                                                         mode=self._mode, derivs=np.array([[1]])))
         else:
             assert AssertionError('Mean for mode %s not implemented' % self._mode)
-    
-    @property
-    def mode(self):
-        return self._mode
-
-    @mode.setter
-    def mode(self, value):
-
-        mode = 0
-        if self._phase == 1:
-            mode = 1
-        elif self._phase == 1j:
-            mode = 2
-
-        if value is self.Mode.Probability:
-            self._call = lambda data: np.real(rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
-        elif value is self.Mode.LogProbability:
-            self._call = lambda data: np.real(rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
-        elif value is self.Mode.Expectation:
-            self._call = lambda data: np.real(self._phase*hidden_expectations(data, self._bh, self._w, self._q))
-        else:
-            raise AssertionError('Mode %s not implemented.' % value)
-
-        self._mode = value
-
 
     def backprop(self, E):
-        
+        """Evaluates and stores the gradients for backpropagation.
+
+        Note:
+            This method only works with ``diagonal_T=True``.
+
+        Args:
+            E (numpy.array): the error for backpropagation.
+
+        Raises:
+            theta.rtbm.RTBM.AssertionError: if ``diagonal_T=False``.
+        """
         if self._diagonal_T:
             
             vWb = np.transpose(self._X).dot(self._w)+self._bh.T
@@ -299,9 +331,36 @@ class RTBM(object):
             np.fill_diagonal(self._gradQ, self._gradQ.diagonal()*0.5)
         else:
             raise AssertionError('Gradients for non-diagonal T not implemented.')
-            
+
+    @property
+    def mode(self):
+        """Sets and returns the RTBM mode."""
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        mode = 0
+        if self._phase == 1:
+            mode = 1
+        elif self._phase == 1j:
+            mode = 2
+
+        if value is self.Mode.Probability:
+            self._call = lambda data: np.real(
+                rtbm_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
+        elif value is self.Mode.LogProbability:
+            self._call = lambda data: np.real(
+                rtbm_log_probability(data, self._bv, self._bh, self._t, self._w, self._q, mode))
+        elif value is self.Mode.Expectation:
+            self._call = lambda data: np.real(self._phase * hidden_expectations(data, self._bh, self._w, self._q))
+        else:
+            raise AssertionError('Mode %s not implemented.' % value)
+
+        self._mode = value
+
     @property
     def bv(self):
+        """Sets and returns the Bv"""
         return self._bv
 
     @bv.setter
@@ -312,6 +371,7 @@ class RTBM(object):
 
     @property
     def t(self):
+        """Sets and returns the T"""
         return self._t
 
     @t.setter
@@ -322,6 +382,7 @@ class RTBM(object):
 
     @property
     def bh(self):
+        """Sets and returns the Bh"""
         return self._bh
 
     @bh.setter
@@ -332,6 +393,7 @@ class RTBM(object):
 
     @property
     def w(self):
+        """Set and returns the W"""
         return self._w
 
     @w.setter
@@ -342,6 +404,7 @@ class RTBM(object):
 
     @property
     def q(self):
+        """Sets and returns the Q"""
         return self._q
 
     @q.setter
