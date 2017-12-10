@@ -44,7 +44,10 @@ class Layer(object):
         return self._Nout
 
     def size(self):
-        """ Returns total # parameters """
+        """
+        Returns:
+            int: total number of parameters.
+        """
         return self._Np
 
     def set_bounds(self, param_bound):
@@ -55,9 +58,18 @@ class Layer(object):
         
         
 class NormAddLayer(Layer):
-    """ Linearly combines inputs with outputs normalized by sum of weights """
-    """ Weights are exponentiated """
-    """ (no bias) """
+    r"""Linearly combines inputs with outputs normalized by sum of weights.
+    Weights are exponentiated.
+
+    .. math::
+        M(v) = \frac{1}{\sum_{i=1}^N e^{\omega_i}} \sum_{i=1}^{N} e^{\omega_i} P^{(i)}(v)
+
+    Args:
+        Nin (int): number of input nodes.
+        Nout (int): number of output nodes.
+        W_init (theta.initializers): random initialization for :math:`W` weights.
+        param_bound (float): maximum value alowed for the optimization via genetic optimizer.
+    """
 
     def __init__(self, Nin, Nout, W_init=null(), param_bound=10):
         
@@ -71,42 +83,21 @@ class NormAddLayer(Layer):
         # Parameter init
         self._w = W_init.getinit((Nout,Nin))
 
-
-    def get_parameters(self):
-        """ Returns the parameters as a flat array
-            [w]
-        """
-
-        return self._w.flatten()
-
-    def set_parameters(self, P):
-        """ Set the matrices from flat input array P
-            P = [w]
-        """
-
-        self._w = P.reshape(self._w.shape)
-
-        return True
-
-    def get_gradients(self): 
-        """ Returns gradients as a flat array
-            [w]
-        """
-        return self._gradW.flatten()
-    
-    
-    def get_bounds(self):
-        """Returns two arrays with min and max of each parameter for the GA"""
-
-        return self._bounds
-
-
     def feedin(self, X, grad_calc=False):
-        """ Feeds in the data X and returns the output of the layer
-            Note: Vectorized
+        """Feeds in the data X and returns the output of the layer.
+
+        Args:
+            X (numpy.array): the feedin data, shape (Nin, Ndata).
+            grad_calc (bool): if True stores useful data for backpropagation.
+
+        Returns:
+            numpy.array: output of the layer.
+            
+        Note: 
+            Results are vectorized.
         """
         eW = np.exp(self._w)
-        S = np.sum(eW,axis=1)
+        S = np.sum(eW, axis=1)
         O = eW.dot(X)
 
         # Store data for grad calc
@@ -115,20 +106,53 @@ class NormAddLayer(Layer):
             self._X = X
             self._O = O
             self._S = S
-            
-        #print("S:",S)
-        #print("O:",O)
-        #print("Sn:",S[:, np.newaxis])
-        
-        return O / S#[:, np.newaxis]
+
+        return O / S
 
     def backprop(self, E):
-       
-        delta = self._X/self._S - self._O / self._S**2
-        
-        self._gradW = self._eW*E.dot(delta.T)/self._X.shape[1]
-    
-        return (self._eW/self._S).T.dot(E)
+        """Evaluates and stores the gradients for backpropagation.
+
+        Args:
+            E (numpy.array): the error for backpropagation.
+
+        Returns:
+            numpy.array: the updated error function.
+        """
+        delta = self._X / self._S - self._O / self._S ** 2
+
+        self._gradW = self._eW * E.dot(delta.T) / self._X.shape[1]
+
+        return (self._eW / self._S).T.dot(E)
+
+    def get_parameters(self):
+        """
+        Returns:
+            numpy.array: W, the parameters as a flat array.
+        """
+        return self._w.flatten()
+
+    def set_parameters(self, P):
+        """Set the matrices from flat input array P
+            P = [w]
+        """
+
+        self._w = P.reshape(self._w.shape)
+
+        return True
+
+    def get_gradients(self): 
+        """
+        Returns:
+            numpy.array: W gradients as a flat array
+        """
+        return self._gradW.flatten()
+
+    def get_bounds(self):
+        """
+        Returns:
+            list of numpy.array: two arrays with min and max of each parameter of the layer.
+        """
+        return self._bounds
 
 
 class Linear(Layer):
@@ -144,13 +168,10 @@ class Linear(Layer):
         self._w = W_init.getinit((Nout,Nin) ).astype(float)
         self._b = B_init.getinit((Nout,1) ).astype(float)
 
-    
-
     def get_parameters(self):
         """ Returns the parameters as a flat array
             [b,w]
         """
-
         return np.concatenate((self._b.flatten(),self._w.flatten()))
 
     def get_gradients(self):
@@ -158,7 +179,6 @@ class Linear(Layer):
             [b,w]
         """
         return np.concatenate((self._gradB.flatten(),self._gradW.flatten()))
-
 
     def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
@@ -181,7 +201,6 @@ class Linear(Layer):
         # Propagate error
         return self._w.T.dot(E)
 
-
     def set_parameters(self, params):
         """ Set the matrices from flat input array P
             P = [b,w]
@@ -195,11 +214,9 @@ class Linear(Layer):
 
         return True
 
-
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
         return self._bounds
-
 
 
 class NonLinear(Layer):
@@ -217,13 +234,11 @@ class NonLinear(Layer):
         # Parameter init
         self._w = W_init.getinit((Nout,Nin)).astype(float)
         self._b = B_init.getinit((Nout,1)).astype(float)
-
         
     def get_parameters(self):
         """ Returns the parameters as a flat array
             [b,w]
         """
-
         return np.concatenate((self._b.flatten(),self._w.flatten()))
 
     def get_gradients(self):
@@ -231,7 +246,6 @@ class NonLinear(Layer):
             [b,w]
         """
         return np.concatenate((self._gradB.flatten(),self._gradW.flatten()))
-
 
     def feedin(self, X, grad_calc=False):
         """ Feeds in the data X and returns the output of the layer
@@ -262,7 +276,6 @@ class NonLinear(Layer):
         # Propagate error
         return self._w.T.dot(Delta)
 
-
     def set_parameters(self, params):
         """ Set the matrices from flat input array P
             P = [b,w]
@@ -276,11 +289,9 @@ class NonLinear(Layer):
 
         return True
 
-
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
         return self._bounds
-
 
 
 class SoftMaxLayer(Layer):
@@ -305,7 +316,6 @@ class SoftMaxLayer(Layer):
 
     def set_parameters(self, params):
         return True
-
 
     def get_bounds(self):
         """Returns two arrays with min and max of each parameter for the GA"""
@@ -334,45 +344,6 @@ class SoftMaxLayer(Layer):
 
         # Propagate error
         return E*self._pO+self._pO.dot(E.T.dot(self._pO))
-
-
-class MaxPosLayer(Layer):
-    """ Depreciated
-
-    """
-
-    def __init__(self, Nin, startPos=0):
-        self._Nin = Nin
-        self._Nout = 1
-        self._Np = 0
-        self._param_bound = 0
-        self._startPos = startPos
-
-    def get_parameters(self):
-        """ Returns the parameters as a flat array
-            []
-        """
-
-        return np.empty(0)
-
-    def set_parameters(self, params):
-        return True
-
-
-    def get_bounds(self):
-        """Returns two arrays with min and max of each parameter for the GA"""
-        self._lower_bounds = []
-        self._upper_bounds = []
-
-        return [self._lower_bounds, self._upper_bounds]
-
-    def feedin(self, X, *grad_calc):
-        """ Feeds in the data X and returns the output of the layer
-            Note: Vectorized
-        """
-
-        return np.argmax(X,axis=0)+self._startPos
-
 
 
 class DiagExpectationUnitLayer(Layer):
@@ -481,7 +452,6 @@ class DiagExpectationUnitLayer(Layer):
         else:
             return self._phase*factorized_hidden_expectations(vWb, self._q, mode=2)
 
-    
     def backprop(self, E):
         """ Propagates the error E through the layer and stores gradient """
         

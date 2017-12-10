@@ -15,12 +15,13 @@ The theoretical paper with the initial explanation of the code is available in
 `arXiv:17xx.xxxxx <https://>`_.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: User Documentation:
 
    install
    theta
-
+   examples
+     
 ..
   Indices and tables
   ==================

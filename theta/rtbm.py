@@ -3,10 +3,11 @@ from __future__ import absolute_import
 import numpy as np
 from theta.mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
     check_normalization_consistency, check_pos_def
-
 from theta.riemann_theta.riemann_theta import RiemannTheta
 
+
 class AssignError(Exception):
+    """Custom exception for Shur complement test"""
     pass
 
 
@@ -103,7 +104,7 @@ class RTBM(object):
             self._D2.append([1,1])
     
     def __call__(self, data, grad_calc=False):
-        """Evaluates the RTBM instance for a given data array"""
+        """Evaluates the RTBM for a given data array"""
         
         P = self._call(data)
 
@@ -118,7 +119,8 @@ class RTBM(object):
         return P
 
     def feed_through(self, X, grad_calc=False):
-        """Evaluates the RTBM. This method is equivalent in calling ``__call__`` or simply ``()``.
+        """Evaluates the RTBM.
+        This method is equivalent in calling the ``()`` operator.
 
         Args:
             X (numpy.array): the feedin data, shape (Nv, Ndata).
@@ -128,13 +130,6 @@ class RTBM(object):
             numpy.array: predictions for the RTBM.
         """
         return self.__call__(X, grad_calc=grad_calc)
-
-    def size(self):
-        """
-        Returns:
-            int: the size of the RTBM.
-        """
-        return self._size
 
     def random_init(self, bound):
         """A fast random initializer based on Schur complement, if ``diagonal_T=True``
@@ -170,6 +165,98 @@ class RTBM(object):
             self._parameters = np.concatenate([self._bv.flatten(), self._bh.flatten(),
                                                self._w.flatten(), self._t[np.triu_indices(self._Nv)],
                                                self._q[np.triu_indices(self._Nh)]])
+
+    def mean(self):
+        """Computes the first moment estimator (mean).
+
+        Returns:
+            float: the mean of the probability distribution.
+
+        Raises:
+            theta.rtbm.AssertionError: if ``mode`` is not ``theta.rtbm.RTBM.Mode.Probability``.
+
+        """
+        if self._mode is self.Mode.Probability:
+            invT = np.linalg.inv(self._t)
+            BvT = self._bv.T
+            BhT = self._bh.T
+            BtiTW = np.dot(np.dot(BvT, invT), self._w)
+            WtiTW = np.dot(np.dot(self._w.T, invT), self._w)
+            return np.real(1.0 / (2j * np.pi) * invT * self._w *
+                           RiemannTheta.normalized_eval((BhT - BtiTW) / (2.0j * np.pi),
+                                                        (-self._q + WtiTW) / (2.0j * np.pi),
+                                                        mode=self._mode, derivs=np.array([[1]])))
+        else:
+            assert AssertionError('Mean for mode %s not implemented' % self._mode)
+
+    def backprop(self, E):
+        """Evaluates and stores the gradients for backpropagation.
+
+        Note:
+            This method only works with ``diagonal_T=True``.
+
+        Args:
+            E (numpy.array): the error for backpropagation.
+
+        Raises:
+            theta.rtbm.RTBM.AssertionError: if ``diagonal_T=False``.
+        """
+        if self._diagonal_T:
+
+            vWb = np.transpose(self._X).dot(self._w) + self._bh.T
+            iT = 1.0 / self._t
+            iTW = iT.dot(self._w)
+
+            # Gradients
+            arg1 = vWb / (2.0j * np.pi)
+            arg2 = -self._q / (2.0j * np.pi)
+            arg3 = (self._bh.T - self._bv.T.dot(iTW)) / (2.0j * np.pi)
+            arg4 = -(self._q - self._w.T.dot(iTW)) / (2.0j * np.pi)
+            coeff1 = 1.0 / (2.0j * np.pi)
+            coeff2 = np.square(coeff1)
+
+            Da = coeff1 * RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D1)
+
+            Db = coeff1 * RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D1)
+
+            # Hessians
+            DDa = coeff2 * RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D2)
+
+            DDb = coeff2 * RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D2)
+
+            # H from DDb
+            Hb = DDb.flatten().reshape(self._q.shape)
+            np.fill_diagonal(Hb, Hb.diagonal() * 0.5)
+
+            # Grad Bv
+            self._gradBv = np.mean(E * (self._P * (-self._X - 2.0 * iT.dot(self._bv) + iTW.dot(Db))), axis=1)
+
+            # Grad Bh
+            self._gradBh = np.mean(E * self._P * (Da - Db), axis=1)
+
+            # Grad W
+            self._gradW = (E * self._P * self._X).dot(Da.T) / self._X.shape[1] + np.mean(E * self._P, axis=1) * (
+                    self._bv.T.dot(iT).T.dot(Db.T) - 2 * iTW.dot(Hb))
+
+            # Grad T
+            iT2 = np.square(iT)
+
+            self._gradT = np.diag(np.mean(-0.5 * self._P * self._X ** 2 * E, axis=1)) + np.mean(E * self._P, axis=1) * (
+                    0.5 * iT + self._bv ** 2 * iT2 - self._bv * iT2 * self._w.dot(Db) + iT2 * self._w.dot(Hb).dot(
+                self._w.T))
+
+            # Grad Q
+            self._gradQ = np.mean(-self._P * (DDa - DDb) * E, axis=1).reshape(self._q.shape)
+            np.fill_diagonal(self._gradQ, self._gradQ.diagonal() * 0.5)
+        else:
+            raise AssertionError('Gradients for non-diagonal T not implemented.')
+
+    def size(self):
+        """
+        Returns:
+            int: the size of the RTBM.
+        """
+        return self._size
 
     def set_parameters(self, params):
         """Assigns a flat array of parameters to the RTBM matrices.
@@ -229,17 +316,10 @@ class RTBM(object):
         
         inds = np.triu_indices_from(self._gradQ)
         
-        if(self._diagonal_T):
-            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten()  )))
-
+        if self._diagonal_T:
+            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten())))
         else:
-            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten()  )))
-
-    def get_bounds(self):
-        """
-        Returns:
-            list of numpy.array: two arrays with min and max of each parameter for the GA."""
-        return self._bounds
+            return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.flatten(), self._gradQ[inds].flatten())))
 
     def set_bounds(self, param_bound):
         """Sets the parameter bound for each parameter.
@@ -251,86 +331,11 @@ class RTBM(object):
         lower_bounds = [-param_bound] * self._size
         self._bounds = [lower_bounds, upper_bounds]
 
-    def mean(self):
-        """Computes the first moment estimator (mean).
-
+    def get_bounds(self):
+        """
         Returns:
-            float: the mean of the probability distribution.
-
-        Raises:
-            theta.rtbm.AssertionError: if ``mode`` is not ``theta.rtbm.RTBM.Mode.Probability``.
-
-        """
-        if self._mode is self.Mode.Probability:
-            invT = np.linalg.inv(self._t)
-            BvT = self._bv.T
-            BhT = self._bh.T
-            BtiTW = np.dot(np.dot(BvT, invT), self._w)
-            WtiTW = np.dot(np.dot(self._w.T, invT), self._w)
-            return np.real(1.0 / (2j * np.pi) * invT * self._w *
-                           RiemannTheta.normalized_eval((BhT - BtiTW) / (2.0j * np.pi), (-self._q + WtiTW) / (2.0j * np.pi),
-                                                        mode=self._mode, derivs=np.array([[1]])))
-        else:
-            assert AssertionError('Mean for mode %s not implemented' % self._mode)
-
-    def backprop(self, E):
-        """Evaluates and stores the gradients for backpropagation.
-
-        Note:
-            This method only works with ``diagonal_T=True``.
-
-        Args:
-            E (numpy.array): the error for backpropagation.
-
-        Raises:
-            theta.rtbm.RTBM.AssertionError: if ``diagonal_T=False``.
-        """
-        if self._diagonal_T:
-            
-            vWb = np.transpose(self._X).dot(self._w)+self._bh.T
-            iT  = 1.0/self._t
-            iTW = iT.dot(self._w)
-
-            # Gradients
-            arg1 = vWb / (2.0j * np.pi)
-            arg2 = -self._q/ (2.0j * np.pi)
-            arg3 = (self._bh.T-self._bv.T.dot(iTW)) / (2.0j * np.pi)
-            arg4 = -(self._q-self._w.T.dot(iTW))/ (2.0j * np.pi)
-            coeff1 = 1.0/(2.0j*np.pi)
-            coeff2 = np.square(coeff1)
-
-            Da = coeff1*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D1)
-            
-            Db = coeff1*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D1)
-            
-            # Hessians
-            DDa = coeff2*RiemannTheta.normalized_eval(arg1, arg2, mode=1, derivs=self._D2)
-            
-            DDb = coeff2*RiemannTheta.normalized_eval(arg3, arg4, mode=1, derivs=self._D2)
-            
-            # H from DDb
-            Hb = DDb.flatten().reshape(self._q.shape)
-            np.fill_diagonal(Hb, Hb.diagonal()*0.5)
-            
-            # Grad Bv
-            self._gradBv = np.mean(E*(self._P*( -self._X -2.0*iT.dot(self._bv) + iTW.dot(Db))), axis=1)
-            
-            # Grad Bh
-            self._gradBh = np.mean(E*self._P*(Da-Db), axis=1) 
-           
-            # Grad W
-            self._gradW = (E*self._P*self._X).dot(Da.T)/self._X.shape[1] + np.mean(E*self._P, axis=1)*(  self._bv.T.dot(iT).T.dot(Db.T)  - 2*iTW.dot(Hb))
-   
-            # Grad T
-            iT2 = np.square(iT)
-            
-            self._gradT = np.diag(np.mean(-0.5*self._P*self._X**2*E, axis=1)) + np.mean(E*self._P, axis=1)*(0.5*iT + self._bv**2*iT2 -self._bv*iT2*self._w.dot(Db) + iT2*self._w.dot(Hb).dot(self._w.T) )   
-            
-            # Grad Q
-            self._gradQ = np.mean(-self._P*( DDa - DDb )*E, axis=1).reshape(self._q.shape)
-            np.fill_diagonal(self._gradQ, self._gradQ.diagonal()*0.5)
-        else:
-            raise AssertionError('Gradients for non-diagonal T not implemented.')
+            list of numpy.array: two arrays with min and max of each parameter for the GA."""
+        return self._bounds
 
     @property
     def mode(self):

@@ -16,7 +16,7 @@ Before installing the theta package please install the following dependencies::
 Then you can proceed and install theta from the Github source. First, clone
 the theta repository using :code:`git`::
 
-   git clone https://github.com/RiemannAI/theta.git
+   git clone --recursive https://github.com/RiemannAI/theta.git
 
 Then, :code:`cd` to the theta folder and run the install command::
 
@@ -33,10 +33,3 @@ and type::
 
   import theta
   print(theta.__version__)
-
-_______________________
-
-Examples
---------
-
-We have prepared some basic ipython notebooks in the :code:`examples` folder.

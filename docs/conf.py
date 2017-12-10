@@ -54,8 +54,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'theta'
-copyright = u'2017, S. Carrazza and D. Krefl'
-author = u'S. Carrazza and D. Krefl'
+copyright = u'2017, Stefano Carrazza and Daniel Krefl'
+author = u'Stefano Carrazza and Daniel Krefl'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
