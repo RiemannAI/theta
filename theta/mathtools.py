@@ -36,7 +36,6 @@ def rtbm_parts(v, bv, bh, t, w, q, mode=1):
     return ( np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF ), ( vR1 / vR2 * np.exp(uR1-uR2) )
 
 
-
 def rtbm_probability(v, bv, bh, t, w, q, mode=1):
     """Implements the RTBM probability"""
     detT = np.linalg.det(t)
@@ -53,6 +52,37 @@ def rtbm_probability(v, bv, bh, t, w, q, mode=1):
     ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1]))
 
     uR1, vR1 = RiemannTheta.parts_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
+    uR2, vR2 = RiemannTheta.parts_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
+
+    return np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * vR1 / vR2 * np.exp(uR1-uR2)
+
+
+def factorized_rtbm_probability(v, bv, bh, t, w, q, mode=1):
+    """Implements the RTBM probability"""
+    detT = np.linalg.det(t)
+    invT = np.linalg.inv(t)
+    vT = v.T
+    vTv = np.dot(np.dot(vT, t), v)
+    BvT = bv.T
+    BhT = bh.T
+    Bvv = np.dot(BvT, v)
+    BiTB = np.dot(np.dot(BvT, invT), bv)
+    BtiTW = np.dot(np.dot(BvT, invT), w)
+    WtiTW = np.dot(np.dot(w.T, invT), w)
+
+    ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1]))
+
+    # factorize Q
+    vWb = (vT.dot(w) + BhT)
+    uR1 = np.ones(vWb.shape[0], dtype=complex)
+    vR1 = np.ones(vWb.shape[0], dtype=complex)
+
+    for i in range(vWb.shape[1]):
+        O = np.matrix([[q[i, i]]], dtype=complex)
+        tuR1, tvR1 = RiemannTheta.parts_eval(vWb[:, [i]] / (2.0j * np.pi), -O / (2.0j * np.pi), mode, epsilon=RTBM_precision)
+        uR1 *= tuR1
+        vR1 *= tvR1
+
     uR2, vR2 = RiemannTheta.parts_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
 
     return np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * vR1 / vR2 * np.exp(uR1-uR2)
