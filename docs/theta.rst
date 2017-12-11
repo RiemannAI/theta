@@ -93,9 +93,8 @@ The theta package implements the following layers:
   nodes. This layer guarantees positive output relevant for mixture
   models.
 * `Linear`_: a standard linear layer for testing and benchmarking purposes.
-* `Non-Linear`_: a custom non linear layer for testing and
+* `Non-Linear`_: a non linear layer for testing and
   benchmarking purposes.
-* SoftMax_: the softmax layer.
 
 All layers are inherited from the ``theta.layers.Layer`` class.
 
@@ -148,16 +147,6 @@ Non-Linear
    :members:
    :inherited-members:
    :member-order: bysource
-
-.. _SoftMax:
-		  
-SoftMax
-#######
-
-.. autoclass:: theta.layers.SoftMaxLayer
-   :members:
-   :inherited-members:
-   :member-order: bysource
        
 _______________________
 
@@ -166,15 +155,63 @@ _______________________
 Minimizers
 ----------
 
-.. automodule:: theta.minimizer
-    :members:
+The theta package provides two minimizers:
 
+* CMA-ES_ (evolutionary strategy)
+* `Stochastic Gradient Descent`_ (SGD)
+
+We also provide the ``BFGS`` optimizer for testing purposes.
+  
 Genetic algorithm
 #################
 
+.. _CMA-ES:
+
+.. autoclass:: theta.minimizer.CMA
+   :members:
+   :inherited-members:
+   :member-order: bysource
+		  
 Gradient descent
 ################
 
+.. _Stochastic Gradient Descent:
+
+.. autoclass:: theta.minimizer.SGD
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+.. autoclass:: theta.minimizer.BFGS
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+.. _Gradient descent schemes:
+		  
+Gradient descent schemes
+########################
+
+.. autoclass:: theta.gradientschemes.adagrad
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+.. autoclass:: theta.gradientschemes.RMSprop
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+.. autoclass:: theta.gradientschemes.adadelta
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+.. autoclass:: theta.gradientschemes.adam
+   :members:
+   :inherited-members:
+   :member-order: bysource
+   
 _______________________
 
 .. _Activations:
@@ -184,9 +221,30 @@ Activations
 
 The current code contains the following activation functions:
 
-.. automodule:: theta.activations
-    :members:
+Linear
+######
 
+.. autoclass:: theta.activations.linear
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Sigmoid
+#######
+		  
+.. autoclass:: theta.activations.sigmoid
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Tanh
+####		  
+		  
+.. autoclass:: theta.activations.tanh
+   :members:
+   :inherited-members:
+   :member-order: bysource
+		  
 _______________________
 
 .. _Initializers:
@@ -196,9 +254,46 @@ Initializers
 
 The current code contains the following intializers:
 
-.. automodule:: theta.initializers
-    :members:
-       
+Uniform
+#######
+
+.. autoclass:: theta.initializers.uniform
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Normal
+######
+
+.. autoclass:: theta.initializers.normal
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Null
+####
+
+.. autoclass:: theta.initializers.null
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Glorot normal
+#############
+
+.. autoclass:: theta.initializers.glorot_normal
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Glorot uniform
+##############		  
+
+.. autoclass:: theta.initializers.glorot_uniform
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
 _______________________
 
 .. _Cost functions:
@@ -208,10 +303,46 @@ Cost functions
 
 The current code contains the following cost functions:
 
-.. automodule:: theta.costfunctions
-    :members:
+MSE
+###
 
-      
+.. autoclass:: theta.costfunctions.mse
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Logarithmic
+###########
+
+.. autoclass:: theta.costfunctions.mse
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+Sum
+###
+
+.. autoclass:: theta.costfunctions.sum
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
+RMSE
+####
+
+.. autoclass:: theta.costfunctions.rmse
+   :members:
+   :inherited-members:
+   :member-order: bysource
+	       
+Cross-entropy
+#############
+
+.. autoclass:: theta.costfunctions.crossentropy
+   :members:
+   :inherited-members:
+   :member-order: bysource
+
 _______________________
 
 .. _Stopping conditions:

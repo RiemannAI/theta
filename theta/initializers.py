@@ -13,7 +13,7 @@ class initializer(object):
 
 
 class uniform(initializer):
-    
+    """Uniformly distributed initialization."""
     def __init__(self, bound=1, center=0):
         self._bound = bound
         self._center = center
@@ -23,6 +23,7 @@ class uniform(initializer):
 
 
 class normal(initializer):
+    """Normal distribution initialization."""
     def __init__(self, mean=0, sdev=1):
         self._mean = mean
         self._sdev = sdev
@@ -33,18 +34,19 @@ class normal(initializer):
 
 
 class null(initializer):
-    
+    """Initialize all parameters to zero."""
     def getinit(self, S):
-        
         return np.zeros(S)    
 
 
 class glorot_normal(initializer):
+    """Initializes with glorot normal distribution."""
     def getinit(self, S):
         return np.random.normal(0, 2.0/(S[0]+S[1]),S)
 
 
 class glorot_uniform(initializer):
+    """Initializes with glorot uniform distribution."""
     def getinit(self, S):
         limit = np.sqrt(6.0/(S[0]+S[1]))
                         
