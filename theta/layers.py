@@ -530,8 +530,8 @@ class ThetaUnitLayer(Layer):
         Nout (int): number of output nodes (i.e. # of RTBMs)
         Nhidden (int): number of hidden layers per RTBM
         init_max_param_bound (float): maximum bound value for CMA
-        random_bound (float): the maximum value for the random matrix X used by the Schur complement
-        phase (complex): number which multiplies w and bh
+        random_bound (float): the maximum value for the random matrix X used by initialization
+        phase (complex): number which multiplies w and bh ``phase=1`` for Phase I and ``phase=1j`` for PhaseII.
         diagonal_T (bool): force T diagonal, by default T is symmetric.
     """
 
@@ -551,6 +551,7 @@ class ThetaUnitLayer(Layer):
 
     def get_unit(self, N):
         """Return the singular RTBM unit.
+
         Args:
             N (int): the Nth RTBM unit.
 

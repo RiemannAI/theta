@@ -41,8 +41,7 @@ def worker_gradient(params):
 
 class CMA(object):
     """Implements the GA using CMA-ES library (cma package).
-    This class provides a basic CMA-ES implementation adjusted for the RTBM
-    test case.
+    This class provides a basic CMA-ES implementation for RTBMs.
 
     Args:
         parallel (bool): if set to True the algorithm uses multi-processing.

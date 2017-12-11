@@ -6,7 +6,7 @@ class Model(object):
     """The model class which holds layer for building mixture models and theta neural networks.
 
     Example:
-        Here a short example showing how to allocate the Model class::
+        ::
 
             from theta.theta import Model
             from theta.layers import ThetaUnitLayer, AddNormLayer
@@ -27,14 +27,13 @@ class Model(object):
 
     def feed_through(self, X, grad_calc=False):
         """Feeds the input X through all layers.
-        This method is equivalent in calling ``()`` operator.
 
         Args:
-            X (numpy.array): the feedin data, shape (Nv, Ndata).
-            grad_calc (bool): if True stores useful data for backpropagation.
+            X (numpy.array): input data, shape (Nv, Ndata).
+            grad_calc (bool): if True stores backpropagation data.
 
         Returns:
-            numpy.array: predictions for the Model.
+            numpy.array: evaluates Model predictions.
         """
         x = X
         for L in self._layers:
@@ -48,7 +47,7 @@ class Model(object):
              layer (theta.layers): any layer implemented in theta.layers (Layers_).
 
         Warning:
-            Input of layer does not match output of previous layer!
+            The layer input size must match the output size of previous layer!
         """
         if len(self._layers) == 0 or self._layers[-1].get_Nout() == layer.get_Nin():
             # Add the layer
@@ -95,6 +94,7 @@ class Model(object):
 
     def get_gradients(self):
         """Collects all gradients and returns a flat array.
+
         Returns:
             numpy array: flat array with calculated gradients.
         """

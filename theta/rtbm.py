@@ -13,21 +13,20 @@ class AssignError(Exception):
 
 class RTBM(object):
     """This class implements the Riemann-Theta Boltzmann Machine.
-    Setup operators for BM based on the number of visible and hidden units
 
     Args:
         visible_units (int): number of visible units.
         hidden_units (int): number of hidden units.
         mode (theta.rtbm.RTBM.Mode): set the working mode among: `probability mode` (``Mode.Probability``),
             `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.
-        init_max_param_bound (float): size of maximum parameters used in random initialization.
+        init_max_param_bound (float): maximum value allowed in random parameters initialization.
         random_bound (float): selects the maximum random value for the Schur complement initialization.
-        phase (complex): number which multiplies w and bh.
+        phase (complex): number which multiplies w and bh ``phase=1`` for Phase I and ``phase=1j`` for Phase II.
         diagonal_T (bool): force T diagonal, by default T is symmetric.
-        check_positivity (bool): verifies if set_parameters satisfy positivity condition.
+        check_positivity (bool): enable positivity condition check in ``set_parameters``.
 
     Example:
-        Here a short example showing how to allocate the RTBM class::
+        ::
 
             from theta.rtbm import RTBM
             m = RTBM(1, 2)  # allocates a RTBM with Nv=1 and Nh=2
@@ -36,7 +35,7 @@ class RTBM(object):
     """
 
     class Mode:
-        """Select the RTBM output mode when ``__call__`` is invoked through the ``()`` operator.
+        """Selects the RTBM output mode when ``__call__`` is invoked through the ``()`` operator.
 
         Possible options are:
             * ``Mode.Probability``: set the output to probability mode.
@@ -120,20 +119,19 @@ class RTBM(object):
 
     def feed_through(self, X, grad_calc=False):
         """Evaluates the RTBM.
-        This method is equivalent in calling the ``()`` operator.
 
         Args:
-            X (numpy.array): the feedin data, shape (Nv, Ndata).
-            grad_calc (bool): if True stores useful data for backpropagation.
+            X (numpy.array): input data, shape (Nv, Ndata).
+            grad_calc (bool): if True stores backpropagation data.
 
         Returns:
-            numpy.array: predictions for the RTBM.
+            numpy.array: evaluates RTBM predictions.
         """
         return self.__call__(X, grad_calc=grad_calc)
 
     def random_init(self, bound):
-        """A fast random initializer based on Schur complement, if ``diagonal_T=True``
-        the initial Schur complement is defined diagonal, so Q and T are diagonal and W is zero.
+        """Random initializer which satisfies the Schur complement positivity condition.
+        If ``diagonal_T=True`` the initial Q and T are diagonal and W is set to zero.
 
         Args:
             bound (float): the maximum value for the random matrix X used by the Schur complement.
@@ -192,7 +190,7 @@ class RTBM(object):
     def backprop(self, E):
         """Evaluates and stores the gradients for backpropagation.
 
-        Note:
+        Warning:
             This method only works with ``diagonal_T=True``.
 
         Args:
@@ -262,7 +260,7 @@ class RTBM(object):
         """Assigns a flat array of parameters to the RTBM matrices.
 
         Args:
-            params (numpy.array): list of parameters to populate Bv, Bh, W, T, Q
+            params (numpy.array): list of parameters to populate Bv, Bh, W, T and Q.
 
         Returns:
             bool: True if Q, T and Q-WtTW are positive, False otherwise.
@@ -304,7 +302,7 @@ class RTBM(object):
     def get_parameters(self):
         """
         Returns:
-            numpy.array: flat array with current matrices weights.
+            numpy.array: flat array with all RTBM parameters.
         """
         return self._parameters
 
@@ -334,7 +332,8 @@ class RTBM(object):
     def get_bounds(self):
         """
         Returns:
-            list of numpy.array: two arrays with min and max of each parameter for the GA."""
+            list of numpy.array: two arrays with min and max of each parameter for the GA.
+        """
         return self._bounds
 
     @property
