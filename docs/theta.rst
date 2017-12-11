@@ -24,7 +24,7 @@ RTBM
 
 The ``theta.rtbm`` module contains the definition of ``class
 RTBM``. This object provides the simplest interface to the parameters
-of the RTMB and to the probability and expectation values.
+of the RTBM and to the probability and expectation values.
 
 .. figure:: rtbm.png
    :scale: 30 %

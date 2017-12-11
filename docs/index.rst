@@ -6,13 +6,11 @@
 Welcome to theta's documentation!
 =================================
 
-Theta is a high-level Riemann-Theta Boltzmann Machine (RTBM) API,
-written in Python and Cython. This package is a simple ML framework focus on the
-training of ML architectures based on RTBMs for probability density estimation,
-data regression and classification.
+Theta is a machine learning (ML) framework implementing the Rieman-Theta Boltzmann Machine (RTBM),
+written in Python and Cython. It offers a high-level interface to build and train RTBM based ML architectures
+for probability density estimation, data regression and classification.
 
-The theoretical paper with the initial explanation of the code is available in
-`arXiv:17xx.xxxxx <https://>`_.
+The code implements the RTBM as described in the theoretical paper `arXiv:17xx.xxxxx <https://>`_.
 
 .. toctree::
    :maxdepth: 3
