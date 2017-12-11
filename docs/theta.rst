@@ -12,8 +12,9 @@ The theta package comes with the following modules:
 * `Cost functions`_ (:code:`theta.costfunctions`)
 * `Stopping conditions`_ (:code:`theta.stopping`)
 
-These modules provide all the required components to train Riemann Theta
-Boltzmann Machines for probability density estimation, regression and classification.
+These modules provide all the required components to train
+Riemann-Theta Boltzmann Machines for probability density estimation,
+regression and classification.
 
 _______________________
 
@@ -24,7 +25,9 @@ RTBM
 
 The ``theta.rtbm`` module contains the definition of ``class
 RTBM``. This object provides the simplest interface to the parameters
-of the RTMB and to the probability and expectation values.
+of the RTBM and to the probability and expectation values.
+
+Schematically, the RTBM is given by the network configuration
 
 .. figure:: rtbm.png
    :scale: 30 %
@@ -37,6 +40,7 @@ where :math:`T` is the connection matrix of the visible sector with
 .. autoclass:: theta.rtbm.RTBM
    :members:
    :inherited-members:
+   :exclude-members: Mode
    :member-order: bysource
    
 _______________________
@@ -81,10 +85,8 @@ Layers
 The theta package implements the following layers:
 
 * `Theta Probability Unit`_: provides a layer with multiple RTBMs
-  setup in probability mode. The most suitable applications for this
-  layer are probability and mixture models determination, in
-  particular the second example is achieved in combination with the
-  normalized additive layer.
+  setup in probability mode. This layer is used to build probability
+  and mixture models.
 * `Theta Diagonal Expectation Unit`_: consists in a layer of RTBM
   setup in expectation mode, where the :math:`T` connections are
   diagonal. This layer is suitable for regression applications, and
@@ -162,8 +164,8 @@ The theta package provides two minimizers:
 
 We also provide the ``BFGS`` optimizer for testing purposes.
   
-Genetic algorithm
-#################
+Evolutionary algorithm
+######################
 
 .. _CMA-ES:
 

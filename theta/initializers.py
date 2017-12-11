@@ -13,7 +13,12 @@ class initializer(object):
 
 
 class uniform(initializer):
-    """Uniformly distributed initialization."""
+    """Uniformly distributed initialization.
+
+    Args:
+        bound (float):
+        center (float):
+    """
     def __init__(self, bound=1, center=0):
         self._bound = bound
         self._center = center
@@ -23,7 +28,12 @@ class uniform(initializer):
 
 
 class normal(initializer):
-    """Normal distribution initialization."""
+    """Normal distribution initialization.
+
+    Args:
+        mean (float):
+        sdev (float):
+    """
     def __init__(self, mean=0, sdev=1):
         self._mean = mean
         self._sdev = sdev

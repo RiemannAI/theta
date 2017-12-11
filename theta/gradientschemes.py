@@ -13,13 +13,18 @@ class gradientscheme(object):
 
     
 class adagrad(gradientscheme):
-    """The Adagrad scheme."""
+    """The Adagrad scheme.
+
+    Args:
+        epsilon (float): cuttof.
+    """
     def __init__(self, epsilon=1e-5):
         self._eps = epsilon
         self._G2sum = np.empty(0)
         
     def getupdate(self, G, lr):
         """Get updates.
+
         Args:
             G (numpy.array): gradients
             lr (float): learning rate
@@ -38,7 +43,12 @@ class adagrad(gradientscheme):
         return lr/np.sqrt(self._G2sum+self._Emat)*G
         
 class RMSprop(gradientscheme):
-    """The RMS propagation scheme."""
+    """The RMS propagation scheme.
+
+    Args:
+        rate (float):
+        epsilon (float): cuttof.
+    """
     def __init__(self, rate=0.9, epsilon=1e-5):
         self._eps = epsilon
         self._E = np.empty(0)
@@ -46,6 +56,7 @@ class RMSprop(gradientscheme):
         
     def getupdate(self, G, lr):
         """Get updates.
+
         Args:
             G (numpy.array): gradients
             lr (float): learning rate
@@ -65,7 +76,12 @@ class RMSprop(gradientscheme):
     
     
 class adadelta(gradientscheme):
-    """The Adadelta scheme."""
+    """The Adadelta scheme.
+
+    Args:
+        rate (float):
+        epsilon (float): cuttof.
+    """
     def __init__(self, rate=0.9, epsilon=1e-5):
         self._eps = epsilon
         self._E = np.empty(0)
@@ -74,6 +90,7 @@ class adadelta(gradientscheme):
     
     def getupdate(self, G, lr):
         """Get updates.
+
         Args:
             G (numpy.array): gradients
             lr (float): learning rate
@@ -100,7 +117,13 @@ class adadelta(gradientscheme):
         return R*G
 
 class adam(gradientscheme):
-    """The Adam scheme."""
+    """The Adam scheme.
+
+    Args:
+        b1 (float):
+        b2 (float):
+        epsilon (float): cuttof.
+    """
     def __init__(self, b1=0.9, b2=0.999 ,epsilon=1e-8):
         self._eps = epsilon
         self._b1  = b1
@@ -110,6 +133,7 @@ class adam(gradientscheme):
         
     def getupdate(self, G, lr):
         """Get updates.
+
         Args:
             G (numpy.array): gradients
             lr (float): learning rate
