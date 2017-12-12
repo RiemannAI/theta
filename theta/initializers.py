@@ -16,8 +16,9 @@ class uniform(initializer):
     """Uniformly distributed initialization.
 
     Args:
-        bound (float):
-        center (float):
+        bound (float): half-width of the distribution [-bound,+bound]
+        center (float): location of the center 
+
     """
     def __init__(self, bound=1, center=0):
         self._bound = bound
@@ -31,8 +32,8 @@ class normal(initializer):
     """Normal distribution initialization.
 
     Args:
-        mean (float):
-        sdev (float):
+        mean (float): mean of the normal distribution
+        sdev (float): standard deviation  
     """
     def __init__(self, mean=0, sdev=1):
         self._mean = mean

@@ -87,12 +87,11 @@ The theta package implements the following layers:
 * `Theta Probability Unit`_: provides a layer with multiple RTBMs
   setup in probability mode. This layer is used to build probability
   and mixture models.
-* `Theta Diagonal Expectation Unit`_: consists in a layer of RTBM
-  setup in expectation mode, where the :math:`T` connections are
-  diagonal. This layer is suitable for regression applications, and
-  can be extended and combined with several layers.
-* `Normalized Additive`_: performs an weighted sum of the input
-  nodes. This layer guarantees positive output relevant for mixture
+* `Theta Diagonal Expectation Unit`_: A layer consisting of a RTBM in expectation mode with diagonal :math:`Q`. 
+  This layer is suitable for regression and classification applications, and
+  can be combined with other layers into a deep model.
+* `Normalized Additive`_: performs a weighted sum of the inputs
+  This layer guarantees a positive and normalized output and is used to build mixture
   models.
 * `Linear`_: a standard linear layer for testing and benchmarking purposes.
 * `Non-Linear`_: a non linear layer for testing and
@@ -246,6 +245,8 @@ Tanh
    :members:
    :inherited-members:
    :member-order: bysource
+
+Custom activation functions can be implemented by extending the ``theta.activations.actfunc`` class.
 		  
 _______________________
 
@@ -254,7 +255,7 @@ _______________________
 Initializers
 ------------
 
-The current code contains the following intializers:
+The current code contains the following parameter initalizers:
 
 Uniform
 #######
@@ -296,6 +297,9 @@ Glorot uniform
    :inherited-members:
    :member-order: bysource
 
+Custom initalization schemes can be easily implemented by extending the ``theta.initializers.initializer`` class.
+
+
 _______________________
 
 .. _Cost functions:
@@ -316,7 +320,7 @@ MSE
 Logarithmic
 ###########
 
-.. autoclass:: theta.costfunctions.mse
+.. autoclass:: theta.costfunctions.logarithmic
    :members:
    :inherited-members:
    :member-order: bysource
@@ -337,14 +341,6 @@ RMSE
    :inherited-members:
    :member-order: bysource
 	       
-Cross-entropy
-#############
-
-.. autoclass:: theta.costfunctions.crossentropy
-   :members:
-   :inherited-members:
-   :member-order: bysource
-
 _______________________
 
 .. _Stopping conditions:
@@ -354,8 +350,8 @@ Stopping conditions
 
 The stopping condition can be used with the ``theta.minimizer.SGD``
 minimizer. The validation data is monitored and if a specific
-condition is achieved the optimization is stopped. You can implement
-your custom stopping condition by just extending the
+condition is achieved the optimization is stopped. Custom stopping
+conditions can be implemented by extending the
 ``theta.minimizer.stopping`` abstract class.
 
 The current code contains the following stopping algorithms:

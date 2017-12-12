@@ -2,13 +2,14 @@ Examples and tutorials
 ======================
 
 We have prepared some basic ipython notebooks in the :code:`examples`
-folder, however in the next lines we show basic examples for the
-potential interesting training modes for RTBMs.
+folder to demonstrate the functionality of the package. Here, we give
+only two simple examples to show the general usage pattern.
+
 
 Probability estimation
 ######################
 
-Let's consider the simple example of training a RTBM to learn a
+Let's consider the example of training a RTBM to learn a
 gaussian probability distribution.
 
 1. The first step consists in generating normal distributed data::
@@ -39,14 +40,18 @@ gaussian probability distribution.
      minim = CMA(False)
      solution = minim.train(logarithmic, model, data, tolfun=1e-4)   
 
+4. The learned probabilities for given data can be queried via::
+
+     model.predict(data)
      
+
 Data regression and classification
 ##################################
 
-Let's now consider the data regression problem.
+Let's now consider a data regression problem.
 
-1. Supposing we have a the ``X_train`` and ``Y_train`` numpy arrays
-   with respectively the support and target data, we allocate a
+1. Suppose we have ``X_train`` and ``Y_train`` numpy arrays
+   with respectively the support and target data. We allocate a
    ``DiagExpectationUnitLayer`` with ``Nin=X_train.shape[0]`` and
    ``Nout=X_train.shape[1]``::
 
@@ -66,7 +71,7 @@ Let's now consider the data regression problem.
      minim = SGD()
      solution = minim.train(mse, model, X_train, Y_train,
                             scheme=RMSprop(), lr=0.01,
-			    phase=1, Q_init=uniform(2,4))
+			                      phase=1, Q_init=uniform(2,4))
 
    For this particular setup we are using the mean square error cost
    function (``mse``) with stochastic gradient descent in the RMS
@@ -80,3 +85,7 @@ Let's now consider the data regression problem.
    validation datasets automatically, by using the
    ``validation_split`` option, or by passing extra datasets, see
    ``theta.minimizer.SGD.train`` for more details.
+
+3. Predictions of the model can be obtained via::
+
+     model.predict(data)
