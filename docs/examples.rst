@@ -16,17 +16,27 @@ gaussian probability distribution.
 
      import numpy as np
      n = 1000
-     data = (np.random.normal(5,10,n)).reshape(1,n)
+     data = (np.random.normal(5, 10, n)).reshape(1, n)
 
 2. Then we allocate a RTBM with one visible and 2 hidden units::
 
      from theta.rtbm import RTBM
-     model = RTBM(1,2)
+
+     model = RTBM(1, 2, init_max_param_bound=20, random_bound=1)
+
+   In this example we have set ``random_bound=1`` to control the
+   maximum random value for the Shur complement initialization. The
+   ``init_max_param_bound=20`` controls the maximum value allowed for
+   all parameters during training with the CMA-ES minimizer.
+     
+   Both flags may require tuning in order to obtain the best model
+   results.
 
 3. We train the model with the CMA-ES minimizer::
 	  
      from theta.minimizer import CMA
      from theta.costfunctions import logarithmic
+   
      minim = CMA(False)
      solution = minim.train(logarithmic, model, data, tolfun=1e-4)   
 
@@ -47,6 +57,7 @@ Let's now consider a data regression problem.
 
      from theta.model import Model
      from theta.layers import DiagExpectationUnitLayer
+
      model = Model()
      model.add(DiagExpectationUnitLayer(Nin, Nout))
 
@@ -54,8 +65,26 @@ Let's now consider a data regression problem.
 
      from theta.minimizer import SGD
      from theta.costfunctions import mse
+     from theta.gradientschemes import RMSprop
+     from theta.initializers import uniform
+   
      minim = SGD()
-     solution = minim.train(mse, model, X_train, Y_train)
+     solution = minim.train(mse, model, X_train, Y_train,
+                            scheme=RMSprop(), lr=0.01,
+			                      phase=1, Q_init=uniform(2,4))
+
+   For this particular setup we are using the mean square error cost
+   function (``mse``) with stochastic gradient descent in the RMS
+   propagation scheme (``scheme=RMSprop()``). The learning rate is
+   ``lr=0.01`` and may require tuning before getting the best results.
+   In this example we have also set an optional random uniform
+   initialization for the :math:`Q` parameters through the ``Q_init``
+   flag.
+
+   When using SGD, it is possible to split the data into training and
+   validation datasets automatically, by using the
+   ``validation_split`` option, or by passing extra datasets, see
+   ``theta.minimizer.SGD.train`` for more details.
 
 3. Predictions of the model can be obtained via::
 

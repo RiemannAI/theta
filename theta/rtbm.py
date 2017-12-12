@@ -18,8 +18,8 @@ class RTBM(object):
         visible_units (int): number of visible units.
         hidden_units (int): number of hidden units.
         mode (theta.rtbm.RTBM.Mode): set the working mode among: `probability mode` (``Mode.Probability``),
-            `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.
-        init_max_param_bound (float): maximum value allowed in random parameters initialization.
+            `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.        
+        init_max_param_bound (float): maximum value allowed for all parameters during the CMA-ES minimization.
         random_bound (float): selects the maximum random value for the Schur complement initialization.
         phase (complex): number which multiplies w and bh ``phase=1`` for Phase I and ``phase=1j`` for Phase II.
         diagonal_T (bool): force T diagonal, by default T is symmetric.
