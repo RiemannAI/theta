@@ -129,6 +129,17 @@ class RTBM(object):
         """
         return self.__call__(X, grad_calc=grad_calc)
 
+    def predict(self, x):
+        """ Performs prediction with the trained model.
+        
+        Args:
+            x (numpy.array): input data, shape (Nv, Ndata)
+        
+        Returns:
+            numpy.array: evaluates Model predictions.        
+        """
+        return self.feed_through(x)    
+
     def random_init(self, bound):
         """Random initializer which satisfies the Schur complement positivity condition.
         If ``diagonal_T=True`` the initial Q and T are diagonal and W is set to zero.
