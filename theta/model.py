@@ -40,6 +40,17 @@ class Model(object):
             x = L.feedin(x, grad_calc)
         return x
 
+    def predict(self, x):
+        """ Performs prediction with the trained model.
+        
+        Args:
+            x (numpy.array): input data, shape (Nv, Ndata)
+        
+        Returns:
+            numpy.array: evaluates Model predictions.        
+        """
+        return self.feed_through(x)
+
     def add(self, layer):
         """ Add layer to the model instance.
 
