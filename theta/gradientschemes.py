@@ -16,7 +16,7 @@ class adagrad(gradientscheme):
     """The Adagrad scheme.
 
     Args:
-        epsilon (float): cuttof.
+        epsilon (float): smoothing term to avoid division by zero
     """
     def __init__(self, epsilon=1e-5):
         self._eps = epsilon
@@ -46,8 +46,8 @@ class RMSprop(gradientscheme):
     """The RMS propagation scheme.
 
     Args:
-        rate (float):
-        epsilon (float): cuttof.
+        rate (float): weighting of the previous squared gradient expectation value
+        epsilon (float): smoothing term to avoid division by zero
     """
     def __init__(self, rate=0.9, epsilon=1e-5):
         self._eps = epsilon
@@ -79,8 +79,8 @@ class adadelta(gradientscheme):
     """The Adadelta scheme.
 
     Args:
-        rate (float):
-        epsilon (float): cuttof.
+        rate (float): weighting of the previous squared gradient expectation value
+        epsilon (float): smoothing term to avoid division by zero
     """
     def __init__(self, rate=0.9, epsilon=1e-5):
         self._eps = epsilon
@@ -120,9 +120,9 @@ class adam(gradientscheme):
     """The Adam scheme.
 
     Args:
-        b1 (float):
-        b2 (float):
-        epsilon (float): cuttof.
+        b1 (float): weight of the previous first moment of the gradient estimate
+        b2 (float): weight of the previous second moment of the gradient estimate
+        epsilon (float): smoothing term to avoid division by zero
     """
     def __init__(self, b1=0.9, b2=0.999 ,epsilon=1e-8):
         self._eps = epsilon
