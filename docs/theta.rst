@@ -254,7 +254,7 @@ _______________________
 Initializers
 ------------
 
-The current code contains the following intializers:
+The current code contains the following parameter initalizers:
 
 Uniform
 #######
@@ -296,6 +296,9 @@ Glorot uniform
    :inherited-members:
    :member-order: bysource
 
+Custom initalization schemes can be easily implemented by extending the ``theta.initializers.initializer`` class.
+
+
 _______________________
 
 .. _Cost functions:
@@ -316,7 +319,7 @@ MSE
 Logarithmic
 ###########
 
-.. autoclass:: theta.costfunctions.mse
+.. autoclass:: theta.costfunctions.logarithmic
    :members:
    :inherited-members:
    :member-order: bysource
@@ -337,14 +340,6 @@ RMSE
    :inherited-members:
    :member-order: bysource
 	       
-Cross-entropy
-#############
-
-.. autoclass:: theta.costfunctions.crossentropy
-   :members:
-   :inherited-members:
-   :member-order: bysource
-
 _______________________
 
 .. _Stopping conditions:
@@ -354,8 +349,8 @@ Stopping conditions
 
 The stopping condition can be used with the ``theta.minimizer.SGD``
 minimizer. The validation data is monitored and if a specific
-condition is achieved the optimization is stopped. You can implement
-your custom stopping condition by just extending the
+condition is achieved the optimization is stopped. Custom stopping
+conditions can be implemented by extending the
 ``theta.minimizer.stopping`` abstract class.
 
 The current code contains the following stopping algorithms:

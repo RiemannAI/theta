@@ -13,11 +13,11 @@ class stopping(object):
 
 class earlystop(stopping):
     """A simple implementation of early stopping.
-    The validation loss function is monitored if it increases
+    If the validation loss function increases
     after `delta` iterations the stop signal is send to the minimizer.
 
     Args:
-        delta (int): the number of iterations where the validation is monitored.
+        delta (int): the number of iterations to pass until the stopping condition check becomes active.
     """
     def __init__(self, delta=10):
         self.delta = delta
