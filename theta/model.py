@@ -41,13 +41,16 @@ class Model(object):
         return x
 
     def predict(self, x):
-        """ Performs prediction with the trained model.
+        """Performs prediction with the trained model. This method has a
+        shortcut defined by the parenthese operator,
+        i.e. ``model.predict(x)`` and ``model(x)`` are equivalent.
         
         Args:
             x (numpy.array): input data, shape (Nv, Ndata)
         
         Returns:
-            numpy.array: evaluates Model predictions.        
+            numpy.array: evaluates Model predictions.
+
         """
         return self.feed_through(x)
 
@@ -180,9 +183,9 @@ class Model(object):
         """Performs numerical check of gth gradient.
 
         Args:
-            g (int): id of gradient to check
+            g (int): id of gradient to check.
             x (numpy.array): input data shape (Ninput, Ndata).
-            epsilon (float): infinitesimal variation of parameter
+            epsilon (float): infinitesimal variation of parameter.
 
         Returns:
             floats: the numerical and analytical gradients.

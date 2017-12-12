@@ -40,7 +40,7 @@ where :math:`T` is the connection matrix of the visible sector with
 .. autoclass:: theta.rtbm.RTBM
    :members:
    :inherited-members:
-   :exclude-members: Mode
+   :exclude-members: Mode, feed_through, backprop, set_parameters, mode, bv, t, bh, w, q
    :member-order: bysource
    
 _______________________
@@ -73,6 +73,7 @@ listed in the Layers_ section of this document.
 .. autoclass:: theta.model.Model
    :members:
    :inherited-members:
+   :exclude-members: feed_through, backprop, build_bounds, set_parameters, set_bound
    :member-order: bysource
 
 _______________________
@@ -97,7 +98,8 @@ The theta package implements the following layers:
 * `Non-Linear`_: a non linear layer for testing and
   benchmarking purposes.
 
-All layers are inherited from the ``theta.layers.Layer`` class.
+All layers are inherited from the ``theta.layers.Layer`` class, so
+custom layers can be implemented by extending that class.
 
 .. _Theta Probability Unit:
 
@@ -107,6 +109,7 @@ Theta Probability Unit
 .. autoclass:: theta.layers.ThetaUnitLayer
    :members:
    :inherited-members:
+   :exclude-members: feedin, backprop, set_parameters, set_bounds 
    :member-order: bysource
 
 .. _Theta Diagonal Expectation Unit:
@@ -117,6 +120,7 @@ Theta Diagonal Expectation Unit
 .. autoclass:: theta.layers.DiagExpectationUnitLayer
    :members:
    :inherited-members:
+   :exclude-members: feedin, backprop, set_parameters, set_bounds    
    :member-order: bysource
 
 .. _Normalized Additive:
@@ -127,6 +131,7 @@ Normalized Additive
 .. autoclass:: theta.layers.NormAddLayer
    :members:
    :inherited-members:
+   :exclude-members: feedin, backprop, set_parameters, set_bounds    
    :member-order: bysource
 
 .. _Linear:
@@ -137,6 +142,7 @@ Linear
 .. autoclass:: theta.layers.Linear
    :members:
    :inherited-members:
+   :exclude-members: feedin, backprop, set_parameters, set_bounds    
    :member-order: bysource
 
 .. _Non-Linear:
@@ -147,6 +153,7 @@ Non-Linear
 .. autoclass:: theta.layers.NonLinear
    :members:
    :inherited-members:
+   :exclude-members: feedin, backprop, set_parameters, set_bounds    
    :member-order: bysource
        
 _______________________
@@ -220,6 +227,10 @@ _______________________
 Activations
 -----------
 
+All activations functions are inherited from the
+``theta.activations.actfunc`` class, so custom activations can be
+implemented by extending that class.
+
 The current code contains the following activation functions:
 
 Linear
@@ -254,6 +265,10 @@ _______________________
 
 Initializers
 ------------
+
+All initializers are inherited from the
+``theta.initializers.initializer`` class, so custom initializers can
+be implemented by extending that class.
 
 The current code contains the following parameter initalizers:
 
@@ -306,6 +321,10 @@ _______________________
 
 Cost functions
 --------------
+
+All cost functions are inherited from the
+``theta.costfunctions.costfunction`` class, so custom costs can be
+implemented by extending that class.
 
 The current code contains the following cost functions:
 

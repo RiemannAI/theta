@@ -27,10 +27,8 @@ gaussian probability distribution.
    In this example we have set ``random_bound=1`` to control the
    maximum random value for the Shur complement initialization. The
    ``init_max_param_bound=20`` controls the maximum value allowed for
-   all parameters during training with the CMA-ES minimizer.
-     
-   Both flags may require tuning in order to obtain the best model
-   results.
+   all parameters during training with the CMA-ES minimizer. Both
+   flags may require tuning in order to obtain the best model results.
 
 3. We train the model with the CMA-ES minimizer::
 	  
@@ -71,7 +69,7 @@ Let's now consider a data regression problem.
      minim = SGD()
      solution = minim.train(mse, model, X_train, Y_train,
                             scheme=RMSprop(), lr=0.01,
-			                      phase=1, Q_init=uniform(2,4))
+			    phase=1, Q_init=uniform(2,4))
 
    For this particular setup we are using the mean square error cost
    function (``mse``) with stochastic gradient descent in the RMS
@@ -79,7 +77,7 @@ Let's now consider a data regression problem.
    ``lr=0.01`` and may require tuning before getting the best results.
    In this example we have also set an optional random uniform
    initialization for the :math:`Q` parameters through the ``Q_init``
-   flag.
+   flag. The model is trained in phase I (``phase=1``).
 
    When using SGD, it is possible to split the data into training and
    validation datasets automatically, by using the

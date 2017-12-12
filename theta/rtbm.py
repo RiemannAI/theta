@@ -25,13 +25,22 @@ class RTBM(object):
         diagonal_T (bool): force T diagonal, by default T is symmetric.
         check_positivity (bool): enable positivity condition check in ``set_parameters``.
 
+    **Properties (setters and getters):**
+
+        * **mode** *(theta.rtbm.RTBM.Mode)* - sets and returns the RTBM mode.
+        * **bv** *(numpy.array)* - sets and returns the Bv.
+        * **t** *(numpy.array)* - sets and returns the T.
+        * **bh** *(numpy.array)* - sets and returns the Bh.
+        * **w** *(numpy.array)* - sets and returns the W.
+        * **q** *(numpy.array)* - sets and returns the Q.
+
     Example:
         ::
 
             from theta.rtbm import RTBM
             m = RTBM(1, 2)  # allocates a RTBM with Nv=1 and Nh=2
             print(m.size()) # returns the total number of parameters
-            output = m(x)   # evaluate prediction
+            output = m(x)   # evaluate prediction        
     """
 
     class Mode:
@@ -130,13 +139,16 @@ class RTBM(object):
         return self.__call__(X, grad_calc=grad_calc)
 
     def predict(self, x):
-        """ Performs prediction with the trained model.
+        """Performs prediction with the trained model. This method has a
+        shortcut defined by the parenthese operator,
+        i.e. ``model.predict(x)`` and ``model(x)`` are equivalent.
         
         Args:
             x (numpy.array): input data, shape (Nv, Ndata)
         
         Returns:
-            numpy.array: evaluates Model predictions.        
+            numpy.array: evaluates Model predictions.
+
         """
         return self.feed_through(x)    
 
