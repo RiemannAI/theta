@@ -13,12 +13,25 @@ class gradientscheme(object):
 
     
 class adagrad(gradientscheme):
-    
+    """The Adagrad scheme.
+
+    Args:
+        epsilon (float): smoothing term to avoid division by zero
+    """
     def __init__(self, epsilon=1e-5):
         self._eps = epsilon
         self._G2sum = np.empty(0)
         
     def getupdate(self, G, lr):
+        """Get updates.
+
+        Args:
+            G (numpy.array): gradients
+            lr (float): learning rate
+
+        Returns:
+            numpy.array: the updated gradient.
+        """
         if(self._G2sum.shape[0]==0):
             # Initalize
             self._G2sum = np.zeros(G.shape)
@@ -30,13 +43,27 @@ class adagrad(gradientscheme):
         return lr/np.sqrt(self._G2sum+self._Emat)*G
         
 class RMSprop(gradientscheme):
-    
+    """The RMS propagation scheme.
+
+    Args:
+        rate (float): weighting of the previous squared gradient expectation value
+        epsilon (float): smoothing term to avoid division by zero
+    """
     def __init__(self, rate=0.9, epsilon=1e-5):
         self._eps = epsilon
         self._E = np.empty(0)
         self._r = rate
         
     def getupdate(self, G, lr):
+        """Get updates.
+
+        Args:
+            G (numpy.array): gradients
+            lr (float): learning rate
+
+        Returns:
+            numpy.array: the updated gradient.
+        """
         if(self._E.shape[0]==0):
             # Initalize
             self._E = np.zeros(G.shape)
@@ -49,6 +76,12 @@ class RMSprop(gradientscheme):
     
     
 class adadelta(gradientscheme):
+    """The Adadelta scheme.
+
+    Args:
+        rate (float): weighting of the previous squared gradient expectation value
+        epsilon (float): smoothing term to avoid division by zero
+    """
     def __init__(self, rate=0.9, epsilon=1e-5):
         self._eps = epsilon
         self._E = np.empty(0)
@@ -56,6 +89,15 @@ class adadelta(gradientscheme):
         self._r = rate
     
     def getupdate(self, G, lr):
+        """Get updates.
+
+        Args:
+            G (numpy.array): gradients
+            lr (float): learning rate
+
+        Returns:
+            numpy.array: the updated gradient.
+        """
         if(self._E.shape[0]==0):
             # Initalize
             self._E  = np.zeros(G.shape)
@@ -75,6 +117,13 @@ class adadelta(gradientscheme):
         return R*G
 
 class adam(gradientscheme):
+    """The Adam scheme.
+
+    Args:
+        b1 (float): weight of the previous first moment of the gradient estimate
+        b2 (float): weight of the previous second moment of the gradient estimate
+        epsilon (float): smoothing term to avoid division by zero
+    """
     def __init__(self, b1=0.9, b2=0.999 ,epsilon=1e-8):
         self._eps = epsilon
         self._b1  = b1
@@ -83,6 +132,15 @@ class adam(gradientscheme):
         self._v    = np.empty(0)
         
     def getupdate(self, G, lr):
+        """Get updates.
+
+        Args:
+            G (numpy.array): gradients
+            lr (float): learning rate
+
+        Returns:
+            numpy.array: the updated gradient.
+        """
         if(self._m.shape[0]==0):
             # Initalize
             self._m  = np.zeros(G.shape)

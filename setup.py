@@ -57,8 +57,10 @@ setup(
     license='LICENSE',
     long_description=open('README.md').read(),
     install_requires=[
-        "numpy >= 1.13",
-        "cma >= 2.0.0",
+            "numpy >= 1.13",
+            "cma >= 2.3.1",
+            "cython >= 0.26",
+            "matplotlib >= 2.0.0",            
     ],
     zip_safe=False,
 )

@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import sys
 
+
 class costfunction(object):
     """ Abstract class for cost functions """
     __metaclass__ = ABCMeta

@@ -40,7 +40,13 @@ def worker_gradient(params):
 
 
 class CMA(object):
-    """Implements the GA using CMA library"""
+    """Implements the GA using CMA-ES library (cma package).
+    This class provides a basic CMA-ES implementation for RTBMs.
+
+    Args:
+        parallel (bool): if set to True the algorithm uses multi-processing.
+        ncores (int): limit the number of cores when ``parallel=True``.
+    """
     def __init__(self, parallel=False, ncores=0):
         super(CMA, self).__init__()
         if parallel:
@@ -53,7 +59,24 @@ class CMA(object):
         print('CMA on %d cpu(s) enabled' % self.num_cores)
 
     def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, popsize=None, maxiter=None, use_grad=False):
-        """The training algorithm"""
+        """Trains the ``model`` using the custom `cost` function.
+
+        Args:
+            cost (theta.costfunctions): the cost function.
+            model (theta.model.Model or theta.rtbm.RTBM): the model to be trained.
+            x_data (numpy.array): the support data with shape (Nv, Ndata).
+            y_data (numpy.array): the target prediction.
+            tolfun (float): the maximum tolerance of the cost function fluctuation to stop the minimization.
+            popsize (int): the population size.
+            maxiter (int): the maximum number of iterations.
+            use_grad (bool): if True the gradients for the cost and model are used in the minimization.
+
+        Returns:
+            numpy.array: the optimal parameters
+
+        Note:
+            The parameters of the model are changed by this algorithm.
+        """
 
         initsol = np.real(model.get_parameters())
         args = {'bounds': model.get_bounds(),
@@ -119,32 +142,38 @@ class CMA(object):
 
 
 class SGD(object):
-    """Stochastic gradient descent"""
+    """Stochastic gradient descent."""
 
     def train(self, cost, model, x_data, y_data=None,
               validation_split=0, validation_x_data=None, validation_y_data=None, stopping=None,
               scheme=None, maxiter=100, batch_size=0, shuffle=False, lr=0.001, decay=0, momentum=0,nesterov=False, noise=0,cplot=True):
         """Trains the given model with stochastic gradient descent methods
 
-        :param cost: the cost fuction class
-        :param model: the model to be trained
-        :param x_data: the target data support
-        :param y_data: the target data prediction
-        :param validation_split: fraction of data used for validation only
-        :param validation_x_data: external set of validation support
-        :param validation_y_data: external set of validation target
-        :param stopping: the stopping class (see stopping.py)
-        :param scheme: the SGD method (Ada, RMSprop, see gradientschemes.py)
-        :param maxiter: maximum number of allowed iterations
-        :param batch_size: the batch size
-        :param shuffle: shuffle the data on each iteration
-        :param lr: learning rate
-        :param decay: learning rate decay rate
-        :param momentum: add momentum
-        :param nesterov: add nesterov momentum
-        :param noise: add gaussian noise
-        :param cplot: if True shows the cost function evolution
-        :return: dictionary with iterations and cost functions
+        Args:
+            cost (theta.costfunctions): the cost fuction class
+            model (theta.rtbm.Model or theta.model.Model): the model to be trained
+            x_data (numpy.array): the target data support
+            y_data (numpy.array): the target data prediction
+            validation_split (float): fraction of data used for validation only
+            validation_x_data (numpy.array): external set of validation support
+            validation_y_data (numpy.array): external set of validation target
+            stopping (theta.stopping): the stopping class (see ``theta.stopping``)
+            scheme (theta.gradientscheme): the SGD method (Ada, RMSprop, see `Gradient descent schemes`_)
+            maxiter (int): maximum number of allowed iterations
+            batch_size (int): the batch size
+            shuffle (bool): shuffle the data on each iteration
+            lr (float): learning rate
+            decay (float): learning rate decay rate
+            momentum (float): add momentum
+            nesterov (bool): add nesterov momentum
+            noise (bool): add gaussian noise
+            cplot (bool): if True shows the cost function evolution
+
+        Returns:
+            dictionary: iterations, cost and validation functions
+
+        Note:
+            The parameters of the model are changed by this algorithm.
         """
         return sgd.train(cost, model, x_data, y_data, validation_split, validation_x_data, validation_y_data, stopping,
                          scheme, maxiter, batch_size,shuffle, lr, decay, momentum, nesterov, noise, cplot)
@@ -154,7 +183,22 @@ class BFGS(object):
     """Implements the BFGS method"""
 
     def train(self, cost, model, x_data, y_data=None, tolfun=1e-11, maxiter=100):
-        """The training algorithm"""
+        """
+        Args:
+            cost (theta.costfunctions): the cost function.
+            model (theta.model.Model or theta.rtbm.RTBM): the model to be trained.
+            x_data (numpy.array): the support data with shape (Nv, Ndata).
+            y_data (numpy.array): the target prediction.
+            tolfun (float): the maximum tolerance of the cost function fluctuation to stop the minimization.
+            popsize (int): the population size.
+            maxiter (int): the maximum number of iterations.
+
+        Returns:
+            numpy.array: the optimal parameters
+
+        Note:
+            The parameters of the model are changed by this algorithm.
+        """
         x0 = np.real(model.get_parameters())
         worker_initialize(cost, model, x_data, y_data)
         bounds = [ (model.get_bounds()[0][i],model.get_bounds()[1][i]) for i in range(model.size())]
