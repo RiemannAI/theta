@@ -3,6 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+:github_url:
+   
+.. image:: GitHub-Mark-32px.png
+   :target: https://github.com/RiemannAI/theta
+
+`View on Github <https://github.com/RiemannAI/theta>`_
+	    
+	    
 Welcome to theta's documentation!
 =================================
 
