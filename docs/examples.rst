@@ -30,11 +30,6 @@ gaussian probability distribution.
    all parameters during training with the CMA-ES minimizer. Both
    flags may require tuning in order to obtain the best model results.
 
-   .. note:: Be aware that fine tune of parameters is required in
-             order to achieve good training results. This can be
-             achieved by varying ``random_bound`` and
-             ``init_max_param_bound`` for RTBMs.
-
 3. We train the model with the CMA-ES minimizer::
 	  
      from theta.minimizer import CMA
@@ -43,14 +38,19 @@ gaussian probability distribution.
      minim = CMA(False)
      solution = minim.train(logarithmic, model, data, tolfun=1e-4)   
 
-   .. note:: The minimization algorithm provides extra options that
-             may require fine tune before getting aceptable results.
-     
 4. The learned probabilities for given data can be queried via::
 
      model.predict(data)
      
 
+.. note:: Be aware that fine tuning of parameters is required in order
+   to achieve good training results. This can be achieved by varying
+   ``random_bound`` and ``init_max_param_bound`` for RTBMs.
+
+   Also, the minimization algorithm provides extra options that may
+   need to be adjusted in order to get acceptable results.
+     
+     
 Data regression and classification
 ##################################
 
@@ -71,12 +71,7 @@ Let's now consider a data regression problem.
    In this example we have also set an optional random uniform
    initialization for the :math:`Q` parameters through the ``Q_init``
    flag. The model is trained in phase I (``phase=1``).
-					
-   .. note:: Be aware that fine tune of parameters is required in
-             order to achieve good training results, please check for
-             each layer the optional parameters concerning
-             initialization.
-     
+
 2. Then we train the model using ``SGD``::
 
      from theta.minimizer import SGD
@@ -97,10 +92,15 @@ Let's now consider a data regression problem.
    validation datasets automatically, by using the
    ``validation_split`` option, or by passing extra datasets, see
    ``theta.minimizer.SGD.train`` for more details.
-
-   .. note:: The SGD algorithms require some fine tune of parameters
-             such as the learning rate, scheme and batch size.
    
 3. Predictions of the model can be obtained via::
 
      model.predict(data)
+
+
+.. note::
+   In order to achieve good training results please check for each
+   layer the optional parameters concerning initialization.
+   
+   The SGD algorithm requires fine tuning of parameters such as the
+   learning rate, scheme and batch size.

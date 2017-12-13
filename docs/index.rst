@@ -12,14 +12,14 @@ Cython. It offers a high-level interface to build and train RTBM based
 ML architectures for probability density estimation, data regression
 and classification.
 
+The code implements the RTBM as described in the theoretical paper
+`arXiv:17xx.xxxxx <https://>`_.
+
+
 .. note::
 
-   The theta is in a proof-of-concept / experimental research
-   development phase. The code is not intended to production yet. You
-   may observe that model training requires some fine tune to get
-   proper results.
-
-The code implements the RTBM as described in the theoretical paper `arXiv:17xx.xxxxx <https://>`_.
+   Theta is in a proof-of-concept / research phase. You may observe
+   that model training requires some fine tune to get proper results.
 
 .. toctree::
    :maxdepth: 3
