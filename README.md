@@ -6,6 +6,12 @@ Theta is a machine learning (ML) framework implementing the Rieman-Theta Boltzma
 
 The code implements the RTBM as described in the theoretical paper arXiv:17xx.xxxxx.
 
+### Note
+
+Theta is in a proof-of-concept / research phase. You may observe that
+model training requires some fine tune to get proper results.
+
+
 ## User documentation
 
 The complete documentation including:
