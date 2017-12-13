@@ -30,6 +30,11 @@ gaussian probability distribution.
    all parameters during training with the CMA-ES minimizer. Both
    flags may require tuning in order to obtain the best model results.
 
+   .. note:: Be aware that fine tune of parameters is required in
+             order to achieve good training results. This can be
+             achieved by varying ``random_bound`` and
+             ``init_max_param_bound`` for RTBMs.
+
 3. We train the model with the CMA-ES minimizer::
 	  
      from theta.minimizer import CMA
@@ -38,6 +43,9 @@ gaussian probability distribution.
      minim = CMA(False)
      solution = minim.train(logarithmic, model, data, tolfun=1e-4)   
 
+   .. note:: The minimization algorithm provides extra options that
+             may require fine tune before getting aceptable results.
+     
 4. The learned probabilities for given data can be queried via::
 
      model.predict(data)
@@ -57,8 +65,18 @@ Let's now consider a data regression problem.
      from theta.layers import DiagExpectationUnitLayer
 
      model = Model()
-     model.add(DiagExpectationUnitLayer(Nin, Nout))
+     model.add(DiagExpectationUnitLayer(Nin, Nout, phase=1,
+                                        Q_init=uniform(2,4)))
 
+   In this example we have also set an optional random uniform
+   initialization for the :math:`Q` parameters through the ``Q_init``
+   flag. The model is trained in phase I (``phase=1``).
+					
+   .. note:: Be aware that fine tune of parameters is required in
+             order to achieve good training results, please check for
+             each layer the optional parameters concerning
+             initialization.
+     
 2. Then we train the model using ``SGD``::
 
      from theta.minimizer import SGD
@@ -68,22 +86,21 @@ Let's now consider a data regression problem.
    
      minim = SGD()
      solution = minim.train(mse, model, X_train, Y_train,
-                            scheme=RMSprop(), lr=0.01,
-			    phase=1, Q_init=uniform(2,4))
+                            scheme=RMSprop(), lr=0.01)
 
    For this particular setup we are using the mean square error cost
    function (``mse``) with stochastic gradient descent in the RMS
    propagation scheme (``scheme=RMSprop()``). The learning rate is
-   ``lr=0.01`` and may require tuning before getting the best results.
-   In this example we have also set an optional random uniform
-   initialization for the :math:`Q` parameters through the ``Q_init``
-   flag. The model is trained in phase I (``phase=1``).
+   ``lr=0.01`` and may require tuning before getting the best results.   
 
    When using SGD, it is possible to split the data into training and
    validation datasets automatically, by using the
    ``validation_split`` option, or by passing extra datasets, see
    ``theta.minimizer.SGD.train`` for more details.
 
+   .. note:: The SGD algorithms require some fine tune of parameters
+             such as the learning rate, scheme and batch size.
+   
 3. Predictions of the model can be obtained via::
 
      model.predict(data)
