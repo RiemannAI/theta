@@ -1,3 +1,0 @@
-[submodule "theta/riemann_theta"]
-	path = theta/riemann_theta
-	url = git@github.com:RiemannAI/openRT.git
