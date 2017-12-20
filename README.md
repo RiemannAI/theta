@@ -1,5 +1,7 @@
 ![alt text](https://github.com/RiemannAI/theta/blob/master/docs/theta.png)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1120325.svg)](https://doi.org/10.5281/zenodo.1120325)
+
 ## Welcome to theta!
 
 Theta is a machine learning (ML) framework implementing the Rieman-Theta Boltzmann Machine (RTBM), written in Python and Cython. It offers a high-level interface to build and train RTBM based ML architectures for probability density estimation, data regression and classification.
