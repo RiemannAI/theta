@@ -1,4 +1,4 @@
-![alt text](https://github.com/RiemannAI/theta/blob/sphinx/docs/theta.png)
+![alt text](https://github.com/RiemannAI/theta/blob/master/docs/theta.png)
 
 ## Welcome to theta!
 
