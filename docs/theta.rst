@@ -93,7 +93,7 @@ The theta package implements the following layers:
 * `Theta Diagonal Expectation Unit`_: A layer consisting of a RTBM in expectation mode with diagonal :math:`Q`. 
   This layer is suitable for regression and classification applications, and
   can be combined with other layers into a deep model.
-* `Normalized Additive`_: performs a weighted sum of the inputs
+* `Normalized Additive`_: performs a weighted sum of the inputs.
   This layer guarantees a positive and normalized output and is used to build mixture
   models.
 * `Linear`_: a standard linear layer for testing and benchmarking purposes.
