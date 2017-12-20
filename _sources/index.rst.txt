@@ -52,4 +52,5 @@ License and citation policy
 The theta package is an open-source package under AGPLv3. If you use the theta
 package please cite the following article::
 
-  Authors... Riemann Theta Boltzmann Machine
+  Daniel Krefl, Stefano Carrazza, Babak Haghighat, Jens Kahlen.
+  Riemann-Theta Boltzmann Machine, arXiv:1712.xxxxx
