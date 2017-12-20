@@ -51,5 +51,5 @@ sudo python setup.py install
 
 The theta package is an open-source package under AGPLv3. If you use the theta package please cite the following article:
 ```
-Daniel Krefl, Stefano Carrazza, Babak Haghighat, Jens Kahlens, Riemann-Theta Boltzmann Machine. arXiv:1712.xxxxx.
+Daniel Krefl, Stefano Carrazza, Babak Haghighat, Jens Kahlen, Riemann-Theta Boltzmann Machine. arXiv:1712.xxxxx.
 ```
