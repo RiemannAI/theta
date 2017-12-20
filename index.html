@@ -1,1 +1,335 @@
-Hello!
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to theta’s documentation! &mdash; theta 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="theta 0.0.1 documentation" href="#"/>
+        <link rel="next" title="Getting started" href="install.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> theta
+          
+
+          
+            
+            <img src="_static/theta.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theta.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples and tutorials</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">theta</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to theta’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <!-- User defined GitHub URL -->
+              <a href="" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <a class="reference external image-reference" href="https://github.com/RiemannAI/theta"><img alt="_images/GitHub-Mark-32px.png" src="_images/GitHub-Mark-32px.png" /></a>
+<p><a class="reference external" href="https://github.com/RiemannAI/theta">View on Github</a></p>
+<div class="section" id="welcome-to-theta-s-documentation">
+<h1>Welcome to theta’s documentation!<a class="headerlink" href="#welcome-to-theta-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Theta is a machine learning (ML) framework implementing the
+Rieman-Theta Boltzmann Machine (RTBM), written in Python and
+Cython. It offers a high-level interface to build and train RTBM based
+ML architectures for probability density estimation, data regression
+and classification.</p>
+<p>The code implements the RTBM as described in the theoretical paper
+<a class="reference external" href="https://">arXiv:17xx.xxxxx</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Theta is in a proof-of-concept / research phase. You may observe
+that model training requires some fine tune to get proper results.</p>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Getting started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#testing-installation">Testing Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="theta.html">Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#rtbm">RTBM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#model">Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#layers">Layers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#theta-probability-unit">Theta Probability Unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#theta-diagonal-expectation-unit">Theta Diagonal Expectation Unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#normalized-additive">Normalized Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#linear">Linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#non-linear">Non-Linear</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#minimizers">Minimizers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#evolutionary-algorithm">Evolutionary algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#gradient-descent">Gradient descent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#gradient-descent-schemes">Gradient descent schemes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#activations">Activations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#id12">Linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#sigmoid">Sigmoid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#tanh">Tanh</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#initializers">Initializers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#uniform">Uniform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#normal">Normal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#null">Null</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#glorot-normal">Glorot normal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#glorot-uniform">Glorot uniform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#cost-functions">Cost functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#mse">MSE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#logarithmic">Logarithmic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#sum">Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#rmse">RMSE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="theta.html#stopping-conditions">Stopping conditions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="theta.html#early-stop">Early Stop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples and tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#probability-estimation">Probability estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#data-regression-and-classification">Data regression and classification</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="license-and-citation-policy">
+<h2>License and citation policy<a class="headerlink" href="#license-and-citation-policy" title="Permalink to this headline">¶</a></h2>
+<p>The theta package is an open-source package under AGPLv3. If you use the theta
+package please cite the following article:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Authors</span><span class="o">...</span> <span class="n">Riemann</span> <span class="n">Theta</span> <span class="n">Boltzmann</span> <span class="n">Machine</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="install.html" class="btn btn-neutral float-right" title="Getting started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Stefano Carrazza and Daniel Krefl.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("YOUR_GOOGLE_CODE_HERE");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+
+</body>
+</html>

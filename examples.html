@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Examples and tutorials &mdash; theta 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="theta 0.0.1 documentation" href="index.html"/>
+        <link rel="prev" title="Components" href="theta.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> theta
+          
+
+          
+            
+            <img src="_static/theta.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theta.html">Components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples and tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#probability-estimation">Probability estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-regression-and-classification">Data regression and classification</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">theta</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Examples and tutorials</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <!-- User defined GitHub URL -->
+              <a href="" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="examples-and-tutorials">
+<h1>Examples and tutorials<a class="headerlink" href="#examples-and-tutorials" title="Permalink to this headline">¶</a></h1>
+<p>We have prepared some basic ipython notebooks in the <code class="code docutils literal"><span class="pre">examples</span></code>
+folder to demonstrate the functionality of the package. Here, we give
+only two simple examples to show the general usage pattern.</p>
+<div class="section" id="probability-estimation">
+<h2>Probability estimation<a class="headerlink" href="#probability-estimation" title="Permalink to this headline">¶</a></h2>
+<p>Let’s consider the example of training a RTBM to learn a
+gaussian probability distribution.</p>
+<ol class="arabic">
+<li><p class="first">The first step consists in generating normal distributed data:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Then we allocate a RTBM with one visible and 2 hidden units:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theta.rtbm</span> <span class="k">import</span> <span class="n">RTBM</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">RTBM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">init_max_param_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example we have set <code class="docutils literal"><span class="pre">random_bound=1</span></code> to control the
+maximum random value for the Shur complement initialization. The
+<code class="docutils literal"><span class="pre">init_max_param_bound=20</span></code> controls the maximum value allowed for
+all parameters during training with the CMA-ES minimizer. Both
+flags may require tuning in order to obtain the best model results.</p>
+</li>
+<li><p class="first">We train the model with the CMA-ES minimizer:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theta.minimizer</span> <span class="k">import</span> <span class="n">CMA</span>
+<span class="kn">from</span> <span class="nn">theta.costfunctions</span> <span class="k">import</span> <span class="n">logarithmic</span>
+
+<span class="n">minim</span> <span class="o">=</span> <span class="n">CMA</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">minim</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">logarithmic</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">tolfun</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">The learned probabilities for given data can be queried via:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Be aware that fine tuning of parameters is required in order
+to achieve good training results. This can be achieved by varying
+<code class="docutils literal"><span class="pre">random_bound</span></code> and <code class="docutils literal"><span class="pre">init_max_param_bound</span></code> for RTBMs.</p>
+<p class="last">Also, the minimization algorithm provides extra options that may
+need to be adjusted in order to get acceptable results.</p>
+</div>
+</div>
+<div class="section" id="data-regression-and-classification">
+<h2>Data regression and classification<a class="headerlink" href="#data-regression-and-classification" title="Permalink to this headline">¶</a></h2>
+<p>Let’s now consider a data regression problem.</p>
+<ol class="arabic">
+<li><p class="first">Suppose we have <code class="docutils literal"><span class="pre">X_train</span></code> and <code class="docutils literal"><span class="pre">Y_train</span></code> numpy arrays
+with respectively the support and target data. We allocate a
+<code class="docutils literal"><span class="pre">DiagExpectationUnitLayer</span></code> with <code class="docutils literal"><span class="pre">Nin=X_train.shape[0]</span></code> and
+<code class="docutils literal"><span class="pre">Nout=X_train.shape[1]</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theta.model</span> <span class="k">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">theta.layers</span> <span class="k">import</span> <span class="n">DiagExpectationUnitLayer</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">DiagExpectationUnitLayer</span><span class="p">(</span><span class="n">Nin</span><span class="p">,</span> <span class="n">Nout</span><span class="p">,</span> <span class="n">phase</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                   <span class="n">Q_init</span><span class="o">=</span><span class="n">uniform</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>In this example we have also set an optional random uniform
+initialization for the <span class="math">\(Q\)</span> parameters through the <code class="docutils literal"><span class="pre">Q_init</span></code>
+flag. The model is trained in phase I (<code class="docutils literal"><span class="pre">phase=1</span></code>).</p>
+</li>
+<li><p class="first">Then we train the model using <code class="docutils literal"><span class="pre">SGD</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theta.minimizer</span> <span class="k">import</span> <span class="n">SGD</span>
+<span class="kn">from</span> <span class="nn">theta.costfunctions</span> <span class="k">import</span> <span class="n">mse</span>
+<span class="kn">from</span> <span class="nn">theta.gradientschemes</span> <span class="k">import</span> <span class="n">RMSprop</span>
+<span class="kn">from</span> <span class="nn">theta.initializers</span> <span class="k">import</span> <span class="n">uniform</span>
+
+<span class="n">minim</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">()</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">minim</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">mse</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">,</span>
+                       <span class="n">scheme</span><span class="o">=</span><span class="n">RMSprop</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For this particular setup we are using the mean square error cost
+function (<code class="docutils literal"><span class="pre">mse</span></code>) with stochastic gradient descent in the RMS
+propagation scheme (<code class="docutils literal"><span class="pre">scheme=RMSprop()</span></code>). The learning rate is
+<code class="docutils literal"><span class="pre">lr=0.01</span></code> and may require tuning before getting the best results.</p>
+<p>When using SGD, it is possible to split the data into training and
+validation datasets automatically, by using the
+<code class="docutils literal"><span class="pre">validation_split</span></code> option, or by passing extra datasets, see
+<code class="docutils literal"><span class="pre">theta.minimizer.SGD.train</span></code> for more details.</p>
+</li>
+<li><p class="first">Predictions of the model can be obtained via:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In order to achieve good training results please check for each
+layer the optional parameters concerning initialization.</p>
+<p class="last">The SGD algorithm requires fine tuning of parameters such as the
+learning rate, scheme and batch size.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="theta.html" class="btn btn-neutral" title="Components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Stefano Carrazza and Daniel Krefl.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("YOUR_GOOGLE_CODE_HERE");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+
+</body>
+</html>

@@ -1,0 +1,1794 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Components &mdash; theta 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="theta 0.0.1 documentation" href="index.html"/>
+        <link rel="next" title="Examples and tutorials" href="examples.html"/>
+        <link rel="prev" title="Getting started" href="install.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> theta
+          
+
+          
+            
+            <img src="_static/theta.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rtbm">RTBM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model">Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#layers">Layers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#theta-probability-unit">Theta Probability Unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#theta-diagonal-expectation-unit">Theta Diagonal Expectation Unit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#normalized-additive">Normalized Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linear">Linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#non-linear">Non-Linear</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#minimizers">Minimizers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#evolutionary-algorithm">Evolutionary algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gradient-descent">Gradient descent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gradient-descent-schemes">Gradient descent schemes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#activations">Activations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sigmoid">Sigmoid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tanh">Tanh</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#initializers">Initializers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#uniform">Uniform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#normal">Normal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#null">Null</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#glorot-normal">Glorot normal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#glorot-uniform">Glorot uniform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cost-functions">Cost functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mse">MSE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logarithmic">Logarithmic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sum">Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rmse">RMSE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#stopping-conditions">Stopping conditions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#early-stop">Early Stop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples and tutorials</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">theta</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Components</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <!-- User defined GitHub URL -->
+              <a href="" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="components">
+<h1>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h1>
+<p>The theta package comes with the following modules:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#rtbm">RTBM</a> (<code class="code docutils literal"><span class="pre">theta.rtbm</span></code>)</li>
+<li><a class="reference internal" href="#model">Model</a> (<code class="code docutils literal"><span class="pre">theta.model</span></code>)</li>
+<li><a class="reference internal" href="#layers">Layers</a> (<code class="code docutils literal"><span class="pre">theta.layers</span></code>)</li>
+<li><a class="reference internal" href="#minimizers">Minimizers</a> (<code class="code docutils literal"><span class="pre">theta.minimizer</span></code>)</li>
+<li><a class="reference internal" href="#activations">Activations</a> (<code class="code docutils literal"><span class="pre">theta.activations</span></code>)</li>
+<li><a class="reference internal" href="#initializers">Initializers</a> (<code class="code docutils literal"><span class="pre">theta.initializers</span></code>)</li>
+<li><a class="reference internal" href="#cost-functions">Cost functions</a> (<code class="code docutils literal"><span class="pre">theta.costfunctions</span></code>)</li>
+<li><a class="reference internal" href="#stopping-conditions">Stopping conditions</a> (<code class="code docutils literal"><span class="pre">theta.stopping</span></code>)</li>
+</ul>
+<p>These modules provide all the required components to train
+Riemann-Theta Boltzmann Machines for probability density estimation,
+regression and classification.</p>
+<hr class="docutils" />
+<div class="section" id="rtbm">
+<span id="id1"></span><h2>RTBM<a class="headerlink" href="#rtbm" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">theta.rtbm</span></code> module contains the definition of <code class="docutils literal"><span class="pre">class</span>
+<span class="pre">RTBM</span></code>. This object provides the simplest interface to the parameters
+of the RTBM and to the probability and expectation values.</p>
+<p>Schematically, the RTBM is given by the network configuration</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/rtbm.png"><img alt="_images/rtbm.png" src="_images/rtbm.png" style="width: 299.7px; height: 211.5px;" /></a>
+</div>
+<p>where <span class="math">\(T\)</span> is the connection matrix of the visible sector with
+<span class="math">\(N_v\)</span> visible units, <span class="math">\(Q\)</span> of the hidden sector with
+<span class="math">\(N_h\)</span> hidden units and <span class="math">\(W\)</span> the inter-connections.</p>
+<dl class="class">
+<dt id="theta.rtbm.RTBM">
+<em class="property">class </em><code class="descclassname">theta.rtbm.</code><code class="descname">RTBM</code><span class="sig-paren">(</span><em>visible_units</em>, <em>hidden_units</em>, <em>mode=0</em>, <em>init_max_param_bound=2</em>, <em>random_bound=1</em>, <em>phase=1</em>, <em>diagonal_T=False</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class implements the Riemann-Theta Boltzmann Machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>visible_units</strong> (<em>int</em>) – number of visible units.</li>
+<li><strong>hidden_units</strong> (<em>int</em>) – number of hidden units.</li>
+<li><strong>mode</strong> (<em>theta.rtbm.RTBM.Mode</em>) – set the working mode among: <cite>probability mode</cite> (<code class="docutils literal"><span class="pre">Mode.Probability</span></code>),
+<cite>log of probability</cite> (<code class="docutils literal"><span class="pre">Mode.LogProbability</span></code>) and expectation (<code class="docutils literal"><span class="pre">Mode.Expectation</span></code>), see <code class="xref py py-class docutils literal"><span class="pre">theta.rtbm.RTBM.Mode</span></code>.</li>
+<li><strong>init_max_param_bound</strong> (<em>float</em>) – maximum value allowed for all parameters during the CMA-ES minimization.</li>
+<li><strong>random_bound</strong> (<em>float</em>) – selects the maximum random value for the Schur complement initialization.</li>
+<li><strong>phase</strong> (<em>complex</em>) – number which multiplies w and bh <code class="docutils literal"><span class="pre">phase=1</span></code> for Phase I and <code class="docutils literal"><span class="pre">phase=1j</span></code> for Phase II.</li>
+<li><strong>diagonal_T</strong> (<em>bool</em>) – force T diagonal, by default T is symmetric.</li>
+<li><strong>check_positivity</strong> (<em>bool</em>) – enable positivity condition check in <code class="docutils literal"><span class="pre">set_parameters</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Properties (setters and getters):</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>mode</strong> <em>(theta.rtbm.RTBM.Mode)</em> - sets and returns the RTBM mode.</li>
+<li><strong>bv</strong> <em>(numpy.array)</em> - sets and returns the Bv.</li>
+<li><strong>t</strong> <em>(numpy.array)</em> - sets and returns the T.</li>
+<li><strong>bh</strong> <em>(numpy.array)</em> - sets and returns the Bh.</li>
+<li><strong>w</strong> <em>(numpy.array)</em> - sets and returns the W.</li>
+<li><strong>q</strong> <em>(numpy.array)</em> - sets and returns the Q.</li>
+</ul>
+</div></blockquote>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theta.rtbm</span> <span class="k">import</span> <span class="n">RTBM</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">RTBM</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># allocates a RTBM with Nv=1 and Nh=2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">size</span><span class="p">())</span> <span class="c1"># returns the total number of parameters</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>   <span class="c1"># evaluate prediction</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="theta.rtbm.RTBM.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs prediction with the trained model. This method has a
+shortcut defined by the parenthese operator,
+i.e. <code class="docutils literal"><span class="pre">model.predict(x)</span></code> and <code class="docutils literal"><span class="pre">model(x)</span></code> are equivalent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – input data, shape (Nv, Ndata)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">evaluates Model predictions.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.random_init">
+<code class="descname">random_init</code><span class="sig-paren">(</span><em>bound</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.random_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Random initializer which satisfies the Schur complement positivity condition.
+If <code class="docutils literal"><span class="pre">diagonal_T=True</span></code> the initial Q and T are diagonal and W is set to zero.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bound</strong> (<em>float</em>) – the maximum value for the random matrix X used by the Schur complement.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the first moment estimator (mean).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the mean of the probability distribution.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">theta.rtbm.AssertionError</span></code> – if <code class="docutils literal"><span class="pre">mode</span></code> is not <code class="docutils literal"><span class="pre">theta.rtbm.RTBM.Mode.Probability</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the size of the RTBM.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">flat array with all RTBM parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">flat array with calculated gradients [Gbh,Gbv,Gw,Gt,Gq].</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.set_bounds">
+<code class="descname">set_bounds</code><span class="sig-paren">(</span><em>param_bound</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.set_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the parameter bound for each parameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>param_bound</strong> (<em>float</em>) – the maximum absolute value for parameter variation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.rtbm.RTBM.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.rtbm.RTBM.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter for the GA.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+</div>
+<div class="section" id="model">
+<span id="id2"></span><h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
+<p>The theta package provide a dedicated container for RTBM probability
+mixtures models and theta neural networks (TNNs) through the <code class="docutils literal"><span class="pre">class</span>
+<span class="pre">Model</span></code> stored in <code class="docutils literal"><span class="pre">theta.model</span></code>.</p>
+<p>This module allows the concatenation of objects for building mixture
+model based on multiple RTBMs and a final <code class="docutils literal"><span class="pre">NormAddLayer</span></code>, such as:</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/mixture.png"><img alt="_images/mixture.png" src="_images/mixture.png" style="width: 296.1px; height: 212.4px;" /></a>
+</div>
+<p>and the possibility to build TNNs, e.g.:</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/tnn.png"><img alt="_images/tnn.png" src="_images/tnn.png" style="width: 354.0px; height: 193.8px;" /></a>
+</div>
+<p>Further information about the implemented layers for the TNNs are
+listed in the <a class="reference internal" href="#layers">Layers</a> section of this document.</p>
+<dl class="class">
+<dt id="theta.model.Model">
+<em class="property">class </em><code class="descclassname">theta.model.</code><code class="descname">Model</code><a class="headerlink" href="#theta.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The model class which holds layer for building mixture models and theta neural networks.</p>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theta.theta</span> <span class="k">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">theta.layers</span> <span class="k">import</span> <span class="n">ThetaUnitLayer</span><span class="p">,</span> <span class="n">AddNormLayer</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>  <span class="c1"># allocates a RTBM with Nv=1 and Nh=2</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ThetaUnitLayer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">NormAddLayer</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="theta.model.Model.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs prediction with the trained model. This method has a
+shortcut defined by the parenthese operator,
+i.e. <code class="docutils literal"><span class="pre">model.predict(x)</span></code> and <code class="docutils literal"><span class="pre">model(x)</span></code> are equivalent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – input data, shape (Nv, Ndata)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">evaluates Model predictions.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>layer</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add layer to the model instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>layer</strong> (<em>theta.layers</em>) – any layer implemented in theta.layers (<a class="reference internal" href="#layers">Layers</a>).</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The layer input size must match the output size of previous layer!</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the size of the RTBM.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects all parameters and returns a flat array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">flat array with current matrices weights.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects all gradients and returns a flat array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">flat array with calculated gradients.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.get_layer">
+<code class="descname">get_layer</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.get_layer" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) – the layer number.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">returns the N-th layer stored in the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">theta.layers</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter of all layers.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.model.Model.gradient_check">
+<code class="descname">gradient_check</code><span class="sig-paren">(</span><em>g</em>, <em>x</em>, <em>epsilon</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.model.Model.gradient_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs numerical check of gth gradient.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>g</strong> (<em>int</em>) – id of gradient to check.</li>
+<li><strong>x</strong> (<em>numpy.array</em>) – input data shape (Ninput, Ndata).</li>
+<li><strong>epsilon</strong> (<em>float</em>) – infinitesimal variation of parameter.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the numerical and analytical gradients.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">floats</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+</div>
+<div class="section" id="layers">
+<span id="id3"></span><h2>Layers<a class="headerlink" href="#layers" title="Permalink to this headline">¶</a></h2>
+<p>The theta package implements the following layers:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#theta-probability-unit">Theta Probability Unit</a>: provides a layer with multiple RTBMs
+setup in probability mode. This layer is used to build probability
+and mixture models.</li>
+<li><a class="reference internal" href="#theta-diagonal-expectation-unit">Theta Diagonal Expectation Unit</a>: A layer consisting of a RTBM in expectation mode with diagonal <span class="math">\(Q\)</span>.
+This layer is suitable for regression and classification applications, and
+can be combined with other layers into a deep model.</li>
+<li><a class="reference internal" href="#normalized-additive">Normalized Additive</a>: performs a weighted sum of the inputs
+This layer guarantees a positive and normalized output and is used to build mixture
+models.</li>
+<li><a class="reference internal" href="#linear">Linear</a>: a standard linear layer for testing and benchmarking purposes.</li>
+<li><a class="reference internal" href="#non-linear">Non-Linear</a>: a non linear layer for testing and
+benchmarking purposes.</li>
+</ul>
+<p>All layers are inherited from the <code class="docutils literal"><span class="pre">theta.layers.Layer</span></code> class, so
+custom layers can be implemented by extending that class.</p>
+<div class="section" id="theta-probability-unit">
+<span id="id4"></span><h3>Theta Probability Unit<a class="headerlink" href="#theta-probability-unit" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.layers.ThetaUnitLayer">
+<em class="property">class </em><code class="descclassname">theta.layers.</code><code class="descname">ThetaUnitLayer</code><span class="sig-paren">(</span><em>Nin</em>, <em>Nout</em>, <em>Nhidden=1</em>, <em>init_max_param_bound=2</em>, <em>random_bound=1</em>, <em>phase=1</em>, <em>diagonal_T=False</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.ThetaUnitLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate a Theta Unit Layer working in probability mode</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Nin</strong> (<em>int</em>) – number of input nodes</li>
+<li><strong>Nout</strong> (<em>int</em>) – number of output nodes (i.e. # of RTBMs)</li>
+<li><strong>Nhidden</strong> (<em>int</em>) – number of hidden layers per RTBM</li>
+<li><strong>init_max_param_bound</strong> (<em>float</em>) – maximum bound value for CMA</li>
+<li><strong>random_bound</strong> (<em>float</em>) – the maximum value for the random matrix X used by initialization</li>
+<li><strong>phase</strong> (<em>complex</em>) – number which multiplies w and bh <code class="docutils literal"><span class="pre">phase=1</span></code> for Phase I and <code class="docutils literal"><span class="pre">phase=1j</span></code> for PhaseII.</li>
+<li><strong>diagonal_T</strong> (<em>bool</em>) – force T diagonal, by default T is symmetric.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.layers.ThetaUnitLayer.get_unit">
+<code class="descname">get_unit</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.ThetaUnitLayer.get_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the singular RTBM unit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) – the Nth RTBM unit.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the Nth RTBM unit.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#theta.rtbm.RTBM" title="theta.rtbm.RTBM">theta.rtbm.RTBM</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.ThetaUnitLayer.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.ThetaUnitLayer.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the parameters as a flat array [b,w,q].</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.ThetaUnitLayer.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.ThetaUnitLayer.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter of the layer for the GA.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.ThetaUnitLayer.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.ThetaUnitLayer.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total number of parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.ThetaUnitLayer.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.ThetaUnitLayer.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">gradients for all RTBM units as a flat array.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="theta-diagonal-expectation-unit">
+<span id="id5"></span><h3>Theta Diagonal Expectation Unit<a class="headerlink" href="#theta-diagonal-expectation-unit" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.layers.DiagExpectationUnitLayer">
+<em class="property">class </em><code class="descclassname">theta.layers.</code><code class="descname">DiagExpectationUnitLayer</code><span class="sig-paren">(</span><em>Nin</em>, <em>Nout</em>, <em>W_init=&lt;theta.initializers.glorot_uniform object&gt;</em>, <em>B_init=&lt;theta.initializers.null object&gt;</em>, <em>Q_init=&lt;theta.initializers.uniform object&gt;</em>, <em>param_bound=16</em>, <em>phase=1</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.DiagExpectationUnitLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A layer of log-gradient theta units.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Nin</strong> (<em>int</em>) – number of inputs.</li>
+<li><strong>Nout</strong> (<em>int</em>) – number of outputs.</li>
+<li><strong>W_init</strong> (<em>theta.initializers</em>) – random initialization for W</li>
+<li><strong>B_init</strong> (<em>theta.initializers</em>) – random initialization for B</li>
+<li><strong>Q_init</strong> (<em>theta.initializers</em>) – random initialization for Q</li>
+<li><strong>param_bound</strong> (<em>float</em>) – maximum value alowed for the optimization via genetic optimizer.</li>
+<li><strong>phase</strong> (<em>complex</em>) – the RTBM phase (default=1)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.layers.DiagExpectationUnitLayer.show_activation">
+<code class="descname">show_activation</code><span class="sig-paren">(</span><em>N</em>, <em>bound=2</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.DiagExpectationUnitLayer.show_activation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the Nth activation function on [-bound,+bound].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>N</strong> (<em>int</em>) – the Nth activation function</li>
+<li><strong>bound</strong> (<em>float</em>) – min/max value for the plot.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.DiagExpectationUnitLayer.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.DiagExpectationUnitLayer.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the parameters as a flat array [bh,w,q]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.DiagExpectationUnitLayer.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.DiagExpectationUnitLayer.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter of the layer for the GA.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.DiagExpectationUnitLayer.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.DiagExpectationUnitLayer.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">B, W and Q gradients as a flat array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.DiagExpectationUnitLayer.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.DiagExpectationUnitLayer.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total number of parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="normalized-additive">
+<span id="id6"></span><h3>Normalized Additive<a class="headerlink" href="#normalized-additive" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.layers.NormAddLayer">
+<em class="property">class </em><code class="descclassname">theta.layers.</code><code class="descname">NormAddLayer</code><span class="sig-paren">(</span><em>Nin</em>, <em>Nout</em>, <em>W_init=&lt;theta.initializers.null object&gt;</em>, <em>param_bound=10</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NormAddLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linearly combines inputs with outputs normalized by sum of weights.
+Weights are exponentiated.</p>
+<div class="math">
+\[M(v) = \frac{1}{\sum_{i=1}^N e^{\omega_i}} \sum_{i=1}^{N} e^{\omega_i} P^{(i)}(v)\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Nin</strong> (<em>int</em>) – number of input nodes.</li>
+<li><strong>Nout</strong> (<em>int</em>) – number of output nodes.</li>
+<li><strong>W_init</strong> (<em>theta.initializers</em>) – random initialization for weights.</li>
+<li><strong>param_bound</strong> (<em>float</em>) – maximum value alowed for the optimization via genetic optimizer.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.layers.NormAddLayer.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NormAddLayer.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the parameters as a flat array [w].</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.NormAddLayer.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NormAddLayer.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">W gradients as a flat array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.NormAddLayer.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NormAddLayer.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter of the layer for the GA.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.NormAddLayer.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NormAddLayer.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total number of parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="linear">
+<span id="id7"></span><h3>Linear<a class="headerlink" href="#linear" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.layers.Linear">
+<em class="property">class </em><code class="descclassname">theta.layers.</code><code class="descname">Linear</code><span class="sig-paren">(</span><em>Nin</em>, <em>Nout</em>, <em>W_init=&lt;theta.initializers.glorot_uniform object&gt;</em>, <em>B_init=&lt;theta.initializers.null object&gt;</em>, <em>param_bound=10</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.Linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear layer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Nin</strong> (<em>int</em>) – number of inputs.</li>
+<li><strong>Nout</strong> (<em>int</em>) – number of outputs.</li>
+<li><strong>W_init</strong> (<em>theta.initializers</em>) – random initialization for weights.</li>
+<li><strong>B_init</strong> (<em>theta.initializers</em>) – random initialization for biases.</li>
+<li><strong>param_bound</strong> (<em>float</em>) – maximum value alowed for the optimization via genetic optimizer.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.layers.Linear.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.Linear.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the parameters as a flat array [b,w].</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.Linear.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.Linear.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">B and W gradients as a flat array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.Linear.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.Linear.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter of the layer for the GA.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.Linear.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.Linear.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total number of parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="non-linear">
+<span id="id8"></span><h3>Non-Linear<a class="headerlink" href="#non-linear" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.layers.NonLinear">
+<em class="property">class </em><code class="descclassname">theta.layers.</code><code class="descname">NonLinear</code><span class="sig-paren">(</span><em>Nin</em>, <em>Nout</em>, <em>activation=&lt;class 'theta.activations.tanh'&gt;</em>, <em>W_init=&lt;theta.initializers.glorot_uniform object&gt;</em>, <em>B_init=&lt;theta.initializers.null object&gt;</em>, <em>param_bound=10</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NonLinear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Non-Linear layer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Nin</strong> (<em>int</em>) – number of inputs.</li>
+<li><strong>Nout</strong> (<em>int</em>) – number of outputs.</li>
+<li><strong>activation</strong> (<em>theta.activations</em>) – the non-linear activation function.</li>
+<li><strong>W_init</strong> (<em>theta.initializers</em>) – random initialization for weights.</li>
+<li><strong>B_init</strong> (<em>theta.initializers</em>) – random initialization for biases.</li>
+<li><strong>param_bound</strong> (<em>float</em>) – maximum value alowed for the optimization via genetic optimizer.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.layers.NonLinear.get_parameters">
+<code class="descname">get_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NonLinear.get_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the parameters as a flat array [b,w].</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.NonLinear.get_gradients">
+<code class="descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NonLinear.get_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">B and W gradients as a flat array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.NonLinear.get_bounds">
+<code class="descname">get_bounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NonLinear.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two arrays with min and max of each parameter of the layer for the GA.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="theta.layers.NonLinear.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#theta.layers.NonLinear.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total number of parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="minimizers">
+<span id="id9"></span><h2>Minimizers<a class="headerlink" href="#minimizers" title="Permalink to this headline">¶</a></h2>
+<p>The theta package provides two minimizers:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#cma-es">CMA-ES</a> (evolutionary strategy)</li>
+<li><a class="reference internal" href="#stochastic-gradient-descent">Stochastic Gradient Descent</a> (SGD)</li>
+</ul>
+<p>We also provide the <code class="docutils literal"><span class="pre">BFGS</span></code> optimizer for testing purposes.</p>
+<div class="section" id="evolutionary-algorithm">
+<h3>Evolutionary algorithm<a class="headerlink" href="#evolutionary-algorithm" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="cma-es"></span><dl class="class">
+<dt id="theta.minimizer.CMA">
+<em class="property">class </em><code class="descclassname">theta.minimizer.</code><code class="descname">CMA</code><span class="sig-paren">(</span><em>parallel=False</em>, <em>ncores=0</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.minimizer.CMA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the GA using CMA-ES library (cma package).
+This class provides a basic CMA-ES implementation for RTBMs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parallel</strong> (<em>bool</em>) – if set to True the algorithm uses multi-processing.</li>
+<li><strong>ncores</strong> (<em>int</em>) – limit the number of cores when <code class="docutils literal"><span class="pre">parallel=True</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.minimizer.CMA.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>cost</em>, <em>model</em>, <em>x_data</em>, <em>y_data=None</em>, <em>tolfun=1e-11</em>, <em>popsize=None</em>, <em>maxiter=None</em>, <em>use_grad=False</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.minimizer.CMA.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains the <code class="docutils literal"><span class="pre">model</span></code> using the custom <cite>cost</cite> function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cost</strong> (<em>theta.costfunctions</em>) – the cost function.</li>
+<li><strong>model</strong> (<a class="reference internal" href="#theta.model.Model" title="theta.model.Model"><em>theta.model.Model</em></a><em> or </em><a class="reference internal" href="#theta.rtbm.RTBM" title="theta.rtbm.RTBM"><em>theta.rtbm.RTBM</em></a>) – the model to be trained.</li>
+<li><strong>x_data</strong> (<em>numpy.array</em>) – the support data with shape (Nv, Ndata).</li>
+<li><strong>y_data</strong> (<em>numpy.array</em>) – the target prediction.</li>
+<li><strong>tolfun</strong> (<em>float</em>) – the maximum tolerance of the cost function fluctuation to stop the minimization.</li>
+<li><strong>popsize</strong> (<em>int</em>) – the population size.</li>
+<li><strong>maxiter</strong> (<em>int</em>) – the maximum number of iterations.</li>
+<li><strong>use_grad</strong> (<em>bool</em>) – if True the gradients for the cost and model are used in the minimization.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the optimal parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameters of the model are changed by this algorithm.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gradient-descent">
+<h3>Gradient descent<a class="headerlink" href="#gradient-descent" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="stochastic-gradient-descent"></span><dl class="class">
+<dt id="theta.minimizer.SGD">
+<em class="property">class </em><code class="descclassname">theta.minimizer.</code><code class="descname">SGD</code><a class="headerlink" href="#theta.minimizer.SGD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stochastic gradient descent.</p>
+<dl class="method">
+<dt id="theta.minimizer.SGD.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>cost</em>, <em>model</em>, <em>x_data</em>, <em>y_data=None</em>, <em>validation_split=0</em>, <em>validation_x_data=None</em>, <em>validation_y_data=None</em>, <em>stopping=None</em>, <em>scheme=None</em>, <em>maxiter=100</em>, <em>batch_size=0</em>, <em>shuffle=False</em>, <em>lr=0.001</em>, <em>decay=0</em>, <em>momentum=0</em>, <em>nesterov=False</em>, <em>noise=0</em>, <em>cplot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.minimizer.SGD.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains the given model with stochastic gradient descent methods</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cost</strong> (<em>theta.costfunctions</em>) – the cost fuction class</li>
+<li><strong>model</strong> (<em>theta.rtbm.Model</em><em> or </em><a class="reference internal" href="#theta.model.Model" title="theta.model.Model"><em>theta.model.Model</em></a>) – the model to be trained</li>
+<li><strong>x_data</strong> (<em>numpy.array</em>) – the target data support</li>
+<li><strong>y_data</strong> (<em>numpy.array</em>) – the target data prediction</li>
+<li><strong>validation_split</strong> (<em>float</em>) – fraction of data used for validation only</li>
+<li><strong>validation_x_data</strong> (<em>numpy.array</em>) – external set of validation support</li>
+<li><strong>validation_y_data</strong> (<em>numpy.array</em>) – external set of validation target</li>
+<li><strong>stopping</strong> (<em>theta.stopping</em>) – the stopping class (see <code class="docutils literal"><span class="pre">theta.stopping</span></code>)</li>
+<li><strong>scheme</strong> (<em>theta.gradientscheme</em>) – the SGD method (Ada, RMSprop, see <a class="reference internal" href="#gradient-descent-schemes">Gradient descent schemes</a>)</li>
+<li><strong>maxiter</strong> (<em>int</em>) – maximum number of allowed iterations</li>
+<li><strong>batch_size</strong> (<em>int</em>) – the batch size</li>
+<li><strong>shuffle</strong> (<em>bool</em>) – shuffle the data on each iteration</li>
+<li><strong>lr</strong> (<em>float</em>) – learning rate</li>
+<li><strong>decay</strong> (<em>float</em>) – learning rate decay rate</li>
+<li><strong>momentum</strong> (<em>float</em>) – add momentum</li>
+<li><strong>nesterov</strong> (<em>bool</em>) – add nesterov momentum</li>
+<li><strong>noise</strong> (<em>bool</em>) – add gaussian noise</li>
+<li><strong>cplot</strong> (<em>bool</em>) – if True shows the cost function evolution</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">iterations, cost and validation functions</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dictionary</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameters of the model are changed by this algorithm.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="theta.minimizer.BFGS">
+<em class="property">class </em><code class="descclassname">theta.minimizer.</code><code class="descname">BFGS</code><a class="headerlink" href="#theta.minimizer.BFGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the BFGS method</p>
+<dl class="method">
+<dt id="theta.minimizer.BFGS.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>cost</em>, <em>model</em>, <em>x_data</em>, <em>y_data=None</em>, <em>tolfun=1e-11</em>, <em>maxiter=100</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.minimizer.BFGS.train" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cost</strong> (<em>theta.costfunctions</em>) – the cost function.</li>
+<li><strong>model</strong> (<a class="reference internal" href="#theta.model.Model" title="theta.model.Model"><em>theta.model.Model</em></a><em> or </em><a class="reference internal" href="#theta.rtbm.RTBM" title="theta.rtbm.RTBM"><em>theta.rtbm.RTBM</em></a>) – the model to be trained.</li>
+<li><strong>x_data</strong> (<em>numpy.array</em>) – the support data with shape (Nv, Ndata).</li>
+<li><strong>y_data</strong> (<em>numpy.array</em>) – the target prediction.</li>
+<li><strong>tolfun</strong> (<em>float</em>) – the maximum tolerance of the cost function fluctuation to stop the minimization.</li>
+<li><strong>popsize</strong> (<em>int</em>) – the population size.</li>
+<li><strong>maxiter</strong> (<em>int</em>) – the maximum number of iterations.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the optimal parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameters of the model are changed by this algorithm.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gradient-descent-schemes">
+<span id="id10"></span><h3>Gradient descent schemes<a class="headerlink" href="#gradient-descent-schemes" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.gradientschemes.adagrad">
+<em class="property">class </em><code class="descclassname">theta.gradientschemes.</code><code class="descname">adagrad</code><span class="sig-paren">(</span><em>epsilon=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.adagrad" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Adagrad scheme.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>epsilon</strong> (<em>float</em>) – smoothing term to avoid division by zero</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.gradientschemes.adagrad.getupdate">
+<code class="descname">getupdate</code><span class="sig-paren">(</span><em>G</em>, <em>lr</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.adagrad.getupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get updates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>G</strong> (<em>numpy.array</em>) – gradients</li>
+<li><strong>lr</strong> (<em>float</em>) – learning rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated gradient.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="theta.gradientschemes.RMSprop">
+<em class="property">class </em><code class="descclassname">theta.gradientschemes.</code><code class="descname">RMSprop</code><span class="sig-paren">(</span><em>rate=0.9</em>, <em>epsilon=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.RMSprop" title="Permalink to this definition">¶</a></dt>
+<dd><p>The RMS propagation scheme.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rate</strong> (<em>float</em>) – weighting of the previous squared gradient expectation value</li>
+<li><strong>epsilon</strong> (<em>float</em>) – smoothing term to avoid division by zero</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.gradientschemes.RMSprop.getupdate">
+<code class="descname">getupdate</code><span class="sig-paren">(</span><em>G</em>, <em>lr</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.RMSprop.getupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get updates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>G</strong> (<em>numpy.array</em>) – gradients</li>
+<li><strong>lr</strong> (<em>float</em>) – learning rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated gradient.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="theta.gradientschemes.adadelta">
+<em class="property">class </em><code class="descclassname">theta.gradientschemes.</code><code class="descname">adadelta</code><span class="sig-paren">(</span><em>rate=0.9</em>, <em>epsilon=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.adadelta" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Adadelta scheme.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rate</strong> (<em>float</em>) – weighting of the previous squared gradient expectation value</li>
+<li><strong>epsilon</strong> (<em>float</em>) – smoothing term to avoid division by zero</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.gradientschemes.adadelta.getupdate">
+<code class="descname">getupdate</code><span class="sig-paren">(</span><em>G</em>, <em>lr</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.adadelta.getupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get updates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>G</strong> (<em>numpy.array</em>) – gradients</li>
+<li><strong>lr</strong> (<em>float</em>) – learning rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated gradient.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="theta.gradientschemes.adam">
+<em class="property">class </em><code class="descclassname">theta.gradientschemes.</code><code class="descname">adam</code><span class="sig-paren">(</span><em>b1=0.9</em>, <em>b2=0.999</em>, <em>epsilon=1e-08</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.adam" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Adam scheme.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>b1</strong> (<em>float</em>) – weight of the previous first moment of the gradient estimate</li>
+<li><strong>b2</strong> (<em>float</em>) – weight of the previous second moment of the gradient estimate</li>
+<li><strong>epsilon</strong> (<em>float</em>) – smoothing term to avoid division by zero</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.gradientschemes.adam.getupdate">
+<code class="descname">getupdate</code><span class="sig-paren">(</span><em>G</em>, <em>lr</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.gradientschemes.adam.getupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get updates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>G</strong> (<em>numpy.array</em>) – gradients</li>
+<li><strong>lr</strong> (<em>float</em>) – learning rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the updated gradient.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="activations">
+<span id="id11"></span><h2>Activations<a class="headerlink" href="#activations" title="Permalink to this headline">¶</a></h2>
+<p>All activations functions are inherited from the
+<code class="docutils literal"><span class="pre">theta.activations.actfunc</span></code> class, so custom activations can be
+implemented by extending that class.</p>
+<p>The current code contains the following activation functions:</p>
+<div class="section" id="id12">
+<h3>Linear<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.activations.linear">
+<em class="property">class </em><code class="descclassname">theta.activations.</code><code class="descname">linear</code><a class="headerlink" href="#theta.activations.linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>A linear pass through.</p>
+<dl class="staticmethod">
+<dt id="theta.activations.linear.activation">
+<em class="property">static </em><code class="descname">activation</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.activations.linear.activation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the activation function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the activation function evaluation.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="theta.activations.linear.gradient">
+<em class="property">static </em><code class="descname">gradient</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.activations.linear.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the gradient of the activation function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the gradient of the activation function.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sigmoid">
+<h3>Sigmoid<a class="headerlink" href="#sigmoid" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.activations.sigmoid">
+<em class="property">class </em><code class="descclassname">theta.activations.</code><code class="descname">sigmoid</code><a class="headerlink" href="#theta.activations.sigmoid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sigmoid activation.</p>
+<dl class="staticmethod">
+<dt id="theta.activations.sigmoid.activation">
+<em class="property">static </em><code class="descname">activation</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.activations.sigmoid.activation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the activation function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the activation function evaluation.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="theta.activations.sigmoid.gradient">
+<em class="property">static </em><code class="descname">gradient</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.activations.sigmoid.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the gradient of the activation function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the gradient of the activation function.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tanh">
+<h3>Tanh<a class="headerlink" href="#tanh" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.activations.tanh">
+<em class="property">class </em><code class="descclassname">theta.activations.</code><code class="descname">tanh</code><a class="headerlink" href="#theta.activations.tanh" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tanh activation.</p>
+<dl class="staticmethod">
+<dt id="theta.activations.tanh.activation">
+<em class="property">static </em><code class="descname">activation</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.activations.tanh.activation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the activation function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the activation function evaluation.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="theta.activations.tanh.gradient">
+<em class="property">static </em><code class="descname">gradient</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.activations.tanh.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the gradient of the activation function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>numpy.array</em>) – the input data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the gradient of the activation function.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<p>Custom activation functions can be implemented by extending the <code class="docutils literal"><span class="pre">theta.activations.actfunc</span></code> class.</p>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="initializers">
+<span id="id13"></span><h2>Initializers<a class="headerlink" href="#initializers" title="Permalink to this headline">¶</a></h2>
+<p>All initializers are inherited from the
+<code class="docutils literal"><span class="pre">theta.initializers.initializer</span></code> class, so custom initializers can
+be implemented by extending that class.</p>
+<p>The current code contains the following parameter initalizers:</p>
+<div class="section" id="uniform">
+<h3>Uniform<a class="headerlink" href="#uniform" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.initializers.uniform">
+<em class="property">class </em><code class="descclassname">theta.initializers.</code><code class="descname">uniform</code><span class="sig-paren">(</span><em>bound=1</em>, <em>center=0</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.initializers.uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uniformly distributed initialization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bound</strong> (<em>float</em>) – half-width of the distribution [-bound,+bound]</li>
+<li><strong>center</strong> (<em>float</em>) – location of the center</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="normal">
+<h3>Normal<a class="headerlink" href="#normal" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.initializers.normal">
+<em class="property">class </em><code class="descclassname">theta.initializers.</code><code class="descname">normal</code><span class="sig-paren">(</span><em>mean=0</em>, <em>sdev=1</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.initializers.normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normal distribution initialization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mean</strong> (<em>float</em>) – mean of the normal distribution</li>
+<li><strong>sdev</strong> (<em>float</em>) – standard deviation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="null">
+<h3>Null<a class="headerlink" href="#null" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.initializers.null">
+<em class="property">class </em><code class="descclassname">theta.initializers.</code><code class="descname">null</code><a class="headerlink" href="#theta.initializers.null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all parameters to zero.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="glorot-normal">
+<h3>Glorot normal<a class="headerlink" href="#glorot-normal" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.initializers.glorot_normal">
+<em class="property">class </em><code class="descclassname">theta.initializers.</code><code class="descname">glorot_normal</code><a class="headerlink" href="#theta.initializers.glorot_normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes with glorot normal distribution.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="glorot-uniform">
+<h3>Glorot uniform<a class="headerlink" href="#glorot-uniform" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.initializers.glorot_uniform">
+<em class="property">class </em><code class="descclassname">theta.initializers.</code><code class="descname">glorot_uniform</code><a class="headerlink" href="#theta.initializers.glorot_uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes with glorot uniform distribution.</p>
+</dd></dl>
+
+<p>Custom initalization schemes can be easily implemented by extending the <code class="docutils literal"><span class="pre">theta.initializers.initializer</span></code> class.</p>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="cost-functions">
+<span id="id14"></span><h2>Cost functions<a class="headerlink" href="#cost-functions" title="Permalink to this headline">¶</a></h2>
+<p>All cost functions are inherited from the
+<code class="docutils literal"><span class="pre">theta.costfunctions.costfunction</span></code> class, so custom costs can be
+implemented by extending that class.</p>
+<p>The current code contains the following cost functions:</p>
+<div class="section" id="mse">
+<h3>MSE<a class="headerlink" href="#mse" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.costfunctions.mse">
+<em class="property">class </em><code class="descclassname">theta.costfunctions.</code><code class="descname">mse</code><a class="headerlink" href="#theta.costfunctions.mse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean squared error</p>
+</dd></dl>
+
+</div>
+<div class="section" id="logarithmic">
+<h3>Logarithmic<a class="headerlink" href="#logarithmic" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.costfunctions.logarithmic">
+<em class="property">class </em><code class="descclassname">theta.costfunctions.</code><code class="descname">logarithmic</code><a class="headerlink" href="#theta.costfunctions.logarithmic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logarithmic total cost</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sum">
+<h3>Sum<a class="headerlink" href="#sum" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.costfunctions.sum">
+<em class="property">class </em><code class="descclassname">theta.costfunctions.</code><code class="descname">sum</code><a class="headerlink" href="#theta.costfunctions.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum total cost</p>
+</dd></dl>
+
+</div>
+<div class="section" id="rmse">
+<h3>RMSE<a class="headerlink" href="#rmse" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.costfunctions.rmse">
+<em class="property">class </em><code class="descclassname">theta.costfunctions.</code><code class="descname">rmse</code><a class="headerlink" href="#theta.costfunctions.rmse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Root mean squared error</p>
+</dd></dl>
+
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="stopping-conditions">
+<span id="id15"></span><h2>Stopping conditions<a class="headerlink" href="#stopping-conditions" title="Permalink to this headline">¶</a></h2>
+<p>The stopping condition can be used with the <code class="docutils literal"><span class="pre">theta.minimizer.SGD</span></code>
+minimizer. The validation data is monitored and if a specific
+condition is achieved the optimization is stopped. Custom stopping
+conditions can be implemented by extending the
+<code class="docutils literal"><span class="pre">theta.minimizer.stopping</span></code> abstract class.</p>
+<p>The current code contains the following stopping algorithms:</p>
+<div class="section" id="early-stop">
+<h3>Early Stop<a class="headerlink" href="#early-stop" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="theta.stopping.earlystop">
+<em class="property">class </em><code class="descclassname">theta.stopping.</code><code class="descname">earlystop</code><span class="sig-paren">(</span><em>delta=10</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.stopping.earlystop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple implementation of early stopping.
+If the validation loss function increases
+after <cite>delta</cite> iterations the stop signal is send to the minimizer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>delta</strong> (<em>int</em>) – the number of iterations to pass until the stopping condition check becomes active.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="theta.stopping.earlystop.do_stop">
+<code class="descname">do_stop</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="headerlink" href="#theta.stopping.earlystop.do_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function which tests if the stop condition is reached.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> (<em>numpy.array</em>) – history of the validation loss function.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the validation loss is growing in the delta window, False elsewhere.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples and tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Stefano Carrazza and Daniel Krefl.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("YOUR_GOOGLE_CODE_HERE");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+
+</body>
+</html>
