@@ -9,7 +9,7 @@
    :target: https://github.com/RiemannAI/theta
 
 `View on Github <https://github.com/RiemannAI/theta>`_
-	    
+
 	    
 Welcome to theta's documentation!
 =================================
@@ -21,7 +21,7 @@ ML architectures for probability density estimation, data regression
 and classification.
 
 The code implements the RTBM as described in the theoretical paper
-`arXiv:17xx.xxxxx <https://>`_.
+`arXiv:1712.07581 <https://arxiv.org/abs/1712.07581>`_.
 
 
 .. note::
@@ -53,4 +53,7 @@ The theta package is an open-source package under AGPLv3. If you use the theta
 package please cite the following article::
 
   Daniel Krefl, Stefano Carrazza, Babak Haghighat, Jens Kahlen.
-  Riemann-Theta Boltzmann Machine, arXiv:1712.xxxxx
+  Riemann-Theta Boltzmann Machine, arXiv:1712.07581
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1120325.svg
+   :target: https://doi.org/10.5281/zenodo.1120325
