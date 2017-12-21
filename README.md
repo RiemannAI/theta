@@ -6,7 +6,7 @@
 
 Theta is a machine learning (ML) framework implementing the Rieman-Theta Boltzmann Machine (RTBM), written in Python and Cython. It offers a high-level interface to build and train RTBM based ML architectures for probability density estimation, data regression and classification.
 
-The code implements the RTBM as described in the theoretical paper arXiv:17xx.xxxxx.
+The code implements the RTBM as described in the theoretical paper [arXiv:1712.07581](https://arxiv.org/abs/1712.07581).
 
 ### Note
 
@@ -53,5 +53,5 @@ sudo python setup.py install
 
 The theta package is an open-source package under AGPLv3. If you use the theta package please cite the following article:
 ```
-Daniel Krefl, Stefano Carrazza, Babak Haghighat, Jens Kahlen, Riemann-Theta Boltzmann Machine. arXiv:1712.xxxxx.
+Daniel Krefl, Stefano Carrazza, Babak Haghighat, Jens Kahlen, Riemann-Theta Boltzmann Machine. arXiv:1712.07581.
 ```
