@@ -91,26 +91,25 @@ class RTBM(object):
         for i in range(hidden_units):
             tmp = [0] * hidden_units
             tmp[i] = 1
-            self._D1.append(tmp)
+            self._D1.append([tmp])
 
         self._D1 = np.array(self._D1)
 
         # Generate vector for hessian calc call
         self._D2 = []
-        
         if hidden_units > 1:
             for i in range(0, hidden_units):
                 for j in range(0, hidden_units):
                     tmp = [0] * hidden_units**2
                     tmp[i] = 1
                     tmp[j+hidden_units] = 1
-            
-                    self._D2.append(tmp)
 
-            self._D2 = np.array(self._D2) 
+                    self._D2.append([tmp[k:k+hidden_units] for k in range(0, hidden_units+1, hidden_units)])
+
+            self._D2 = np.array(self._D2)
         else:
             self._D2.append([1,1])
-    
+
     def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM for a given data array"""
         
@@ -203,10 +202,9 @@ class RTBM(object):
             BhT = self._bh.T
             BtiTW = np.dot(np.dot(BvT, invT), self._w)
             WtiTW = np.dot(np.dot(self._w.T, invT), self._w)
-            return np.real(1.0 / (2j * np.pi) * invT * self._w *
-                           RiemannTheta.normalized_eval((BhT - BtiTW) / (2.0j * np.pi),
-                                                        (-self._q + WtiTW) / (2.0j * np.pi),
-                                                        mode=self._mode, derivs=np.array([[1]])))
+            return np.real(-np.dot(invT, self._bv) + 1.0 / (2j * np.pi) *
+                            np.dot(np.dot(invT, self._w), RiemannTheta.normalized_eval((BhT - BtiTW) / (2.0j * np.pi),
+                                                        (-self._q + WtiTW) / (2.0j * np.pi), mode=self._mode, derivs=self._D1)))
         else:
             assert AssertionError('Mean for mode %s not implemented' % self._mode)
 
