@@ -357,6 +357,46 @@ class RTBM(object):
         """
         return self._bounds
 
+    def conditional(self, d):
+        """Generates the conditional RTBM. 
+    
+        Args:
+            d (numpy.array): column vector containing the values for the conditional
+
+        Returns:
+            theta.rtbm.RTBM: RTBM modelling the conditional probability P(y|d)
+        """
+    
+        if self._Nv == 1:
+            print('Error: cannot do the conditional probability of a 1d distribution')
+            return False
+    
+        nh = self._Nh
+        nv = self._Nv 
+        
+        if d.size >= nv:
+            print('Error: d larger than Nv')
+            return False
+
+        k = int(nv-d.size)
+    
+        cmodel = RTBM(k, nh)
+
+        # Matrix A
+        t = self.t[:k,:k]
+        t = t[np.triu_indices(k)]
+        q = self.q[np.triu_indices(nh)]
+        w = self.w[:k]
+
+        # Biases
+        bh = self.bh + np.dot(self.w[k:].T, d)
+        bv = self.bv[:k] + np.dot(self.t[:k,k:], d)
+
+        cparams = np.concatenate((bv, bh, w, t, q), axis = None)
+        cmodel.set_parameters(cparams)
+
+        return cmodel
+    
     @property
     def mode(self):
         """Sets and returns the RTBM mode."""
