@@ -366,17 +366,13 @@ class RTBM(object):
         Returns:
             theta.rtbm.RTBM: RTBM modelling the conditional probability P(y|d)
         """
-    
-        if self._Nv == 1:
-            print('Error: cannot do the conditional probability of a 1d distribution')
-            return False
+
+        assert (self._Nv > 1), "cannot do the conditional probability of a 1d distribution"
     
         nh = self._Nh
         nv = self._Nv 
-        
-        if d.size >= nv:
-            print('Error: d larger than Nv')
-            return False
+
+        assert (d.size < nv), "d larger than Nv"
 
         k = int(nv-d.size)
     
