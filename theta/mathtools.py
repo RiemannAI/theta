@@ -71,7 +71,7 @@ def rtbm_log_probability(v, bv, bh, t, w, q, mode=1):
     BtiTW = np.dot(np.dot(BvT, invT), w)
     WtiTW = np.dot(np.dot(w.T, invT), w)
 
-    ExpF = -0.5 * vTv.diagonal() - Bvv - BiTB * np.ones(v.shape[1])
+    ExpF = -0.5 * vTv.diagonal() - Bvv - 0.5*BiTB * np.ones(v.shape[1])
   
     lnR1 = RiemannTheta.log_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
     lnR2 = RiemannTheta.log_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
