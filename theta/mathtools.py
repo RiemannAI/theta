@@ -20,7 +20,10 @@ def rtbm_parts(v, bv, bh, t, w, q, mode=1):
     detT = np.linalg.det(t)
     invT = np.linalg.inv(t)
     vT = v.T
-    vTv = np.dot(np.dot(vT, t), v)
+    #vTv = np.dot(np.dot(vT, t), v)
+    
+    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(v).A).sum(1)
+    
     BvT = bv.T
     BhT = bh.T
     Bvv = np.dot(BvT, v)
@@ -28,7 +31,7 @@ def rtbm_parts(v, bv, bh, t, w, q, mode=1):
     BtiTW = np.dot(np.dot(BvT, invT), w)
     WtiTW = np.dot(np.dot(w.T, invT), w)
     
-    ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - 0.5*BiTB * np.ones(v.shape[1]))
+    ExpF = np.exp(-0.5 * vTv - Bvv - 0.5*BiTB * np.ones(v.shape[1]))
     
     uR1, vR1 = RiemannTheta.parts_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
     uR2, vR2 = RiemannTheta.parts_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
@@ -42,7 +45,9 @@ def rtbm_probability(v, bv, bh, t, w, q, mode=1):
     detT = np.linalg.det(t)
     invT = np.linalg.inv(t)
     vT = v.T
-    vTv = np.dot(np.dot(vT, t), v)
+    #vTv = np.dot(np.dot(vT, t), v)
+    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(v).A).sum(1)
+    
     BvT = bv.T
     BhT = bh.T
     Bvv = np.dot(BvT, v)
@@ -50,7 +55,7 @@ def rtbm_probability(v, bv, bh, t, w, q, mode=1):
     BtiTW = np.dot(np.dot(BvT, invT), w)
     WtiTW = np.dot(np.dot(w.T, invT), w)
 
-    ExpF = np.exp(-0.5 * vTv.diagonal() - Bvv - 0.5*BiTB * np.ones(v.shape[1]))
+    ExpF = np.exp(-0.5 * vTv - Bvv - 0.5*BiTB * np.ones(v.shape[1]))
 
     uR1, vR1 = RiemannTheta.parts_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
     uR2, vR2 = RiemannTheta.parts_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
@@ -63,7 +68,9 @@ def rtbm_log_probability(v, bv, bh, t, w, q, mode=1):
     detT = np.linalg.det(t)
     invT = np.linalg.inv(t)
     vT = v.T
-    vTv = np.dot(np.dot(vT, t), v)
+    #vTv = np.dot(np.dot(vT, t), v)
+    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(v).A).sum(1)
+    
     BvT = bv.T
     BhT = bh.T
     Bvv = np.dot(BvT, v)
@@ -71,7 +78,7 @@ def rtbm_log_probability(v, bv, bh, t, w, q, mode=1):
     BtiTW = np.dot(np.dot(BvT, invT), w)
     WtiTW = np.dot(np.dot(w.T, invT), w)
 
-    ExpF = -0.5 * vTv.diagonal() - Bvv - 0.5*BiTB * np.ones(v.shape[1])
+    ExpF = -0.5 * vTv - Bvv - 0.5*BiTB * np.ones(v.shape[1])
   
     lnR1 = RiemannTheta.log_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
     lnR2 = RiemannTheta.log_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
