@@ -20,9 +20,7 @@ def rtbm_parts(v, bv, bh, t, w, q, mode=1):
     detT = np.linalg.det(t)
     invT = np.linalg.inv(t)
     vT = v.T
-    #vTv = np.dot(np.dot(vT, t), v)
-    
-    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(v).A).sum(1)
+    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(vT).A).sum(1)
     
     BvT = bv.T
     BhT = bh.T
@@ -45,8 +43,7 @@ def rtbm_probability(v, bv, bh, t, w, q, mode=1):
     detT = np.linalg.det(t)
     invT = np.linalg.inv(t)
     vT = v.T
-    #vTv = np.dot(np.dot(vT, t), v)
-    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(v).A).sum(1)
+    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(vT).A).sum(1)
     
     BvT = bv.T
     BhT = bh.T
@@ -68,8 +65,7 @@ def rtbm_log_probability(v, bv, bh, t, w, q, mode=1):
     detT = np.linalg.det(t)
     invT = np.linalg.inv(t)
     vT = v.T
-    #vTv = np.dot(np.dot(vT, t), v)
-    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(v).A).sum(1)
+    vTv = ((np.matrix(vT)*np.matrix(t)).A*np.matrix(vT).A).sum(1)
     
     BvT = bv.T
     BhT = bh.T
