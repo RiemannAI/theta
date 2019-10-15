@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 import numpy as np
 from theta.mathtools import rtbm_probability, hidden_expectations, rtbm_log_probability, \
-    check_normalization_consistency, check_pos_def
-from theta.riemann_theta.riemann_theta import RiemannTheta
+    check_normalization_consistency, check_pos_def, rtbm_ph, RTBM_precision
+from theta.riemann_theta.riemann_theta import RiemannTheta, radius, integer_points_python
 
 
 class AssignError(Exception):
@@ -18,7 +18,7 @@ class RTBM(object):
         visible_units (int): number of visible units.
         hidden_units (int): number of hidden units.
         mode (theta.rtbm.RTBM.Mode): set the working mode among: `probability mode` (``Mode.Probability``),
-            `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.        
+            `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.
         init_max_param_bound (float): maximum value allowed for all parameters during the CMA-ES minimization.
         random_bound (float): selects the maximum random value for the Schur complement initialization.
         phase (complex): number which multiplies w and bh ``phase=1`` for Phase I and ``phase=1j`` for Phase II.
@@ -40,7 +40,7 @@ class RTBM(object):
             from theta.rtbm import RTBM
             m = RTBM(1, 2)  # allocates a RTBM with Nv=1 and Nh=2
             print(m.size()) # returns the total number of parameters
-            output = m(x)   # evaluate prediction        
+            output = m(x)   # evaluate prediction
     """
 
     class Mode:
@@ -81,11 +81,11 @@ class RTBM(object):
 
         # set boundaries
         self.set_bounds(init_max_param_bound)
-        
+
         # Populate with random parameters using Schur complement
         # This guarantees an acceptable and instantaneous initial solution
         self.random_init(random_bound)
-        
+
         # Generate vector for gradient calc call
         self._D1 = []
         for i in range(hidden_units):
@@ -112,7 +112,7 @@ class RTBM(object):
 
     def __call__(self, data, grad_calc=False):
         """Evaluates the RTBM for a given data array"""
-        
+
         P = self._call(data)
 
         # Store for backprop
@@ -122,7 +122,7 @@ class RTBM(object):
             self._check_positivity = False
         else:
             self._check_positivity = True
-            
+
         return P
 
     def feed_through(self, X, grad_calc=False):
@@ -141,15 +141,15 @@ class RTBM(object):
         """Performs prediction with the trained model. This method has a
         shortcut defined by the parenthese operator,
         i.e. ``model.predict(x)`` and ``model(x)`` are equivalent.
-        
+
         Args:
             x (numpy.array): input data, shape (Nv, Ndata)
-        
+
         Returns:
             numpy.array: evaluates Model predictions.
 
         """
-        return self.feed_through(x)    
+        return self.feed_through(x)
 
     def random_init(self, bound):
         """Random initializer which satisfies the Schur complement positivity condition.
@@ -332,9 +332,9 @@ class RTBM(object):
         Returns:
             numpy array: flat array with calculated gradients [Gbh,Gbv,Gw,Gt,Gq].
         """
-        
+
         inds = np.triu_indices_from(self._gradQ)
-        
+
         if self._diagonal_T:
             return np.real(np.concatenate((self._gradBv.flatten(),self._gradBh.flatten(),self._gradW.flatten(), self._gradT.diagonal(), self._gradQ[inds].flatten())))
         else:
@@ -357,12 +357,68 @@ class RTBM(object):
         """
         return self._bounds
 
+    def make_sample(self, size, epsilon=RTBM_precision):
+        """Produces P(v) and P(h) samples for the current RTBM architecture.
+
+        Args:
+            size (int): number of samples to be generated.
+            epsilon (float): threshold for the radius calculation
+
+        Returns:
+            list of numpy.array: sampling of P(v)
+            list of numpy.array: sampling of P(h)
+        """
+        invT = np.linalg.inv(self._t)
+        WTiW  = self._w.T.dot(invT.dot(self._w))
+        BvTiW = self._bv.T.dot(invT.dot(self._w))
+
+        O = (self._q - WTiW)
+        Z = (self._bh.T - BvTiW)
+        Z = Z.flatten()
+
+        Omega = np.array(-O/(2.0j*np.pi), dtype=np.complex)
+        Y = Omega.imag
+
+        RT = RiemannTheta.eval(Z/(2.0j*np.pi),-O/(2.0j*np.pi) )
+
+        if(Y.shape[0]!=1):
+            _T = np.linalg.cholesky(Y).T
+        else:
+            _T = np.sqrt(Y)
+
+        T = np.ascontiguousarray(_T)
+        g = len(Z)
+
+        R = radius(epsilon, _T, derivs=[], accuracy_radius=5.)
+        S = np.ascontiguousarray(integer_points_python(g,R,_T))
+
+        pmax = 0
+        for s in S:
+            v = rtbm_ph(self, s)
+            if v > pmax: pmax = v
+
+        # Rejection sampling
+        ph = []
+        while len(ph) < size:
+            U = np.random.randint(0,len(S))
+            X = (np.exp(-0.5*S[U].T.dot(O).dot(S[U])-Z.dot(S[U]))/RT).real
+            J = np.random.uniform()
+            if(X/pmax > J):
+                ph.append(S[U])
+
+        # Draw samples from P(v|h)
+        pv = np.zeros(shape=(len(ph), self._bv.shape[0]))
+        for i in range(0,len(ph)):
+            muh = -np.dot(invT, np.dot(self._w, ph[i].reshape(g,1))+ self._bv)
+            pv[i] = np.random.multivariate_normal(mean=muh.flatten(),cov=invT, size=1).flatten()
+
+        return pv, ph
+
     def conditional(self, d):
         """Generates the conditional RTBM. 
     
         Args:
             d (numpy.array): column vector containing the values for the conditional
-
         Returns:
             theta.rtbm.RTBM: RTBM modelling the conditional probability P(y|d)
         """
