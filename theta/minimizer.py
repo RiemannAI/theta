@@ -129,18 +129,12 @@ class CMA(object):
                 pool.terminate()
         else:
             worker_initialize(cost, model, x_data, y_data)
-            while not es.stop():
-                f_values, solutions = [], []
-                while len(solutions) < es.popsize:
-                    curr_fit = x = np.NaN
-                    while np.isnan(curr_fit):
-                        x = es.ask(1, gradf=grad)[0]
-                        curr_fit = worker_compute(x)
-                    solutions.append(x)
-                    f_values.append(curr_fit)
-                es.tell(solutions, f_values)
-                es.disp()
-        print(es.result)
+            # By using ask_and_eval we let the cma decide what to do with NaNs
+            solutions, f_values = es.ask_and_eval(worker_compute)
+            es.tell(solutions, f_values)
+            es.disp()
+        if self._verbose:
+            print(es.result)
 
         model.set_parameters(es.result[0])
         return es.result[0]
