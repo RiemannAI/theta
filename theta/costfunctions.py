@@ -21,6 +21,8 @@ class kullbackLeibler(costfunction):
 
     @staticmethod
     def cost(x, y):
+        if np.sum(x) == 0:
+            return 0.0
         return -np.sum(y*np.log(x)) # + np.sum(y*np.log(y))
     
     @staticmethod

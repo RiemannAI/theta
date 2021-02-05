@@ -47,7 +47,8 @@ class CMA(object):
         parallel (bool): if set to True the algorithm uses multi-processing.
         ncores (int): limit the number of cores when ``parallel=True``.
     """
-    def __init__(self, parallel=False, ncores=0):
+    def __init__(self, parallel=False, ncores=0, verbose=True):
+        self._verbose = verbose
         super(CMA, self).__init__()
         if parallel:
             if(ncores==0):
@@ -77,11 +78,27 @@ class CMA(object):
         Note:
             The parameters of the model are changed by this algorithm.
         """
+        if self._verbose:
+            vb = 0
+        else:
+            vb = -9
 
         initsol = np.real(model.get_parameters())
-        args = {'bounds': model.get_bounds(),
+
+        # Prepare the bounds
+        bounds = model.get_bounds()
+        # The diagonal must be always positive
+        t_diagonal = np.diag(model._t)
+        q_diagonal = np.diag(model._q)
+        a_diagonal = np.concatenate([t_diagonal, q_diagonal])
+        for val in a_diagonal:
+            idx = np.where(initsol == val)[0][0]
+            bounds[0][idx] = np.maximum(1e-7, bounds[0][idx])
+
+        args = {'bounds': bounds,
                 'tolfun': tolfun,
-                'verb_log': 0}
+                'verbose': vb,
+                'verb_log': vb}
         sigma = np.max(model.get_bounds()[1])*0.1
 
         if popsize is not None:
