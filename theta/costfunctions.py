@@ -15,7 +15,18 @@ class costfunction(object):
     @abstractmethod
     def gradient(self, X):
         pass
+
+
+class kullbackLeibler(costfunction):
+
+    @staticmethod
+    def cost(x, y):
+        return -np.sum(y*np.log(x)) # + np.sum(y*np.log(y))
     
+    @staticmethod
+    def gradient(x, y):
+        return -np.sum(y/x)
+
 
 class mse(costfunction):
     """ Mean squared error """
@@ -49,7 +60,7 @@ class sum(costfunction):
         return -np.sum(x)
 
     @staticmethod
-    def gradient(x):
+    def gradient(x, y):
         sys.exit("Gradient not implemented!")
 
         
@@ -61,7 +72,7 @@ class rmse(costfunction):
         return np.sqrt(np.sum(np.mean((y-x)**2,axis=1)))
 
     @staticmethod
-    def gradient(x):
+    def gradient(x, y):
         return 1.0/np.sqrt(np.sum(np.mean((y-x)**2,axis=1)))*(x-y)
      
         
@@ -74,6 +85,5 @@ class crossentropy(costfunction):
         return -np.sum(np.mean(np.multiply(y,lx),axis=1))
     
     @staticmethod
-    def gradient(x):
+    def gradient(x, y):
         return -1.0/y.shape[1]*y/x
-  
