@@ -21,8 +21,8 @@ class kullbackLeibler(costfunction):
 
     @staticmethod
     def cost(x, y):
-        if np.sum(x) == 0:
-            return 0.0
+        if (x < 0).any():
+            import ipdb; ipdb.set_trace()
         return -np.sum(y*np.log(x)) # + np.sum(y*np.log(y))
     
     @staticmethod

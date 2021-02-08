@@ -28,6 +28,8 @@ def worker_initialize(cost, model, x_data, y_data):
 def worker_compute(params):
     if not resource.model.set_parameters(params):
         return np.NaN
+    if (resource.model(resource.x_data) <0.0).any():
+        import ipdb; ipdb.set_trace()
     res = resource.cost_function.cost(np.real(resource.model(resource.x_data)), resource.y_data)
     return res
 
