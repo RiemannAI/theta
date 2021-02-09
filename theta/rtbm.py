@@ -56,7 +56,9 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
-                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False):
+                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False,
+                 positive_T = False, positive_Q = False,
+                 ):
         self._Nv = visible_units
         self._Nh = hidden_units
         self._bv = np.zeros([visible_units, 1])
@@ -76,11 +78,19 @@ class RTBM(object):
         else:
             self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)//2+self._Nv*self._Nh
 
+        # Note that the list of parameters will always keep the following structure:
+        # [biases_visible, biases_hidden, W, upper_triangular_T (or diagonal), upper_triangular_Q]
+        # therefore, the indices for T start at: (nv+nh + nv*nh)
+
         # set operation mode
         self.mode = mode
 
+
         # set boundaries
+        self._positive_T = positive_T
+        self._positive_Q = positive_Q
         self.set_bounds(init_max_param_bound)
+
 
         # Populate with random parameters using Schur complement
         # This guarantees an acceptable and instantaneous initial solution
@@ -162,6 +172,7 @@ class RTBM(object):
         a_size = (self._Nv+self._Nh)**2
 
         params = np.random.uniform(-bound, bound, a_size+self._Nv+self._Nh)
+
         if self._diagonal_T:
             x = np.eye(a_shape[0])
             np.fill_diagonal(x, params[:self._Nv+self._Nh])
@@ -306,13 +317,24 @@ class RTBM(object):
             index += self._Nv
         else:
             inds = np.triu_indices_from(self._t)
-            self._t[inds] = params[index:index+(self._Nv**2+self._Nv)//2]
-            self._t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)//2]
+            matrix_t = self._t
+            matrix_t[inds] = params[index:index+(self._Nv**2+self._Nv)//2]
+            matrix_t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)//2]
+            if self._positive_T:
+                self._t = matrix_t.T.dot(matrix_t)
+            else:
+                self._t = matrix_t
             index += (self._Nv**2+self._Nv)//2
 
         inds = np.triu_indices_from(self._q)
-        self._q[inds] = params[index:index+(self._Nh**2+self._Nh)//2]
-        self._q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)//2]
+        # Note, the choice of creating a new variable to hold the _reference_ to the matrix is purely aesthetical
+        matrix_q = self._q
+        matrix_q[inds] = params[index:index+(self._Nh**2+self._Nh)//2]
+        matrix_q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)//2]
+        if self._positive_Q:
+            self._q = matrix_q.T.dot(matrix_q)
+        else:
+            self._q = matrix_q
 
         if self._check_positivity:
             if not check_normalization_consistency(self._t, self._q, self._w) or \
@@ -346,8 +368,35 @@ class RTBM(object):
         Args:
             param_bound (float): the maximum absolute value for parameter variation.
         """
-        upper_bounds = [param_bound] * self._size
-        lower_bounds = [-param_bound] * self._size
+        upper_bounds = np.array([param_bound] * self._size)
+        lower_bounds = np.array([-param_bound] * self._size)
+
+        # If positivity is imposed for T _or_ Q the boundaries might change
+        # for T we need to check whether this is a triangular matrix
+        t_idx = self._Nv + self._Nh + self._Nv*self._Nh
+        t_size = self._Nv if self._diagonal_T else int((self._Nv**2 + self._Nv)/2) 
+        if self._positive_T:
+            if self._Nv == 1 or self._diagonal_T:
+            # If the T is diagonal, positivity can enforced just with this
+                lower_bounds[t_idx: t_idx+t_size] = 0.0
+            else:
+                # if is positive but not diagonal, then let's play with the limit
+                sqr_bound = np.sqrt(param_bound/self._Nv)
+                lower_bounds[t_idx: t_idx + t_size] = -sqr_bound
+                upper_bounds[t_idx: t_idx + t_size] = sqr_bound
+
+        # We do the same for Q, only Q is not allowed to be diagonal
+        q_idx = t_idx + t_size
+        if self._positive_Q:
+            # if nh = 1 then this is trivial!
+            if self._Nh == 1:
+                lower_bounds[q_idx] = 0.0
+            else:
+                # if is positive but not diagonal, then let's play with the limit
+                sqr_bound = np.sqrt(param_bound/self._Nh)
+                lower_bounds[q_idx:] = -sqr_bound
+                upper_bounds[q_idx:] = sqr_bound
+
         self._bounds = [lower_bounds, upper_bounds]
 
     def get_bounds(self):

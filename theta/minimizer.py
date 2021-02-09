@@ -28,9 +28,10 @@ def worker_initialize(cost, model, x_data, y_data):
 def worker_compute(params):
     if not resource.model.set_parameters(params):
         return np.NaN
-    if (resource.model(resource.x_data) <0.0).any():
+    prob = np.real(resource.model(resource.x_data))
+    if (prob < 0.0).any():
         import ipdb; ipdb.set_trace()
-    res = resource.cost_function.cost(np.real(resource.model(resource.x_data)), resource.y_data)
+    res = resource.cost_function.cost(prob, resource.y_data)
     return res
 
 
@@ -89,13 +90,6 @@ class CMA(object):
 
         # Prepare the bounds
         bounds = model.get_bounds()
-        # The diagonal must be always positive
-        t_diagonal = np.diag(model._t)
-        q_diagonal = np.diag(model._q)
-        a_diagonal = np.concatenate([t_diagonal, q_diagonal])
-        for val in a_diagonal:
-            idx = np.where(initsol == val)[0][0]
-            bounds[0][idx] = np.maximum(1e-7, bounds[0][idx])
 
         args = {'bounds': bounds,
                 'tolfun': tolfun,
