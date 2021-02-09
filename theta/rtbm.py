@@ -66,7 +66,7 @@ class RTBM(object):
         self._bh = np.zeros([hidden_units, 1])
         self._w = np.zeros([visible_units, hidden_units])
         self._q = np.zeros([hidden_units, hidden_units])
-        self._diagonal_T = diagonal_T
+        self._diagonal_T = diagonal_T or visible_units == 1
         self._mode = None
         self._call = None
         self._parameters = None
@@ -165,6 +165,9 @@ class RTBM(object):
         """Random initializer which satisfies the Schur complement positivity condition.
         If ``diagonal_T=True`` the initial Q and T are diagonal and W is set to zero.
 
+        Note that if T or Q are forced to be positive what the parameters array hold
+        would be its cholesky decomposition
+
         Args:
             bound (float): the maximum value for the random matrix X used by the Schur complement.
         """
@@ -187,15 +190,31 @@ class RTBM(object):
         self._bv = params[a_size:a_size + self._Nv].reshape(self._bv.shape)
         self._bh = self._phase * params[-self._Nh:].reshape(self._bh.shape)
 
-        # store parameters having in mind that Q and T are symmetric.
+        all_parameters = [
+                self._bv.flatten(),
+                self._bh.flatten(),
+                self._w.flatten()
+                ]
+
+
+        # store parameters having in mind that Q and T are symmetric
         if self._diagonal_T:
-            self._parameters = np.concatenate([self._bv.flatten(), self._bh.flatten(),
-                                               self._w.flatten(), self._t.diagonal(),
-                                               self._q[np.triu_indices(self._Nh)]])
+            all_parameters.append(self._t.diagonal())
         else:
-            self._parameters = np.concatenate([self._bv.flatten(), self._bh.flatten(),
-                                               self._w.flatten(), self._t[np.triu_indices(self._Nv)],
-                                               self._q[np.triu_indices(self._Nh)]])
+            if self._positive_T:
+                t_target = np.linalg.cholesky(self._t).T
+            else:
+                t_target = self._t
+            all_parameters.append(t_target[np.triu_indices(self._Nv)])
+
+        if self._positive_Q:
+            q_target = np.linalg.cholesky(self._q).T
+        else:
+            q_target = self._q
+
+        all_parameters.append(q_target[np.triu_indices(self._Nh)])
+
+        self._parameters = np.concatenate(all_parameters)
 
     def mean(self):
         """Computes the first moment estimator (mean).
@@ -317,23 +336,23 @@ class RTBM(object):
             index += self._Nv
         else:
             inds = np.triu_indices_from(self._t)
-            matrix_t = self._t
+            matrix_t = np.zeros((self._Nv, self._Nv))
             matrix_t[inds] = params[index:index+(self._Nv**2+self._Nv)//2]
-            matrix_t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)//2]
             if self._positive_T:
                 self._t = matrix_t.T.dot(matrix_t)
             else:
+                matrix_t[(inds[1], inds[0])] = params[index:index+(self._Nv**2+self._Nv)//2]
                 self._t = matrix_t
             index += (self._Nv**2+self._Nv)//2
 
         inds = np.triu_indices_from(self._q)
         # Note, the choice of creating a new variable to hold the _reference_ to the matrix is purely aesthetical
-        matrix_q = self._q
+        matrix_q = np.zeros((self._Nh, self._Nh))
         matrix_q[inds] = params[index:index+(self._Nh**2+self._Nh)//2]
-        matrix_q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)//2]
         if self._positive_Q:
             self._q = matrix_q.T.dot(matrix_q)
         else:
+            matrix_q[(inds[1], inds[0])] = params[index:index+(self._Nh**2+self._Nh)//2]
             self._q = matrix_q
 
         if self._check_positivity:
@@ -364,10 +383,15 @@ class RTBM(object):
 
     def set_bounds(self, param_bound):
         """Sets the parameter bound for each parameter.
+        If the matrices T and/or Q are forced as positive, the bounds
+        correspond to (relaxed) bounds of the cholesky decomposition
+        The actual bound would be nodes X bound
 
         Args:
             param_bound (float): the maximum absolute value for parameter variation.
         """
+        # TODO not sure how to do the bounds better than np.sqrt(bound) right now...
+
         upper_bounds = np.array([param_bound] * self._size)
         lower_bounds = np.array([-param_bound] * self._size)
 
@@ -381,7 +405,7 @@ class RTBM(object):
                 lower_bounds[t_idx: t_idx+t_size] = 0.0
             else:
                 # if is positive but not diagonal, then let's play with the limit
-                sqr_bound = np.sqrt(param_bound/self._Nv)
+                sqr_bound = np.sqrt(param_bound)
                 lower_bounds[t_idx: t_idx + t_size] = -sqr_bound
                 upper_bounds[t_idx: t_idx + t_size] = sqr_bound
 
@@ -393,7 +417,7 @@ class RTBM(object):
                 lower_bounds[q_idx] = 0.0
             else:
                 # if is positive but not diagonal, then let's play with the limit
-                sqr_bound = np.sqrt(param_bound/self._Nh)
+                sqr_bound = np.sqrt(param_bound)
                 lower_bounds[q_idx:] = -sqr_bound
                 upper_bounds[q_idx:] = sqr_bound
 
