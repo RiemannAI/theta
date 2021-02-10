@@ -19,7 +19,7 @@ class RTBM(object):
         hidden_units (int): number of hidden units.
         mode (theta.rtbm.RTBM.Mode): set the working mode among: `probability mode` (``Mode.Probability``),
             `log of probability` (``Mode.LogProbability``) and expectation (``Mode.Expectation``), see :class:`theta.rtbm.RTBM.Mode`.
-        init_max_param_bound (float): maximum value allowed for all parameters during the CMA-ES minimization.
+        minimization_bound (float): maximum value allowed for all parameters during the CMA-ES minimization.
         random_bound (float): selects the maximum random value for the Schur complement initialization.
         phase (complex): number which multiplies w and bh ``phase=1`` for Phase I and ``phase=1j`` for Phase II.
         diagonal_T (bool): force T diagonal, by default T is symmetric.
@@ -56,8 +56,9 @@ class RTBM(object):
         Expectation = 2
 
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
-                 init_max_param_bound=2, random_bound=1, phase=1, diagonal_T=False,
+                 minimization_bound=2, random_bound=1, phase=1, diagonal_T=False,
                  positive_T = False, positive_Q = False,
+                 gaussian_init=False,
                  ):
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -89,12 +90,18 @@ class RTBM(object):
         # set boundaries
         self._positive_T = positive_T
         self._positive_Q = positive_Q
-        self.set_bounds(init_max_param_bound)
+        self.set_bounds(minimization_bound)
 
 
-        # Populate with random parameters using Schur complement
-        # This guarantees an acceptable and instantaneous initial solution
-        self.random_init(random_bound)
+        if gaussian_init:
+            # Ensure the bounds are arbitrarily over 50
+            if minimization_bound < 50:
+                raise ValueError("Gaussian initialization needs a more relaxed bound > 50")
+            self.gaussian_initialize()
+        else:
+            # Populate with random parameters using Schur complement
+            # This guarantees an acceptable and instantaneous initial solution
+            self.random_init(random_bound)
 
         # Generate vector for gradient calc call
         self._D1 = []
@@ -132,7 +139,6 @@ class RTBM(object):
             self._check_positivity = False
         else:
             self._check_positivity = True
-
         return P
 
     def feed_through(self, X, grad_calc=False):
@@ -192,10 +198,29 @@ class RTBM(object):
 
         self._store_parameters()
 
-    def gaussian_init(self, data):
+    def gaussian_initialize(self, bound=50, mean=0.5, std=0.025):
+        """ Reset the parameters of the rtbm with a multivariate gaussian
+        centered around mean with a covmat given by std*eye(nv)
+        """
+        multi_mean = np.ones(self._Nv)*mean
+        covmat = np.eye(self._Nv)*std
+        n = min(pow(10, self._Nv+2), 1e7) 
+        fake_data = np.random.multivariate_normal(multi_mean, covmat, size=int(n))
+
+        # Create a positive Q
+        self._bh = np.random.uniform(-bound, bound, self._Nh)
+        sq = np.sqrt(np.abs(bound))
+        params_q = np.random.uniform(-sq, sq, int((self._Nh**2 + self._Nh)/2))
+        chol_q = np.zeros((self._Nh, self._Nh))
+        chol_q[np.triu_indices(self._Nh)] = params_q
+        self._q = chol_q.T.dot(chol_q)
+
+        self._gaussian_init(fake_data.T)
+
+    def _gaussian_init(self, data):
         """ Reset parametrization with a gaussian on top of the data """
         # Set the W andbiases to 0
-        self._w = np.zeros_like(self._q)
+        self._w = np.zeros_like(self._w)
         self._bh = np.zeros_like(self._bh)
 
         # Solve the equation for the gaussian
