@@ -35,7 +35,7 @@ class mse(costfunction):
 
     @staticmethod
     def cost(x, y):   
-        return np.sum(np.mean((x-y)**2,axis=1))
+        return np.sum(np.mean((x-y)**2,axis=-1))
     
     @staticmethod
     def gradient(x, y):

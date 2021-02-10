@@ -198,7 +198,7 @@ class RTBM(object):
 
         self._store_parameters()
 
-    def gaussian_initialize(self, bound=50, mean=0.5, std=0.025):
+    def gaussian_initialize(self, bound=50, mean=0, std=0.25):
         """ Reset the parameters of the rtbm with a multivariate gaussian
         centered around mean with a covmat given by std*eye(nv)
         """
