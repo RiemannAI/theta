@@ -190,12 +190,31 @@ class RTBM(object):
         self._bv = params[a_size:a_size + self._Nv].reshape(self._bv.shape)
         self._bh = self._phase * params[-self._Nh:].reshape(self._bh.shape)
 
+        self._store_parameters()
+
+    def gaussian_init(self, data):
+        """ Reset parametrization with a gaussian on top of the data """
+        # Set the W andbiases to 0
+        self._w = np.zeros_like(self._q)
+        self._bh = np.zeros_like(self._bh)
+
+        # Solve the equation for the gaussian
+        vi = np.mean(data, axis=1, keepdims=True)
+        vivj = data.dot(data.T) / data.shape[1]
+        invT = vivj - vi.dot(vi.T)
+        self._t = np.linalg.inv(invT)
+        self._bv = -1.0*np.dot(vi.T, self._t).T
+
+        self._store_parameters()
+
+
+    def _store_parameters(self):
+        """ Store paramaters in the all_parameters array """
         all_parameters = [
                 self._bv.flatten(),
                 self._bh.flatten(),
                 self._w.flatten()
                 ]
-
 
         # store parameters having in mind that Q and T are symmetric
         if self._diagonal_T:
@@ -356,8 +375,17 @@ class RTBM(object):
             self._q = matrix_q
 
         if self._check_positivity:
-            if not check_normalization_consistency(self._t, self._q, self._w) or \
-                    not check_pos_def(self._q) or not check_pos_def(self._t):
+            if not check_normalization_consistency(self._t, self._q, self._w):
+                return False
+            if not check_pos_def(self._t):
+                if self._positive_T:
+                    print("T have a problem")
+                    import ipdb; ipdb.set_trace()
+                return False
+            if not check_pos_def(self._q):
+                if self._positive_Q:
+                    print("Q have a problem")
+                    import ipdb; ipdb.set_trace()
                 return False
         return True
 
