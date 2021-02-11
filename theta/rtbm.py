@@ -200,7 +200,7 @@ class RTBM(object):
 
         self._store_parameters()
 
-    def gaussian_initialize(self, mean=0, std=0.25):
+    def gaussian_initialize(self, mean=0, std=2.0):
         """ Reset the parameters of the rtbm with a multivariate gaussian
         centered around mean with a covmat given by std*eye(nv)
         """
@@ -506,6 +506,37 @@ class RTBM(object):
             list of numpy.array: two arrays with min and max of each parameter for the GA.
         """
         return self._bounds
+
+    def make_sample_rho(self, size, gap=0.5):
+        """ Produces a probability density between 0 and 1
+        such tha
+
+            \int_0^1 p(x) = 1
+
+        Returns:
+            r: np.array (nevents, ndim)
+                sampling of P(v) between 0 and 1
+            p(x): np.array (nevents,)
+                p(x)
+            r_raw: np.array(nevents, ndim)
+                original sampling of P(v) (-inf, inf)
+        """
+        r_raw, _ = self.make_sample(size)
+        px_raw = self(r_raw.T)[0]
+        # Get the maximum and minimum per dimension
+        rmean = self.mean()
+        # TODO compute std also analytically
+        rstd = np.std(r_raw, axis=0)
+#         rmax = rmean + rstd*5.0
+#         rmin = rmean - rstd*5.0
+        rmax = np.max(r_raw, axis=0) + rstd/5.0
+        rmin = np.min(r_raw, axis=0) - rstd/5.0
+        # TODO check that all points are in this reange
+        delta = rmax - rmin
+        # Rescale
+        r = (r_raw - rmin)/delta
+        px = px_raw * np.prod(delta)
+        return r, px, r_raw
 
     def make_sample(self, size, epsilon=RTBM_precision):
         """Produces P(v) and P(h) samples for the current RTBM architecture.
