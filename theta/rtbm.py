@@ -67,7 +67,7 @@ class RTBM(object):
         self._bh = np.zeros([hidden_units, 1])
         self._w = np.zeros([visible_units, hidden_units])
         self._q = np.zeros([hidden_units, hidden_units])
-        self._diagonal_T = diagonal_T or visible_units == 1
+        self._diagonal_T = diagonal_T or (visible_units == 1 and not gaussian_init)
         self._mode = None
         self._call = None
         self._parameters = None
@@ -75,6 +75,8 @@ class RTBM(object):
         self._phase = phase
         self._check_positivity = True
         if diagonal_T:
+            if gaussian_init:
+                raise ValueError("Gaussian initialization doesn't allow for diagonal_T")
             self._size = 2 * self._Nv + self._Nh + (self._Nh**2+self._Nh)//2 + self._Nv*self._Nh
         else:
             self._size = self._Nv + self._Nh + (self._Nv**2+self._Nv+self._Nh**2+self._Nh)//2+self._Nv*self._Nh
@@ -198,7 +200,7 @@ class RTBM(object):
 
         self._store_parameters()
 
-    def gaussian_initialize(self, bound=50, mean=0, std=0.25):
+    def gaussian_initialize(self, mean=0, std=0.25):
         """ Reset the parameters of the rtbm with a multivariate gaussian
         centered around mean with a covmat given by std*eye(nv)
         """
@@ -207,15 +209,37 @@ class RTBM(object):
         n = min(pow(10, self._Nv+2), 1e7) 
         fake_data = np.random.multivariate_normal(multi_mean, covmat, size=int(n))
 
+        # Get the bounds for the matrix q, which corresponds to the last value in the bounds
+        q_min = self._bounds[0][-1]
+        q_max = self._bounds[1][-1]
+        # The biases instead all have the same bounds and are set at the beginning
+        q_bias_min = self._bounds[0][0]
+        q_bias_max = self._bounds[1][0]
+
         # Create a positive Q
-        self._bh = np.random.uniform(-bound, bound, self._Nh)
-        sq = np.sqrt(np.abs(bound))
-        params_q = np.random.uniform(-sq, sq, int((self._Nh**2 + self._Nh)/2))
-        chol_q = np.zeros((self._Nh, self._Nh))
-        chol_q[np.triu_indices(self._Nh)] = params_q
-        self._q = chol_q.T.dot(chol_q)
+        self._bh = np.random.uniform(q_bias_min, q_bias_max, self._Nh)
+        params_q = np.random.uniform(q_min, q_max, int((self._Nh**2 + self._Nh)/2))
+        if self._Nh == 1:
+            self._q = params_q.reshape((1,1))
+        else:
+            chol_q = np.zeros((self._Nh, self._Nh))
+            chol_q[np.triu_indices(self._Nh)] = params_q
+            self._q = chol_q.T.dot(chol_q)
 
         self._gaussian_init(fake_data.T)
+
+        # Change the bounds of T according to the gaussian initialization
+        t_idx = self._Nv + self._Nh + self._Nv*self._Nh
+        t_size = self._Nv if self._diagonal_T else int((self._Nv**2 + self._Nv)/2) 
+        if self._Nv == 1:
+            t_bound_min = 0.0
+            t_bound_max = np.max(self._t)*1.5
+        else:
+            t_bound_max = np.sqrt(np.max(self._t))*2.0
+            t_bound_min = -t_bound_max
+
+        self._bounds[0][t_idx: t_idx+t_size] = t_bound_min
+        self._bounds[1][t_idx: t_idx+t_size] = t_bound_max
 
     def _gaussian_init(self, data):
         """ Reset parametrization with a gaussian on top of the data """
@@ -245,13 +269,13 @@ class RTBM(object):
         if self._diagonal_T:
             all_parameters.append(self._t.diagonal())
         else:
-            if self._positive_T:
+            if self._positive_T and self._Nv > 1:
                 t_target = np.linalg.cholesky(self._t).T
             else:
                 t_target = self._t
             all_parameters.append(t_target[np.triu_indices(self._Nv)])
 
-        if self._positive_Q:
+        if self._positive_Q and self._Nh > 1:
             q_target = np.linalg.cholesky(self._q).T
         else:
             q_target = self._q
