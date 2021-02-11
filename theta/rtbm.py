@@ -96,9 +96,6 @@ class RTBM(object):
 
 
         if gaussian_init:
-            # Ensure the bounds are arbitrarily over 50
-            if minimization_bound < 50:
-                raise ValueError("Gaussian initialization needs a more relaxed bound > 50")
             self.gaussian_initialize()
         else:
             # Populate with random parameters using Schur complement
@@ -233,7 +230,7 @@ class RTBM(object):
         t_size = self._Nv if self._diagonal_T else int((self._Nv**2 + self._Nv)/2) 
         if self._Nv == 1:
             t_bound_min = 0.0
-            t_bound_max = np.max(self._t)*1.5
+            t_bound_max = np.max(self._t)*5.0
         else:
             t_bound_max = np.sqrt(np.max(self._t))*2.0
             t_bound_min = -t_bound_max
@@ -469,8 +466,8 @@ class RTBM(object):
         """
         # TODO not sure how to do the bounds better than np.sqrt(bound) right now...
 
-        upper_bounds = np.array([param_bound] * self._size)
-        lower_bounds = np.array([-param_bound] * self._size)
+        upper_bounds = np.array([param_bound*1.0] * self._size)
+        lower_bounds = np.array([-param_bound*1.0] * self._size)
 
         # If positivity is imposed for T _or_ Q the boundaries might change
         # for T we need to check whether this is a triangular matrix
