@@ -58,7 +58,7 @@ class RTBM(object):
     def __init__(self, visible_units, hidden_units, mode=Mode.Probability,
                  minimization_bound=2, random_bound=1, phase=1, diagonal_T=False,
                  positive_T = False, positive_Q = False,
-                 gaussian_init=False,
+                 gaussian_init=False, gaussian_parameters = None
                  ):
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -96,7 +96,9 @@ class RTBM(object):
 
 
         if gaussian_init:
-            self.gaussian_initialize()
+            if gaussian_parameters is None:
+                gaussian_parameters = {"mean" : 0.0, "std": 2.0}
+            self.gaussian_initialize(**gaussian_parameters)
         else:
             # Populate with random parameters using Schur complement
             # This guarantees an acceptable and instantaneous initial solution
@@ -504,7 +506,7 @@ class RTBM(object):
         """
         return self._bounds
 
-    def make_sample_rho(self, size, gap=0.5):
+    def make_sample_rho(self, size, epsilon=1e-4, scaling="minmax"):
         """ Produces a probability density between 0 and 1
         such tha
 
@@ -521,18 +523,18 @@ class RTBM(object):
         r_raw, _ = self.make_sample(size)
         px_raw = self(r_raw.T)[0]
         # Get the maximum and minimum per dimension
-        rmean = self.mean()
-        # TODO compute std also analytically
-        rstd = np.std(r_raw, axis=0)
-#         rmax = rmean + rstd*5.0
-#         rmin = rmean - rstd*5.0
-        rmax = np.max(r_raw, axis=0) + rstd/5.0
-        rmin = np.min(r_raw, axis=0) - rstd/5.0
-        # TODO check that all points are in this reange
-        delta = rmax - rmin
-        # Rescale
-        r = (r_raw - rmin)/delta
-        px = px_raw * np.prod(delta)
+        rmax = np.max(r_raw, axis=0) + epsilon
+        rmin = np.min(r_raw, axis=0) - epsilon
+        if scaling == "minmax":
+            delta = rmax - rmin
+            r = (r_raw - rmin)/delta
+            px = px_raw * np.prod(delta)
+        elif scaling == "sigmoid":
+            from scipy.special import expit
+            r = expit(r_raw)
+            px = px_raw/np.prod(r*(1-r), axis=1)
+        else:
+            raise ValueError(f"Scaling {scaling} not recognized")
         return r, px, r_raw
 
     def make_sample(self, size, epsilon=RTBM_precision):
