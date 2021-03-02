@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import numpy as np
+from scipy.special import expit
 from theta.mathtools import (
     rtbm_probability,
     hidden_expectations,
@@ -77,6 +78,7 @@ class RTBM(object):
         positive_Q=False,
         gaussian_init=False,
         gaussian_parameters=None,
+        sampling_activation="minmax"
     ):
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -92,6 +94,7 @@ class RTBM(object):
         self._X = None
         self._phase = phase
         self._check_positivity = True
+        self._sampling_activation = sampling_activation
         if diagonal_T:
             if gaussian_init:
                 raise ValueError("Gaussian initialization doesn't allow for diagonal_T")
@@ -256,17 +259,17 @@ class RTBM(object):
         self._gaussian_init(fake_data.T)
 
         # Change the bounds of T according to the gaussian initialization
-        t_idx = self._Nv + self._Nh + self._Nv * self._Nh
-        t_size = self._Nv if self._diagonal_T else int((self._Nv ** 2 + self._Nv) / 2)
-        if self._Nv == 1:
-            t_bound_min = 0.0
-            t_bound_max = np.max(self._t) * 5.0
-        else:
-            t_bound_max = np.sqrt(np.max(self._t)) * 2.0
-            t_bound_min = -t_bound_max
-
-        self._bounds[0][t_idx : t_idx + t_size] = t_bound_min
-        self._bounds[1][t_idx : t_idx + t_size] = t_bound_max
+#         t_idx = self._Nv + self._Nh + self._Nv * self._Nh
+#         t_size = self._Nv if self._diagonal_T else int((self._Nv ** 2 + self._Nv) / 2)
+#         if self._Nv == 1:
+#             t_bound_min = 0.0
+#             t_bound_max = np.max(self._t) * 5.0
+#         else:
+#             t_bound_max = np.max(self._t) * 5.0
+#             t_bound_min = -t_bound_max
+# 
+#         self._bounds[0][t_idx : t_idx + t_size] = t_bound_min
+#         self._bounds[1][t_idx : t_idx + t_size] = t_bound_max
 
     def _gaussian_init(self, data):
         """ Reset parametrization with a gaussian on top of the data """
@@ -546,7 +549,7 @@ class RTBM(object):
         if self._positive_T:
             if self._Nv == 1 or self._diagonal_T:
                 # If the T is diagonal, positivity can enforced just with this
-                lower_bounds[t_idx : t_idx + t_size] = 0.0
+                lower_bounds[t_idx : t_idx + t_size] = 1.0/param_bound
             else:
                 # if is positive but not diagonal, then let's play with the limit
                 sqr_bound = np.sqrt(param_bound)
@@ -558,7 +561,7 @@ class RTBM(object):
         if self._positive_Q:
             # if nh = 1 then this is trivial!
             if self._Nh == 1:
-                lower_bounds[q_idx] = 0.0
+                lower_bounds[q_idx] = 1.0/param_bound
             else:
                 # if is positive but not diagonal, then let's play with the limit
                 sqr_bound = np.sqrt(param_bound)
@@ -574,7 +577,29 @@ class RTBM(object):
         """
         return self._bounds
 
-    def make_sample_rho(self, size, epsilon=1e-4, scaling="minmax"):
+    def get_transformation(self, xarr):
+        """ Receives an array (nevents, ndim) and returns
+        the transformed array of numbers and the jacobian of the transformation """
+        # Get first the distribution by the raw rtbm
+        px_raw = self(xarr.T)[0]
+        # And now transform the input array and the probability according to the activation
+        if self._sampling_activation is None:
+            r = xarr
+            px = px_raw
+        elif self._sampling_activation == "minmax":
+            xmax = np.max(xarr, axis=0) + 1e-7
+            xmin = np.min(xarr, axis=0) - 1e-7
+            delta = xmax - xmin
+            r = (xarr - xmin)/delta
+            px = px_raw * np.prod(delta)
+        elif self._sampling_activation == "sigmoid":
+            r = expit(xarr)
+            px = px_raw / np.prod(r - r**2, axis=1)
+        else:
+            raise ValueError(f"Activation {self._sampling_activation} not recognized")
+        return r, px
+
+    def make_sample_rho(self, size):
         """Produces a probability density between 0 and 1
         such tha
 
@@ -589,21 +614,7 @@ class RTBM(object):
                 original sampling of P(v) (-inf, inf)
         """
         r_raw, _ = self.make_sample(size)
-        px_raw = self(r_raw.T)[0]
-        # Get the maximum and minimum per dimension
-        rmax = np.max(r_raw, axis=0) + epsilon
-        rmin = np.min(r_raw, axis=0) - epsilon
-        if scaling == "minmax":
-            delta = rmax - rmin
-            r = (r_raw - rmin) / delta
-            px = px_raw * np.prod(delta)
-        elif scaling == "sigmoid":
-            from scipy.special import expit
-
-            r = expit(r_raw)
-            px = px_raw / np.prod(r * (1 - r), axis=1)
-        else:
-            raise ValueError(f"Scaling {scaling} not recognized")
+        r, px = self.get_transformation(r_raw)
         return r, px, r_raw
 
     def make_sample(self, size, epsilon=RTBM_precision):

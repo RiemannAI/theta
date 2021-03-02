@@ -8,7 +8,8 @@ RTBM_precision= 1e-8
 
 def check_normalization_consistency(t, q, w):
     c = q - np.transpose(w).dot(np.linalg.inv(t).dot(w))
-    return np.all(np.linalg.eigvals(c) > 0)
+    res = np.all(np.linalg.eigvals(c) > 0)
+    return res
 
 
 def check_pos_def(x):
