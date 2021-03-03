@@ -6,10 +6,13 @@ from theta.riemann_theta.riemann_theta import RiemannTheta
 RTBM_precision= 1e-8
 
 
-def check_normalization_consistency(t, q, w):
+def normalization_consistency(t, q, w):
     c = q - np.transpose(w).dot(np.linalg.inv(t).dot(w))
-    res = np.all(np.linalg.eigvals(c) > 0)
-    return res
+    return np.linalg.eigvals(c)
+
+
+def check_normalization_consistency(t, q, w):
+    return np.all(normalization_consistency(t, q, w) > 0)
 
 
 def check_pos_def(x):

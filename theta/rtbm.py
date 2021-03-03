@@ -258,18 +258,7 @@ class RTBM(object):
 
         self._gaussian_init(fake_data.T)
 
-        # Change the bounds of T according to the gaussian initialization
-#         t_idx = self._Nv + self._Nh + self._Nv * self._Nh
-#         t_size = self._Nv if self._diagonal_T else int((self._Nv ** 2 + self._Nv) / 2)
-#         if self._Nv == 1:
-#             t_bound_min = 0.0
-#             t_bound_max = np.max(self._t) * 5.0
-#         else:
-#             t_bound_max = np.max(self._t) * 5.0
-#             t_bound_min = -t_bound_max
-# 
-#         self._bounds[0][t_idx : t_idx + t_size] = t_bound_min
-#         self._bounds[1][t_idx : t_idx + t_size] = t_bound_max
+        # Change the bounds of T according to the gaussian initialization?
 
     def _gaussian_init(self, data):
         """ Reset parametrization with a gaussian on top of the data """
@@ -428,7 +417,6 @@ class RTBM(object):
         Returns:
             bool: True if Q, T and Q-WtTW are positive, False otherwise.
         """
-
         if len(params) != self._size:
             raise Exception("Size does no match.")
 
@@ -459,32 +447,27 @@ class RTBM(object):
                 self._t = matrix_t
             index += (self._Nv ** 2 + self._Nv) // 2
 
+
         inds = np.triu_indices_from(self._q)
         # Note, the choice of creating a new variable to hold the _reference_ to the matrix is purely aesthetical
         matrix_q = np.zeros((self._Nh, self._Nh))
         matrix_q[inds] = params[index : index + (self._Nh ** 2 + self._Nh) // 2]
         if self._positive_Q:
-            self._q = matrix_q.T.dot(matrix_q)
+            if self._Nh == 1:
+                self._q = matrix_q
+            else:
+                self._q = matrix_q.T.dot(matrix_q)
         else:
             matrix_q[(inds[1], inds[0])] = params[index : index + (self._Nh ** 2 + self._Nh) // 2]
             self._q = matrix_q
 
+        # At this point we can already check the positivity
         if self._check_positivity:
             if not check_normalization_consistency(self._t, self._q, self._w):
                 return False
-            if not check_pos_def(self._t):
-                if self._positive_T:
-                    print("T have a problem")
-                    import ipdb
-
-                    ipdb.set_trace()
+            if not self._positive_T and not check_pos_def(self._t):
                 return False
-            if not check_pos_def(self._q):
-                if self._positive_Q:
-                    print("Q have a problem")
-                    import ipdb
-
-                    ipdb.set_trace()
+            if not self._positive_Q and not check_pos_def(self._q):
                 return False
         return True
 
@@ -529,32 +512,29 @@ class RTBM(object):
             )
 
     def set_bounds(self, param_bound):
-        """Sets the parameter bound for each parameter.
-        If the matrices T and/or Q are forced as positive, the bounds
-        correspond to (relaxed) bounds of the cholesky decomposition
-        The actual bound would be nodes X bound
+        """Sets the parameter bounds for each parameter as (-param_bound, param_bound)
+        If the matrices T and/or Q are forced positive, the bounds depend on their shape
+        if T/Q are diagonal then the bounds are (0, param_bound), otherwise, since
+        we optimize the cholesky decomposition the bounds are (-1, +1)*sqrt(param_bound)
 
         Args:
             param_bound (float): the maximum absolute value for parameter variation.
         """
-        # TODO not sure how to do the bounds better than np.sqrt(bound) right now...
+        upper_bounds = np.ones(self._size)*param_bound
+        lower_bounds = -upper_bounds
 
-        upper_bounds = np.array([param_bound * 1.0] * self._size)
-        lower_bounds = np.array([-param_bound * 1.0] * self._size)
-
-        # If positivity is imposed for T _or_ Q the boundaries might change
-        # for T we need to check whether this is a triangular matrix
-        t_idx = self._Nv + self._Nh + self._Nv * self._Nh
-        t_size = self._Nv if self._diagonal_T else int((self._Nv ** 2 + self._Nv) / 2)
         if self._positive_T:
+            t_idx = self._Nv + self._Nh + self._Nv * self._Nh
+            t_size = self._Nv if self._diagonal_T else int((self._Nv ** 2 + self._Nv) / 2)
+
             if self._Nv == 1 or self._diagonal_T:
-                # If the T is diagonal, positivity can enforced just with this
                 lower_bounds[t_idx : t_idx + t_size] = 1.0/param_bound
+                upper_bounds[t_idx : t_idx + t_size] = param_bound
             else:
-                # if is positive but not diagonal, then let's play with the limit
                 sqr_bound = np.sqrt(param_bound)
                 lower_bounds[t_idx : t_idx + t_size] = -sqr_bound
                 upper_bounds[t_idx : t_idx + t_size] = sqr_bound
+
 
         # We do the same for Q, only Q is not allowed to be diagonal
         q_idx = t_idx + t_size
@@ -562,6 +542,7 @@ class RTBM(object):
             # if nh = 1 then this is trivial!
             if self._Nh == 1:
                 lower_bounds[q_idx] = 1.0/param_bound
+                upper_bounds[q_idx] = param_bound
             else:
                 # if is positive but not diagonal, then let's play with the limit
                 sqr_bound = np.sqrt(param_bound)
