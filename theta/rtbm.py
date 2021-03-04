@@ -576,6 +576,9 @@ class RTBM(object):
         elif self._sampling_activation == "sigmoid":
             r = expit(xarr)
             px = px_raw / np.prod(r - r**2, axis=1)
+        elif self._sampling_activation == "tanh":
+            r = np.tanh(xarr)/2.0 + 0.5
+            px = px_raw * np.cosh(xarr)**2
         else:
             raise ValueError(f"Activation {self._sampling_activation} not recognized")
         return r, px
