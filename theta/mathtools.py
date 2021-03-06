@@ -61,7 +61,9 @@ def rtbm_probability(v, bv, bh, t, w, q, mode=1):
     uR1, vR1 = RiemannTheta.parts_eval((vT.dot(w) + BhT) / (2.0j * np.pi), -q / (2.0j * np.pi), mode, epsilon=RTBM_precision)
     uR2, vR2 = RiemannTheta.parts_eval((BhT - BtiTW) / (2.0j * np.pi), (-q + WtiTW) / (2.0j * np.pi), mode, epsilon=RTBM_precision)
 
-    return np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * vR1 / vR2 * np.exp(uR1-uR2)
+    # In order to avoid problems at multiprocessing, let's add a maximum value for the exponent
+    res = np.sqrt(detT / (2.0 * np.pi) ** (v.shape[0])) * ExpF * vR1 / vR2 * np.exp( np.minimum(uR1-uR2, 250) )
+    return res
 
 
 def rtbm_log_probability(v, bv, bh, t, w, q, mode=1):

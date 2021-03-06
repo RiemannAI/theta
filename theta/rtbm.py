@@ -568,17 +568,25 @@ class RTBM(object):
             r = xarr
             px = px_raw
         elif self._sampling_activation == "minmax":
+            # (0, 1)
             xmax = np.max(xarr, axis=0) + 1e-7
             xmin = np.min(xarr, axis=0) - 1e-7
             delta = xmax - xmin
             r = (xarr - xmin)/delta
             px = px_raw * np.prod(delta)
         elif self._sampling_activation == "sigmoid":
+            # (0, 1)
             r = expit(xarr)
             px = px_raw / np.prod(r - r**2, axis=1)
         elif self._sampling_activation == "tanh":
+            # (-1, 1)
             r = np.tanh(xarr)
             px = px_raw * np.prod(np.cosh(xarr)**2, axis=1)
+        elif self._sampling_activation == "softsign":
+            # (-1, 1)
+            abs_x = 1 + np.abs(xarr)
+            r = xarr / abs_x
+            px = px_raw*abs_x**2
         else:
             raise ValueError(f"Activation {self._sampling_activation} not recognized")
         return r, px
