@@ -579,14 +579,14 @@ class RTBM(object):
             r = expit(xarr)
             px = px_raw / np.prod(r - r**2, axis=1)
         elif self._sampling_activation == "tanh":
-            # (-1, 1)
+            # (-1, 1), good starting gaussian: 0.0-0.5
             r = np.tanh(xarr)
             px = px_raw * np.prod(np.cosh(xarr)**2, axis=1)
         elif self._sampling_activation == "softsign":
             # (-1, 1)
             abs_x = 1 + np.abs(xarr)
             r = xarr / abs_x
-            px = px_raw*abs_x**2
+            px = px_raw*np.prod(abs_x**2, axis=1)
         else:
             raise ValueError(f"Activation {self._sampling_activation} not recognized")
         return r, px
