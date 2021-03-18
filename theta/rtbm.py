@@ -580,8 +580,9 @@ class RTBM(object):
             px = px_raw / np.prod(r - r**2, axis=1)
         elif self._sampling_activation == "tanh":
             # (-1, 1), good starting gaussian: 0.0-0.5
-            r = np.tanh(xarr)
-            px = px_raw * np.prod(np.cosh(xarr)**2, axis=1)
+            # Factor of 2 to fix that
+            r = (np.tanh(xarr)+1)/2.0
+            px = px_raw * np.prod(2.0*np.cosh(xarr)**2, axis=1)
         elif self._sampling_activation == "softsign":
             # (-1, 1)
             abs_x = 1 + np.abs(xarr)
