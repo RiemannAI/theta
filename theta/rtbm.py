@@ -579,8 +579,8 @@ class RTBM(object):
             r = expit(xarr)
             px = px_raw / np.prod(r - r**2, axis=1)
         elif self._sampling_activation == "tanh":
-            # (-1, 1), good starting gaussian: 0.0-0.5
-            # Factor of 2 to fix that
+            # The image of tanh is (-1, 1)
+            # factor of 2 to move it to (0, 1)
             r = (np.tanh(xarr)+1)/2.0
             px = px_raw * np.prod(2.0*np.cosh(xarr)**2, axis=1)
         elif self._sampling_activation == "softsign":
