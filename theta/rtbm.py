@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import numpy as np
-from scipy.special import expit
+from scipy.special import expit, logit
 from theta.mathtools import (
     rtbm_probability,
     hidden_expectations,
@@ -13,6 +12,49 @@ from theta.mathtools import (
 )
 from theta.riemann_theta.riemann_theta import RiemannTheta, radius, integer_points_python
 
+#### Activations
+class Nope:
+    def __init__(self):
+        print("WARNING: using no sampling")
+    def __call__(self, x):
+        return x
+    def grad(self, x):
+        return np.ones_like(x)
+    def inv(self, y):
+        return y
+
+class Tanh:
+    # The image of tanh is (-1, 1)
+    # factor of 2 to move it to (0, 1)
+    def __call__(self, x):
+        return (np.tanh(x)+1.0)/2.0
+    def grad(self, x):
+        return 2.0*np.cosh(x)**2
+    def inv(self, y):
+        return np.arctanh(2.0*y - 1.0)
+
+class Sigmoid:
+    def __call__(self, x):
+        return expit(x)
+    def grad(self, x):
+        return 1.0/(self(x)-self(x)**2)
+    def inv(self, y):
+        return logit(y)
+    
+class Softsign:
+    def __call__(self, x):
+        return (x/(1+np.abs(x))+1.0)/2.0
+    def grad(self, x):
+        return 2.0*np.abs(x)**2
+    def inv(self, y):
+        ay = np.where(y > 0.0, y, -y)
+        return y/(1 - ay)
+
+activation_dict = {
+        "tanh": Tanh,
+        "sigmoid": Sigmoid,
+        "softsign": Softsign
+        }
 
 class AssignError(Exception):
     """Custom exception for Shur complement test"""
@@ -78,7 +120,7 @@ class RTBM(object):
         positive_Q=False,
         gaussian_init=False,
         gaussian_parameters=None,
-        sampling_activation="minmax"
+        sampling_activations="tanh"
     ):
         self._Nv = visible_units
         self._Nh = hidden_units
@@ -94,7 +136,11 @@ class RTBM(object):
         self._X = None
         self._phase = phase
         self._check_positivity = True
-        self._sampling_activation = sampling_activation
+        # Get the activation per dimension (# TODO better check)
+        if isinstance(sampling_activations, str):
+            sampling_activations = visible_units*[sampling_activations]
+        self._activations = [activation_dict.get(i.lower(), Nope)() for i in sampling_activations]
+
         if diagonal_T:
             if gaussian_init:
                 raise ValueError("Gaussian initialization doesn't allow for diagonal_T")
@@ -235,7 +281,8 @@ class RTBM(object):
         centered around mean with a covmat given by std*eye(nv)
         """
         multi_mean = np.ones(self._Nv) * mean
-        covmat = np.eye(self._Nv) * std
+        covmat = np.eye(self._Nv)
+        np.fill_diagonal(covmat, std)
         n = min(pow(10, self._Nv + 2), 1e7)
         fake_data = np.random.multivariate_normal(multi_mean, covmat, size=int(n))
 
@@ -562,34 +609,36 @@ class RTBM(object):
         """ Receives an array (nevents, ndim) and returns
         the transformed array of numbers and the jacobian of the transformation """
         # Get first the distribution by the raw rtbm
-        px_raw = self(xarr.T)[0]
+        px = self(xarr.T)[0]
         # And now transform the input array and the probability according to the activation
-        if self._sampling_activation is None:
-            r = xarr
-            px = px_raw
-        elif self._sampling_activation == "minmax":
-            # (0, 1)
-            xmax = np.max(xarr, axis=0) + 1e-7
-            xmin = np.min(xarr, axis=0) - 1e-7
-            delta = xmax - xmin
-            r = (xarr - xmin)/delta
-            px = px_raw * np.prod(delta)
-        elif self._sampling_activation == "sigmoid":
-            # (0, 1)
-            r = expit(xarr)
-            px = px_raw / np.prod(r - r**2, axis=1)
-        elif self._sampling_activation == "tanh":
-            # The image of tanh is (-1, 1)
-            # factor of 2 to move it to (0, 1)
-            r = (np.tanh(xarr)+1)/2.0
-            px = px_raw * np.prod(2.0*np.cosh(xarr)**2, axis=1)
-        elif self._sampling_activation == "softsign":
-            # (-1, 1)
-            abs_x = 1 + np.abs(xarr)
-            r = xarr / abs_x
-            px = px_raw*np.prod(abs_x**2, axis=1)
-        else:
-            raise ValueError(f"Activation {self._sampling_activation} not recognized")
+        r_list = []
+        for x, act in zip(xarr.T, self._activations):
+            r_list.append(act(x))
+            px *= act.grad(x)
+        r = np.stack(r_list, axis=-1)
+        return r, px
+
+
+#         r = self._sampling_activation(xarr)
+#         px = px_raw * np.prod(self._sampling_activation.grad(xarr), axis=1)
+
+#         if self._sampling_activation is None:
+#             r = xarr
+#             px = px_raw
+#         elif self._sampling_activation == "sigmoid":
+#             # (0, 1)
+#             r = expit(xarr)
+#             px = px_raw / np.prod(r - r**2, axis=1)
+#         elif self._sampling_activation == "tanh":
+#             r = (np.tanh(xarr)+1)/2.0
+#             px = px_raw * np.prod(2.0*np.cosh(xarr)**2, axis=1)
+#         elif self._sampling_activation == "softsign":
+#             # (-1, 1)
+#             abs_x = 1 + np.abs(xarr)
+#             r = xarr / abs_x
+#             px = px_raw*np.prod(abs_x**2, axis=1)
+#         else:
+#             raise ValueError(f"Activation {self._sampling_activation} not recognized")
         return r, px
 
     def make_sample_rho(self, size):
