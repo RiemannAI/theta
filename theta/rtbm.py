@@ -618,28 +618,13 @@ class RTBM(object):
         r = np.stack(r_list, axis=-1)
         return r, px
 
-
-#         r = self._sampling_activation(xarr)
-#         px = px_raw * np.prod(self._sampling_activation.grad(xarr), axis=1)
-
-#         if self._sampling_activation is None:
-#             r = xarr
-#             px = px_raw
-#         elif self._sampling_activation == "sigmoid":
-#             # (0, 1)
-#             r = expit(xarr)
-#             px = px_raw / np.prod(r - r**2, axis=1)
-#         elif self._sampling_activation == "tanh":
-#             r = (np.tanh(xarr)+1)/2.0
-#             px = px_raw * np.prod(2.0*np.cosh(xarr)**2, axis=1)
-#         elif self._sampling_activation == "softsign":
-#             # (-1, 1)
-#             abs_x = 1 + np.abs(xarr)
-#             r = xarr / abs_x
-#             px = px_raw*np.prod(abs_x**2, axis=1)
-#         else:
-#             raise ValueError(f"Activation {self._sampling_activation} not recognized")
-        return r, px
+    def undo_transformation(self, rand):
+        """ Receives an array of random numbers (the product of `get_transformation`)
+        and invert it returning `xarr` """
+        x_list = []
+        for r, act in zip(rand.T, self._activations):
+            x_list.append(act.inv(r))
+        return np.stack(x_list, axis=-1)
 
     def make_sample_rho(self, size):
         """Produces a probability density between 0 and 1
